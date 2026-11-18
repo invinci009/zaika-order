@@ -1,0 +1,15 @@
+.git
+.next
+node_modules
+android
+tests
+docs
+templates
+.planning
+.cursor
+.gemini
+coverage
+tmp
+temp
+*.log
+.env*.local

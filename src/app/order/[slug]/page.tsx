@@ -23,41 +23,40 @@ export default async function OrderPortalPage({ params, searchParams }: PortalPa
     const all = await getCampaigns().catch(() => [])
     campaign = all.find((c) => c.active) || all[0] || null
   }
+  // Graceful fallback for the restaurant: enable direct menu access even if Firestore campaign isn't seeded
+  if (!campaign && (slug === config.slug || slug === 'pm-zaika' || slug === 'zaika')) {
+    campaign = {
+      id: 'default-pm-zaika',
+      slug: config.slug,
+      name: config.name,
+      active: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as any
+  }
 
   const fallbackCard = (title: string, body: string, tone: 'amber' | 'rose' = 'amber') => (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)' }}
+      className="min-h-screen flex items-center justify-center p-4 bg-[#0a0510] text-[#fbf7ee]"
     >
       <div
-        className="w-full max-w-sm text-center p-8 rounded-3xl space-y-5 animate-in fade-in zoom-in-95 duration-300"
-        style={{
-          background: 'rgba(31, 32, 65, 0.9)',
-          border: '1px solid rgba(212, 162, 52, 0.3)',
-          boxShadow: '0 4px 40px rgba(0,0,0,0.5)',
-        }}
+        className="w-full max-w-sm text-center p-8 rounded-3xl space-y-5 animate-in fade-in zoom-in-95 duration-300 bg-[#160d24]/90 border border-amber-500/30 shadow-2xl backdrop-blur-md"
       >
         <div
-          className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center`}
-          style={{
-            background: tone === 'rose' ? 'rgba(229, 57, 53, 0.1)' : 'rgba(212, 162, 52, 0.1)',
-            border: `1px solid ${tone === 'rose' ? 'rgba(229,57,53,0.3)' : 'rgba(212,162,52,0.3)'}`,
-            color: tone === 'rose' ? '#e53935' : '#d4a234',
-          }}
+          className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center ${
+            tone === 'rose'
+              ? 'bg-rose-500/15 border border-rose-500/40 text-rose-400'
+              : 'bg-amber-500/15 border border-amber-500/40 text-amber-300'
+          }`}
         >
           <AlertTriangle className="w-8 h-8" />
         </div>
-        <h1 className="text-xl font-extrabold" style={{ color: '#f5f5f0' }}>{title}</h1>
-        <p className="text-sm leading-relaxed" style={{ color: '#a0a0b8' }}>{body}</p>
+        <h1 className="text-xl font-extrabold text-[#fdf8f0]">{title}</h1>
+        <p className="text-sm leading-relaxed text-[#c7bdd6]">{body}</p>
         {config.contact.phone && (
           <a
             href={`tel:${config.contact.phone}`}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-colors"
-            style={{
-              background: 'rgba(212, 162, 52, 0.1)',
-              border: '1px solid rgba(212, 162, 52, 0.3)',
-              color: '#d4a234',
-            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 hover:brightness-110 shadow-lg shadow-amber-500/20"
           >
             <Phone className="w-3.5 h-3.5" /> Call: {config.contact.phone}
           </a>
