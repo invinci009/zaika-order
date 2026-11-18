@@ -5,12 +5,34 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ==============================================================================
-   Branding CSS Variables (dynamically set from config.json)
+   PM Zaika Restaurant — Design System
+   Dark Navy + Gold Theme
    ============================================================================== */
+
+/* Brand CSS Variables */
 :root {
-  --brand-primary: #1a6234;
-  --brand-secondary: #0f3d1f;
-  --brand-accent: #2d8a4e;
+  --brand-primary: #d4a234;
+  --brand-secondary: #1a1a2e;
+  --brand-accent: #e8a317;
+
+  /* Zaika Design Tokens */
+  --zaika-bg: #1a1a2e;
+  --zaika-bg-deep: #0f0f23;
+  --zaika-bg-card: #1f2041;
+  --zaika-bg-elevated: #252550;
+  --zaika-gold: #d4a234;
+  --zaika-gold-light: #f0c14b;
+  --zaika-gold-dark: #b8860b;
+  --zaika-gold-muted: rgba(212, 162, 52, 0.15);
+  --zaika-gold-border: rgba(212, 162, 52, 0.3);
+  --zaika-text: #f5f5f0;
+  --zaika-text-muted: #a0a0b8;
+  --zaika-text-dim: #6b6b88;
+  --zaika-mandala: rgba(212, 162, 52, 0.07);
+  --zaika-mandala-hover: rgba(212, 162, 52, 0.12);
+  --zaika-veg: #4caf50;
+  --zaika-nonveg: #e53935;
+  --zaika-egg: #ff9800;
 }
 
 @theme inline {
@@ -61,115 +83,72 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --background: #1a1a2e;
+  --foreground: #f5f5f0;
+  --card: #1f2041;
+  --card-foreground: #f5f5f0;
+  --popover: #1f2041;
+  --popover-foreground: #f5f5f0;
   --primary: var(--brand-primary);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: var(--brand-secondary);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --primary-foreground: #0f0f23;
+  --secondary: #252550;
+  --secondary-foreground: #f5f5f0;
+  --muted: #252550;
+  --muted-foreground: #a0a0b8;
   --accent: var(--brand-accent);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent-foreground: #0f0f23;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: rgba(212, 162, 52, 0.2);
+  --input: #252550;
   --ring: var(--brand-primary);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --chart-1: #d4a234;
+  --chart-2: #f0c14b;
+  --chart-3: #b8860b;
+  --chart-4: #e8a317;
+  --chart-5: #8b6914;
+  --radius: 0.75rem;
+  --sidebar: #1f2041;
+  --sidebar-foreground: #f5f5f0;
   --sidebar-primary: var(--brand-primary);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-primary-foreground: #0f0f23;
+  --sidebar-accent: #252550;
+  --sidebar-accent-foreground: #f5f5f0;
+  --sidebar-border: rgba(212, 162, 52, 0.2);
   --sidebar-ring: var(--brand-primary);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --background: #1a1a2e;
+  --foreground: #f5f5f0;
+  --card: #1f2041;
+  --card-foreground: #f5f5f0;
+  --popover: #1f2041;
+  --popover-foreground: #f5f5f0;
   --primary: var(--brand-primary);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: var(--brand-secondary);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
+  --primary-foreground: #0f0f23;
+  --secondary: #252550;
+  --secondary-foreground: #f5f5f0;
+  --muted: #252550;
+  --muted-foreground: #a0a0b8;
   --accent: var(--brand-accent);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent-foreground: #0f0f23;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: rgba(212, 162, 52, 0.2);
+  --input: #252550;
   --ring: var(--brand-primary);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --chart-1: #d4a234;
+  --chart-2: #f0c14b;
+  --chart-3: #b8860b;
+  --chart-4: #e8a317;
+  --chart-5: #8b6914;
+  --sidebar: #1f2041;
+  --sidebar-foreground: #f5f5f0;
   --sidebar-primary: var(--brand-primary);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-primary-foreground: #0f0f23;
+  --sidebar-accent: #252550;
+  --sidebar-accent-foreground: #f5f5f0;
+  --sidebar-border: rgba(212, 162, 52, 0.2);
   --sidebar-ring: var(--brand-primary);
-}
-
-@layer utilities {
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .no-scrollbar::-webkit-scrollbar,
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  /* Hide scrollbar for IE, Edge and Firefox */
-  .no-scrollbar,
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  /* Mobile Safe Area utilities */
-  .pt-safe {
-    padding-top: max(0.75rem, env(safe-area-inset-top));
-  }
-  .pb-safe {
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-  }
-  .pb-safe-nav {
-    padding-bottom: max(5.25rem, calc(env(safe-area-inset-bottom) + 4.75rem));
-  }
-  .pl-safe {
-    padding-left: max(0.5rem, env(safe-area-inset-left));
-  }
-  .pr-safe {
-    padding-right: max(0.5rem, env(safe-area-inset-right));
-  }
-  .top-safe {
-    top: env(safe-area-inset-top);
-  }
-  .bottom-safe {
-    bottom: env(safe-area-inset-bottom);
-  }
-  .min-h-safe-screen {
-    min-height: 100dvh;
-  }
-  .h-safe-screen {
-    height: 100dvh;
-  }
 }
 
 @layer base {
@@ -179,6 +158,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+    min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -webkit-touch-callout: none;
     overscroll-behavior-y: none;
@@ -188,19 +169,16 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Prevent 300ms mobile touch delay */
   button, a, input, select, textarea {
     touch-action: manipulation;
   }
 
-  /* Prevent iOS Safari auto-zoom on input focus */
   @media screen and (max-width: 768px) {
     input, select, textarea {
       font-size: 16px !important;
     }
   }
 
-  /* Standalone PWA UI polish */
   @media all and (display-mode: standalone) {
     body {
       user-select: none;
@@ -213,18 +191,87 @@
   }
 }
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar,
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .pt-safe { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+  .pb-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+  .pb-safe-nav { padding-bottom: max(5.25rem, calc(env(safe-area-inset-bottom) + 4.75rem)); }
+  .pl-safe { padding-left: max(0.5rem, env(safe-area-inset-left)); }
+  .pr-safe { padding-right: max(0.5rem, env(safe-area-inset-right)); }
+  .top-safe { top: env(safe-area-inset-top); }
+  .bottom-safe { bottom: env(safe-area-inset-bottom); }
+  .min-h-safe-screen { min-height: 100dvh; }
+  .h-safe-screen { height: 100dvh; }
+
+  /* Gold gradient text */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #f0c14b 0%, #d4a234 50%, #b8860b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gold border glow */
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(212, 162, 52, 0.15), 0 0 40px rgba(212, 162, 52, 0.08);
+  }
+
+  /* Zaika card style */
+  .zaika-card {
+    background: rgba(31, 32, 65, 0.8);
+    border: 1px solid rgba(212, 162, 52, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Zaika surface */
+  .zaika-surface {
+    background: rgba(37, 37, 80, 0.6);
+    border: 1px solid rgba(212, 162, 52, 0.15);
+  }
+
+  /* Category header separator */
+  .zaika-category-line {
+    background: linear-gradient(90deg, transparent, #d4a234 20%, #d4a234 80%, transparent);
+    height: 1px;
+  }
+
+  /* Gold shimmer animation for logo */
+  .gold-shimmer {
+    background: linear-gradient(90deg, #d4a234 0%, #f0c14b 25%, #d4a234 50%, #b8860b 75%, #d4a234 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite linear;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Mandala pulse */
+  .mandala-pulse {
+    animation: mandalaPulse 4s ease-in-out infinite;
+  }
+}
+
 /* ==============================================================================
-   Biryani Badshah Brand Typography
+   PM Zaika Brand Typography
    ============================================================================== */
 
-/* Apply Rajdhani heading font to all headings, restaurant name, and branding text */
 h1, h2, h3, h4, h5, h6,
 .font-heading {
   font-family: var(--font-heading), 'Rajdhani', sans-serif;
   letter-spacing: 0.02em;
+  color: var(--zaika-text);
 }
 
-/* On Stage Serial Xbold Font for BADSHAH BIRYANI / BIRYANI BADSHAH brand lettering */
 @font-face {
   font-family: 'On Stage Serial Xbold';
   src: url('/fonts/OnStageSerial-Xbold.woff2') format('woff2'),
@@ -235,7 +282,6 @@ h1, h2, h3, h4, h5, h6,
   font-display: swap;
 }
 
-/* Bruce Forever Font */
 @font-face {
   font-family: 'Bruce Forever';
   src: url('/fonts/BruceForever.ttf') format('truetype'),
@@ -253,7 +299,6 @@ h1, h2, h3, h4, h5, h6,
   text-transform: uppercase;
 }
 
-/* Extra-bold brand title styling */
 .brand-title,
 .font-brand {
   font-family: var(--font-onstage), 'On Stage Serial Xbold', 'OnStageSerial-Xbold', var(--font-bruce), 'Bruce Forever', var(--font-heading), 'Rajdhani', sans-serif;
@@ -262,7 +307,148 @@ h1, h2, h3, h4, h5, h6,
   letter-spacing: 0.05em;
 }
 
-/* Script calligraphy for 'A Family Restaurant' tagline matching the branding */
 .font-script {
   font-family: var(--font-script), 'Kaushan Script', cursive;
+}
+
+/* ==============================================================================
+   Zaika Splash Screen Animations
+   ============================================================================== */
+@keyframes shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes mandalaPulse {
+  0%, 100% { opacity: 0.07; transform: scale(1) rotate(0deg); }
+  50% { opacity: 0.12; transform: scale(1.03) rotate(2deg); }
+}
+
+@keyframes mandalaRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes splashLogoIn {
+  0% { opacity: 0; transform: scale(0.6) translateY(20px); }
+  60% { opacity: 1; transform: scale(1.05) translateY(-3px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes splashNameIn {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes splashTaglineIn {
+  0% { opacity: 0; letter-spacing: 0.5em; }
+  100% { opacity: 1; letter-spacing: 0.15em; }
+}
+
+@keyframes splashOut {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-100vh); }
+}
+
+@keyframes menuReveal {
+  0% { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes goldPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(212, 162, 52, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(212, 162, 52, 0.5), 0 0 50px rgba(212, 162, 52, 0.2); }
+}
+
+@keyframes cartPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Animation utility classes */
+.animate-splash-logo { animation: splashLogoIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-splash-name { animation: splashNameIn 0.7s ease-out 0.7s both; }
+.animate-splash-tagline { animation: splashTaglineIn 0.8s ease-out 1.3s both; }
+.animate-splash-out { animation: splashOut 0.6s ease-in forwards; }
+.animate-menu-reveal { animation: menuReveal 0.5s ease-out forwards; }
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out both; }
+.animate-gold-pulse { animation: goldPulse 2s ease-in-out infinite; }
+.animate-cart-pop { animation: cartPop 0.3s ease-in-out; }
+.animate-mandala-rotate { animation: mandalaRotate 60s linear infinite; }
+
+/* ==============================================================================
+   Zaika Menu Specific Styles
+   ============================================================================== */
+
+/* Category section header */
+.zaika-category-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 12px;
+}
+
+.zaika-category-header h2 {
+  font-family: var(--font-heading), 'Rajdhani', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0f0f23;
+  background: linear-gradient(135deg, #f0c14b 0%, #d4a234 100%);
+  padding: 4px 16px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Item row dotted line between name and price */
+.item-dotted-line {
+  flex: 1;
+  border-bottom: 1px dotted rgba(212, 162, 52, 0.25);
+  margin-bottom: 4px;
+  min-width: 20px;
+}
+
+/* Veg/NonVeg indicator dot */
+.diet-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border-width: 1.5px;
+  border-style: solid;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.diet-dot::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.diet-dot-veg { border-color: #4caf50; color: #4caf50; }
+.diet-dot-nonveg { border-color: #e53935; color: #e53935; }
+.diet-dot-egg { border-color: #ff9800; color: #ff9800; }
+
+/* Cart bar */
+.zaika-cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: linear-gradient(135deg, #1f2041, #252550);
+  border-top: 1px solid rgba(212, 162, 52, 0.4);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.4), 0 -1px 0 rgba(212, 162, 52, 0.2);
+  padding: max(12px, env(safe-area-inset-bottom));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }

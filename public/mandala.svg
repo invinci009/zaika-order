@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Center point -->
+  <circle cx="100" cy="100" r="3" fill="#d4a234" opacity="0.8"/>
+  <!-- Radiating lines (12 spokes) -->
+  <g stroke="#d4a234" stroke-width="0.5" opacity="0.7">
+    <line x1="100" y1="100" x2="100" y2="0"/>
+    <line x1="100" y1="100" x2="183" y2="50"/>
+    <line x1="100" y1="100" x2="183" y2="150"/>
+    <line x1="100" y1="100" x2="100" y2="200"/>
+    <line x1="100" y1="100" x2="17" y2="150"/>
+    <line x1="100" y1="100" x2="17" y2="50"/>
+    <line x1="100" y1="100" x2="150" y2="13.4"/>
+    <line x1="100" y1="100" x2="196.6" y2="100"/>
+    <line x1="100" y1="100" x2="150" y2="186.6"/>
+    <line x1="100" y1="100" x2="50" y2="186.6"/>
+    <line x1="100" y1="100" x2="3.4" y2="100"/>
+    <line x1="100" y1="100" x2="50" y2="13.4"/>
+  </g>
+  <!-- Concentric circles -->
+  <g stroke="#d4a234" fill="none" opacity="0.5">
+    <circle cx="100" cy="100" r="20" stroke-width="0.5"/>
+    <circle cx="100" cy="100" r="40" stroke-width="0.5"/>
+    <circle cx="100" cy="100" r="60" stroke-width="0.5"/>
+    <circle cx="100" cy="100" r="80" stroke-width="0.5"/>
+    <circle cx="100" cy="100" r="97" stroke-width="0.5"/>
+  </g>
+  <!-- Diamond shapes at ring intersections -->
+  <g fill="#d4a234" opacity="0.6">
+    <!-- Inner ring diamonds (r=20) -->
+    <polygon points="100,78 103,81 100,84 97,81"/>
+    <polygon points="122,100 119,103 116,100 119,97"/>
+    <polygon points="100,122 97,119 100,116 103,119"/>
+    <polygon points="78,100 81,97 84,100 81,103"/>
+    <polygon points="114.1,85.9 116.2,88.0 114.1,90.1 112.0,88.0"/>
+    <polygon points="114.1,114.1 112.0,112.0 114.1,109.9 116.2,112.0"/>
+    <polygon points="85.9,114.1 88.0,116.2 90.1,114.1 88.0,112.0"/>
+    <polygon points="85.9,85.9 88.0,84.0 90.1,85.9 88.0,88.0"/>
+  </g>
+  <g fill="#d4a234" opacity="0.5">
+    <!-- Middle ring shapes (r=40) -->
+    <polygon points="100,58 103,61 100,64 97,61"/>
+    <polygon points="142,100 139,103 136,100 139,97"/>
+    <polygon points="100,142 97,139 100,136 103,139"/>
+    <polygon points="58,100 61,97 64,100 61,103"/>
+    <polygon points="128.3,71.7 130.4,73.8 128.3,75.9 126.2,73.8"/>
+    <polygon points="128.3,128.3 126.2,126.2 128.3,124.1 130.4,126.2"/>
+    <polygon points="71.7,128.3 73.8,130.4 75.9,128.3 73.8,126.2"/>
+    <polygon points="71.7,71.7 73.8,69.6 75.9,71.7 73.8,73.8"/>
+    <polygon points="100,60 101.5,61.5 100,63 98.5,61.5"/>
+  </g>
+  <!-- Outer ring dots -->
+  <g fill="#d4a234" opacity="0.4">
+    <circle cx="100" cy="20" r="1.5"/>
+    <circle cx="169.3" cy="60" r="1.5"/>
+    <circle cx="169.3" cy="140" r="1.5"/>
+    <circle cx="100" cy="180" r="1.5"/>
+    <circle cx="30.7" cy="140" r="1.5"/>
+    <circle cx="30.7" cy="60" r="1.5"/>
+    <circle cx="140" cy="30.7" r="1.5"/>
+    <circle cx="180" cy="100" r="1.5"/>
+    <circle cx="140" cy="169.3" r="1.5"/>
+    <circle cx="60" cy="169.3" r="1.5"/>
+    <circle cx="20" cy="100" r="1.5"/>
+    <circle cx="60" cy="30.7" r="1.5"/>
+  </g>
+  <!-- Petal-like curves between spokes -->
+  <g stroke="#d4a234" stroke-width="0.4" fill="none" opacity="0.4">
+    <path d="M100,100 Q113,76 100,60 Q87,76 100,100"/>
+    <path d="M100,100 Q124,87 140,100 Q124,113 100,100"/>
+    <path d="M100,100 Q113,124 100,140 Q87,124 100,100"/>
+    <path d="M100,100 Q76,113 60,100 Q76,87 100,100"/>
+    <path d="M100,100 Q121,76 128,60 Q117,80 100,100"/>
+    <path d="M100,100 Q124,121 140,128 Q120,117 100,100"/>
+    <path d="M100,100 Q79,124 72,140 Q83,120 100,100"/>
+    <path d="M100,100 Q76,79 60,72 Q80,83 100,100"/>
+  </g>
+</svg>

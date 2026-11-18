@@ -10,41 +10,28 @@ import {
   Trash2,
   ShoppingBag,
   AlertTriangle,
-  Leaf,
-  Drumstick,
-  Egg,
   Star,
   X,
   BellRing,
-  ArrowLeft,
   Phone,
-  Check,
   Sparkles,
-  UtensilsCrossed,
-  Droplets,
-  Receipt,
-  HandPlatter,
-  Brush,
   Loader2,
   MapPin,
   ChevronDown,
   ChevronRight,
-  CheckCircle2,
-  Gift,
   Crown,
-  Clock,
-  History,
-  User,
-  RefreshCw,
 } from 'lucide-react'
 import { formatPaise, formatTableDisplay } from '@/lib/ordering/rules.mjs'
 import { loadCart, saveCart, cartLineKey, getActiveOrderSession, type CartLine, type CartSelection, type ActiveSession } from '@/lib/ordering/cart'
-import { normalizeImageUrl } from '@/lib/ordering/validation'
-import { ItemDetailModal, type MenuItem, type OptionGroup, type MenuOption } from '@/components/ordering/ItemDetailModal'
+import { ItemDetailModal, type MenuItem, type OptionGroup } from '@/components/ordering/ItemDetailModal'
 import { TableSelectModal } from '@/components/ordering/TableSelectModal'
 import { ServiceCallModal } from '@/components/ordering/ServiceCallModal'
-import { VipOrdersHubModal, type CustomerPreviousOrder, type LoyaltyRewardItem } from '@/components/ordering/VipOrdersHubModal'
-import { ItemCard } from '@/components/ordering/ItemCard'
+import { VipOrdersHubModal, type CustomerPreviousOrder } from '@/components/ordering/VipOrdersHubModal'
+import { MandalaBackground } from '@/components/ordering/MandalaBackground'
+import { ZaikaCategorySection } from '@/components/ordering/ZaikaCategorySection'
+import { ZaikaItemRow } from '@/components/ordering/ZaikaItemRow'
+import { ZaikaCartBar } from '@/components/ordering/ZaikaCartBar'
+import { ZaikaCategoryJump } from '@/components/ordering/ZaikaCategoryJump'
 import { SpecialMenuSection } from '@/components/ordering/SpecialMenuSection'
 import { ALL_SPECIAL_ITEMS_MAP } from '@/lib/ordering/specialMenuData'
 
@@ -103,13 +90,11 @@ export default function OrderMenuPage() {
   const [reviewSlug, setReviewSlug] = useState<string>('')
   const [dietFilter, setDietFilter] = useState<'all' | 'veg' | 'nonveg' | 'bestsellers'>('all')
   const [search, setSearch] = useState('')
-  const [activeCat, setActiveCat] = useState<string>('all')
   const [cart, setCart] = useState<CartLine[]>(() => loadCart(slug, tableParam || null))
   const [cartOpen, setCartOpen] = useState(false)
   const [customizing, setCustomizing] = useState<MenuItem | null>(null)
   const [pendingSel, setPendingSel] = useState<CartSelection[]>([])
   const [staffMsg, setStaffMsg] = useState<string | null>(null)
-  const [addedKey, setAddedKey] = useState<string | null>(null)
 
   // Table Selection for Main QR
   const [availableTables, setAvailableTables] = useState<Array<{ id: string; label: string; state?: string }>>([])
@@ -239,7 +224,6 @@ export default function OrderMenuPage() {
             if (savedPhone && /^[6-9]\d{9}$/.test(savedPhone)) {
               handlePhoneLogin(savedPhone, savedName || undefined)
             } else if (!sessionStorage.getItem('rp_skip_phone')) {
-              // First time entering ordering: prompt to enter mobile number first
               setLoyaltyModalOpen(true)
             }
           } catch {
@@ -352,8 +336,6 @@ export default function OrderMenuPage() {
     } else {
       updateCart([...cart, { key, itemId, quantity: 1, selections }])
     }
-    setAddedKey(key)
-    setTimeout(() => setAddedKey(null), 1200)
   }
 
   const changeQty = (key: string, delta: number) => {
@@ -403,7 +385,7 @@ export default function OrderMenuPage() {
       setTimeout(() => setStaffMsg(null), 3500)
       setLoyaltyModalOpen(false)
     } else {
-      setStaffMsg('These items are currently unavailable on today\'s menu.')
+      setStaffMsg("These items are currently unavailable on today's menu.")
       setTimeout(() => setStaffMsg(null), 3000)
     }
   }
@@ -429,11 +411,6 @@ export default function OrderMenuPage() {
 
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items])
 
-  const regularItems = useMemo(
-    () => items.filter((i) => i.categoryId !== 'mehman_nawazi' && !i.id.startsWith('special-')),
-    [items]
-  )
-
   const cartCount = cart.reduce((s, l) => s + l.quantity, 0)
   const cartEstimate = cart.reduce((s, l) => {
     const item = itemById.get(l.itemId)
@@ -442,34 +419,12 @@ export default function OrderMenuPage() {
       return special ? s + special.pricePaise * l.quantity : s
     }
     const opts = l.selections.reduce((sum, sel) => {
-      const g = item.options.find((g) => g.id === sel.groupId)
-      const c = g?.choices.find((c) => c.id === sel.optionId)
+      const g = item.options.find((grp) => grp.id === sel.groupId)
+      const c = g?.choices.find((ch) => ch.id === sel.optionId)
       return sum + (c?.pricePaise || 0)
     }, 0)
     return s + (item.pricePaise + opts) * l.quantity
   }, 0)
-
-  const filtered = items.filter((i) => {
-    // Keep special items in their dedicated Mehman Nawazi section
-    if (activeCat === 'all' && (i.categoryId === 'mehman_nawazi' || i.id.startsWith('special-'))) {
-      return false
-    }
-    if (activeCat !== 'all' && (i.categoryId || 'uncategorized') !== activeCat) return false
-    if (
-      search.trim() &&
-      !i.name.toLowerCase().includes(search.toLowerCase()) &&
-      !(i.description || '').toLowerCase().includes(search.toLowerCase())
-    )
-      return false
-    if (dietFilter === 'veg' && i.veg !== 'veg') return false
-    if (dietFilter === 'nonveg' && i.veg !== 'nonveg' && i.veg !== 'egg') return false
-    if (dietFilter === 'bestsellers' && !i.featured) return false
-    return true
-  })
-  const featured =
-    search.trim() || activeCat !== 'all' || dietFilter !== 'all'
-      ? []
-      : items.filter((i) => i.featured)
 
   const openCustomize = (item: MenuItem) => {
     if (!item.available) return
@@ -478,7 +433,6 @@ export default function OrderMenuPage() {
       return
     }
     setCustomizing(item)
-    // Pre-select first choice for single-choice required options
     const defaults: CartSelection[] = []
     for (const g of item.options) {
       if (g.type === 'single' && g.required && g.choices.length > 0) {
@@ -522,6 +476,52 @@ export default function OrderMenuPage() {
     return customizing.pricePaise + optsPrice
   }, [customizing, pendingSel])
 
+  // Group items by category in a strict top-down structure
+  const categorizedSections = useMemo(() => {
+    const list: Array<{ id: string; name: string; items: MenuItem[] }> = []
+
+    const filterItem = (i: MenuItem) => {
+      if (
+        search.trim() &&
+        !i.name.toLowerCase().includes(search.toLowerCase()) &&
+        !(i.description || '').toLowerCase().includes(search.toLowerCase())
+      ) {
+        return false
+      }
+      if (dietFilter === 'veg' && i.veg !== 'veg') return false
+      if (dietFilter === 'nonveg' && i.veg !== 'nonveg' && i.veg !== 'egg') return false
+      if (dietFilter === 'bestsellers' && !i.featured) return false
+      return true
+    }
+
+    if (categories && categories.length > 0) {
+      for (const cat of categories) {
+        const catItems = items.filter((i) => i.categoryId === cat.id && filterItem(i))
+        if (catItems.length > 0 || !search.trim()) {
+          list.push({ id: cat.id, name: cat.name, items: catItems })
+        }
+      }
+      // Check for items with unknown or missing categoryId
+      const uncatItems = items.filter((i) => (!i.categoryId || !categories.some((c) => c.id === i.categoryId)) && filterItem(i))
+      if (uncatItems.length > 0) {
+        list.push({ id: 'more-dishes', name: 'MORE DISHES', items: uncatItems })
+      }
+    } else {
+      // Fallback: group items dynamically by categoryId or default
+      const grouped = new Map<string, MenuItem[]>()
+      for (const i of items.filter(filterItem)) {
+        const key = i.categoryId || 'menu'
+        if (!grouped.has(key)) grouped.set(key, [])
+        grouped.get(key)!.push(i)
+      }
+      for (const [key, val] of grouped.entries()) {
+        list.push({ id: key, name: key.replace(/[-_]/g, ' ').toUpperCase(), items: val })
+      }
+    }
+
+    return list
+  }, [categories, items, search, dietFilter])
+
   const submitServiceRequest = async (e: React.FormEvent) => {
     e.preventDefault()
     setServiceSending(true)
@@ -555,46 +555,43 @@ export default function OrderMenuPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#faf8f5] text-stone-900 pb-28">
-        <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-stone-200 px-3 py-2.5 space-y-2">
+      <div
+        className="min-h-screen pb-28 relative"
+        style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)' }}
+      >
+        <MandalaBackground />
+        <header className="sticky top-0 z-20 px-3 py-3 backdrop-blur-md border-b border-[rgba(212,162,52,0.2)] bg-[#1a1a2e]/90">
           <div className="flex items-center justify-between gap-2 max-w-2xl mx-auto">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl overflow-hidden border border-emerald-400 shadow-xs shrink-0 bg-white flex items-center justify-center p-0.5">
+              <div className="w-10 h-10 rounded-full border border-[#d4a234] flex items-center justify-center bg-[#1f2041] p-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.png" alt="Biryani Badshah" className="w-full h-full object-contain" />
+                <img src="/logo.svg" alt="PM Zaika" className="w-full h-full object-contain" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-onstage font-bruce font-black tracking-wider uppercase text-base text-stone-900 leading-none">
-                  BIRYANI BADSHAH
+              <div>
+                <span className="font-heading font-black text-sm text-[#f0c14b] uppercase tracking-wider block">
+                  PM ZAIKA RESTAURANT
                 </span>
-                <span className="font-script text-[11px] text-emerald-800 font-normal leading-none block mt-0.5">
-                  A Family Restaurant
+                <span className="font-script text-[11px] text-[#d4a234] block">
+                  Indian ‖ Chinese ‖ Tandoor ‖ Rolls
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 animate-pulse">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-700" />
+            <div className="flex items-center gap-1.5 text-xs text-[#d4a234] font-bold bg-[#d4a234]/10 border border-[#d4a234]/30 px-3 py-1 rounded-full animate-pulse">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
               <span>Loading Menu...</span>
             </div>
           </div>
-          <div className="flex gap-1.5 max-w-2xl mx-auto overflow-x-auto no-scrollbar py-1">
-            <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-800 text-white shrink-0">
-              Mehman Nawazi
-            </span>
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-7 w-20 rounded-full bg-stone-100 animate-pulse shrink-0" />
-            ))}
-          </div>
         </header>
-        <main className="max-w-2xl mx-auto px-3 py-4 space-y-3">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="p-3.5 rounded-2xl bg-white border border-stone-200 flex gap-3 animate-pulse">
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-3/4 rounded bg-stone-100" />
-                <div className="h-3 w-full rounded bg-stone-50" />
-                <div className="h-4 w-20 rounded bg-stone-100" />
-              </div>
-              <div className="w-20 h-20 rounded-xl bg-stone-100" />
+
+        <main className="max-w-2xl mx-auto px-3 py-6 space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="p-4 rounded-xl border border-[rgba(212,162,52,0.15)] bg-[#1f2041]/60 space-y-3 animate-pulse"
+            >
+              <div className="h-4 w-32 rounded bg-[#d4a234]/20" />
+              <div className="h-3 w-full rounded bg-[#d4a234]/10" />
+              <div className="h-3 w-3/4 rounded bg-[#d4a234]/10" />
             </div>
           ))}
         </main>
@@ -604,17 +601,29 @@ export default function OrderMenuPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
-        <div className="max-w-sm text-center p-8 rounded-3xl bg-white border border-stone-200 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+      <div
+        className="min-h-screen flex items-center justify-center p-4 relative"
+        style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)' }}
+      >
+        <MandalaBackground />
+        <div
+          className="max-w-sm text-center p-8 rounded-3xl space-y-4 relative z-10"
+          style={{
+            background: 'rgba(31, 32, 65, 0.9)',
+            border: '1px solid rgba(212, 162, 52, 0.3)',
+            boxShadow: '0 4px 40px rgba(0,0,0,0.5)',
+          }}
+        >
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#d4a234]/10 border border-[#d4a234]/30 text-[#d4a234] flex items-center justify-center">
             <AlertTriangle className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-black text-stone-900">Menu Unavailable</h2>
-          <p className="text-xs text-stone-600">{error}</p>
+          <h2 className="text-xl font-black text-[#f5f5f0]">Menu Unavailable</h2>
+          <p className="text-xs text-[#a0a0b8]">{error}</p>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="w-full h-11 rounded-xl bg-amber-600 text-white font-bold text-xs hover:bg-amber-700 cursor-pointer transition-colors"
+            className="w-full h-11 rounded-xl text-black font-bold text-xs cursor-pointer transition-all active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #f0c14b, #d4a234)' }}
           >
             Retry Loading
           </button>
@@ -628,83 +637,89 @@ export default function OrderMenuPage() {
   if (tableLabel) checkoutParams.set('table', tableLabel)
   const checkoutHref = `/order/${slug}/checkout${checkoutParams.toString() ? `?${checkoutParams.toString()}` : ''}`
 
-  const backParams = new URLSearchParams()
-  if (tableLabel) backParams.set('table', tableLabel)
-  if (token) backParams.set('token', token)
-  const backHref = `/order/${slug}${backParams.toString() ? `?${backParams.toString()}` : ''}`
-
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-stone-900 pb-28">
-      {/* Header */}
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-stone-200 px-3 py-2.5 space-y-2.5 shadow-sm">
+    <div
+      className="min-h-screen text-[#f5f5f0] pb-28 relative overflow-x-hidden"
+      style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)' }}
+    >
+      {/* Ornamental Mandala Background Layer */}
+      <MandalaBackground />
+
+      {/* Sticky Header with PM Zaika Identity */}
+      <header className="sticky top-0 z-30 backdrop-blur-md border-b border-[rgba(212,162,52,0.25)] bg-[#1a1a2e]/90 px-3 py-2.5 space-y-2.5 shadow-lg">
         <div className="flex items-center gap-2.5 max-w-2xl mx-auto">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-emerald-400 shadow-xs shrink-0 bg-white flex items-center justify-center">
+          {/* PM Zaika Logo Emblem */}
+          <div className="w-10 h-10 rounded-full border border-[#d4a234] shadow-xs shrink-0 bg-[#1f2041] flex items-center justify-center p-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logo.png"
-              alt={restaurantName || 'Biryani Badshah'}
+              src="/logo.svg"
+              alt={restaurantName || 'PM Zaika Restaurant'}
               className="w-full h-full object-contain"
               onError={(e) => {
-                e.currentTarget.style.display = 'none'
+                e.currentTarget.src = '/logo.png'
               }}
             />
           </div>
+
           <div className="flex-1 min-w-0">
-            <h1 className="font-onstage font-bruce font-black text-base truncate flex items-center gap-1.5 text-stone-900 leading-tight uppercase tracking-wider">
-              <span>{restaurantName || 'Biryani Badshah'}</span>
+            <h1 className="font-heading font-black text-sm sm:text-base truncate flex items-center gap-1.5 leading-tight uppercase tracking-wider text-gold-gradient">
+              <span>{restaurantName || 'PM ZAIKA RESTAURANT'}</span>
             </h1>
-            <span className="font-script text-[11px] text-emerald-800 font-normal leading-none block -mt-0.5">
-              A Family Restaurant
+            <span className="font-script text-[11px] text-[#f0c14b] font-normal leading-none block -mt-0.5">
+              Indian ‖ Chinese ‖ Tandoor ‖ Rolls
             </span>
             {token ? (
-              <p className="text-[11px] font-semibold text-amber-700 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
-                {formatTableDisplay(tableLabel)} • Dine-in Ordering
+              <p className="text-[11px] font-semibold text-[#f0c14b] flex items-center gap-1 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4caf50] inline-block" />
+                {formatTableDisplay(tableLabel)} • Dine-in
               </p>
             ) : (
               <button
                 type="button"
                 onClick={() => setTableModalOpen(true)}
-                className="mt-0.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100/80 hover:bg-amber-200/80 border border-amber-300 text-[11px] font-bold text-amber-950 cursor-pointer transition-all shadow-xs active:scale-95"
+                className="mt-0.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#d4a234]/15 hover:bg-[#d4a234]/25 border border-[#d4a234]/40 text-[11px] font-bold text-[#f0c14b] cursor-pointer transition-all shadow-xs active:scale-95"
               >
-                <MapPin className="w-3 h-3 text-amber-600 shrink-0" />
+                <MapPin className="w-3 h-3 text-[#d4a234] shrink-0" />
                 <span>{tableLabel ? formatTableDisplay(tableLabel) : 'Choose Table'}</span>
-                <ChevronDown className="w-3 h-3 text-amber-700 shrink-0" />
+                <ChevronDown className="w-3 h-3 text-[#d4a234] shrink-0" />
               </button>
             )}
           </div>
+
           {contactPhone && (
             <a
               href={`tel:${contactPhone}`}
-              className="p-2 rounded-xl bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors"
+              className="p-2 rounded-xl bg-[#1f2041] text-[#f0c14b] border border-[#d4a234]/30 hover:bg-[#252550] transition-colors"
               aria-label="Call restaurant"
             >
               <Phone className="w-4 h-4" />
             </a>
           )}
+
           <button
             type="button"
             onClick={() => setLoyaltyModalOpen(true)}
-            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/20 text-amber-900 border border-amber-300 hover:border-amber-400 hover:bg-amber-500/25 transition-all flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
+            className="px-2.5 py-1.5 rounded-xl bg-[#d4a234]/15 text-[#f0c14b] border border-[#d4a234]/40 hover:bg-[#d4a234]/25 transition-all flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
             aria-label="Loyalty and rewards"
-            title="Badshah VIP Points & Rewards"
+            title="VIP Club"
           >
-            <Crown className="w-3.5 h-3.5 text-amber-600 fill-amber-500/30 shrink-0" />
+            <Crown className="w-3.5 h-3.5 text-[#d4a234] fill-[#d4a234]/30 shrink-0" />
             {loyaltyPoints === null ? (
-              <span className="text-[11px] font-black tracking-tight text-amber-900">VIP Club</span>
+              <span className="text-[11px] font-black tracking-tight">VIP</span>
             ) : (
-              <span className="text-[11px] font-black text-amber-950 flex items-center gap-0.5">
+              <span className="text-[11px] font-black flex items-center gap-0.5">
                 <span>{loyaltyPoints}</span>
-                <span className="text-[9px] font-bold text-amber-700 uppercase">pts</span>
+                <span className="text-[9px] uppercase">pts</span>
               </span>
             )}
           </button>
+
           <button
             type="button"
             onClick={() => setServiceModalOpen(true)}
-            className="p-2 rounded-xl bg-amber-500/10 text-amber-700 border border-amber-300 hover:bg-amber-500/20 transition-colors flex items-center gap-1 cursor-pointer"
+            className="p-2 rounded-xl bg-[#d4a234]/15 text-[#f0c14b] border border-[#d4a234]/40 hover:bg-[#d4a234]/25 transition-colors flex items-center gap-1 cursor-pointer"
             aria-label="Call staff"
-            title="Call staff / service request"
+            title="Call staff"
           >
             <BellRing className="w-4 h-4" />
             <span className="text-[11px] font-bold hidden sm:inline">Call Staff</span>
@@ -713,33 +728,33 @@ export default function OrderMenuPage() {
 
         {/* Search Bar */}
         <div className="relative max-w-2xl mx-auto">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0b8]" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search delicious biryanis, gravies, rolls…"
-            className="w-full h-10 pl-9 pr-9 rounded-xl bg-stone-100 border border-stone-200 text-xs focus:outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all text-stone-900 placeholder:text-stone-400"
+            placeholder="Search soup, paneer, chicken, biryani, noodles…"
+            className="w-full h-10 pl-9 pr-9 rounded-xl bg-[#1f2041]/90 border border-[rgba(212,162,52,0.3)] text-xs focus:outline-none focus:border-[#d4a234] focus:ring-2 focus:ring-[#d4a234]/20 transition-all text-[#f5f5f0] placeholder:text-[#6b6b88]"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#a0a0b8] hover:text-[#f5f5f0]"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {/* Dietary Quick-Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto max-w-2xl mx-auto no-scrollbar scrollbar-hide py-1">
+        {/* Dietary Quick-Filter Pills (All, Veg, NonVeg, Specials) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto max-w-2xl mx-auto no-scrollbar scrollbar-hide py-0.5">
           <button
             type="button"
             onClick={() => setDietFilter('all')}
             className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 ${
               dietFilter === 'all'
-                ? 'bg-stone-900 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200'
+                ? 'bg-[#d4a234] text-[#0f0f23] shadow-md font-black'
+                : 'bg-[#1f2041] text-[#a0a0b8] hover:text-[#f5f5f0] border border-[rgba(212,162,52,0.2)]'
             }`}
           >
             <span>All Dishes</span>
@@ -749,525 +764,217 @@ export default function OrderMenuPage() {
             onClick={() => setDietFilter('veg')}
             className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 ${
               dietFilter === 'veg'
-                ? 'bg-emerald-700 text-white shadow-xs'
-                : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
+                ? 'bg-[#4caf50] text-[#0f0f23] shadow-md font-black'
+                : 'bg-[#1f2041] text-[#4caf50] border border-[#4caf50]/40'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-xs border border-current flex items-center justify-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
-            </span>
-            <span>Pure Veg 🌱</span>
+            <span className="diet-dot diet-dot-veg" />
+            <span>Pure Veg</span>
           </button>
           <button
             type="button"
             onClick={() => setDietFilter('nonveg')}
             className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 ${
               dietFilter === 'nonveg'
-                ? 'bg-rose-800 text-white shadow-xs'
-                : 'bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-200'
+                ? 'bg-[#e53935] text-[#f5f5f0] shadow-md font-black'
+                : 'bg-[#1f2041] text-[#e53935] border border-[#e53935]/40'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-xs border border-current flex items-center justify-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
-            </span>
-            <span>Non-Veg 🍗</span>
+            <span className="diet-dot diet-dot-nonveg" />
+            <span>Non-Veg</span>
           </button>
           <button
             type="button"
             onClick={() => setDietFilter('bestsellers')}
             className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 ${
               dietFilter === 'bestsellers'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200'
+                ? 'bg-[#f0c14b] text-[#0f0f23] shadow-md font-black'
+                : 'bg-[#1f2041] text-[#f0c14b] border border-[#f0c14b]/40'
             }`}
           >
-            <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
-            <span>Chef&apos;s Specials</span>
+            <Star className="w-3 h-3 fill-[#f0c14b] text-[#f0c14b]" />
+            <span>Specials</span>
           </button>
-        </div>
-
-        {/* Integrated VIP Rewards & Member Perks Strip */}
-        <div className="pt-1 pb-0.5 max-w-2xl mx-auto">
-          <button
-            type="button"
-            onClick={() => {
-              if (loyaltyCustomer) {
-                setVipModalTab(previousOrders.length > 0 ? 'orders' : 'perks')
-                refreshLoyaltySummary()
-              }
-              setLoyaltyModalOpen(true)
-            }}
-            className="w-full text-left p-2.5 px-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-yellow-500/15 border border-amber-300 hover:border-amber-400 hover:bg-amber-500/20 transition-all flex items-center justify-between gap-2.5 shadow-xs group cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-600 to-yellow-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Crown className="w-4 h-4 fill-white/30" />
-              </div>
-              <div className="min-w-0 text-xs">
-                {loyaltyCustomer ? (
-                  <p className="font-extrabold text-amber-950 truncate flex items-center gap-1.5">
-                    <span>VIP Member: {formatDisplayPhone(loyaltyCustomer.phone)}</span>
-                    <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] bg-amber-200/90 text-amber-900 font-black">
-                      {loyaltyPoints ?? 0} pts
-                    </span>
-                  </p>
-                ) : (
-                  <p className="font-black text-amber-950 truncate flex items-center gap-1.5">
-                    <span>Badshah VIP Club • Enter Mobile</span>
-                  </p>
-                )}
-                <p className="text-[10px] text-amber-800/90 truncate">
-                  {loyaltyCustomer
-                    ? `${previousOrders.length > 0 ? `${previousOrders.length} previous order${previousOrders.length > 1 ? 's' : ''} • ` : ''}Rewards & discounts apply at checkout • Tap to view`
-                    : 'Enter mobile number to view previous orders, points & earn member perks'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 text-[11px] font-black text-amber-950 shrink-0 bg-white/90 border border-amber-300 px-2.5 py-1 rounded-xl group-hover:bg-amber-100 transition-colors shadow-xs">
-              <span>{loyaltyCustomer ? 'My Perks & Orders' : 'Enter Mobile'}</span>
-              <Sparkles className="w-3 h-3 text-amber-600 fill-amber-400" />
-            </div>
-          </button>
-        </div>
-
-        {/* Category Pills */}
-        <div className="-mx-3 -mb-2.5 px-3 py-2.5 bg-gradient-to-r from-[#0d3b1e] via-[#1a6234] to-[#0a2e16] shadow-inner">
-          <div className="flex gap-2 overflow-x-auto max-w-2xl mx-auto no-scrollbar scrollbar-hide py-0.5">
-            <button
-              type="button"
-              onClick={() => setActiveCat('all')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 ${
-                activeCat === 'all'
-                  ? 'bg-white text-emerald-900 shadow-sm font-extrabold'
-                  : 'bg-transparent text-white border border-white/85 hover:bg-white/10'
-              }`}
-            >
-              All Dishes ({regularItems.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveCat('special-menu')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 ${
-                activeCat === 'special-menu'
-                  ? 'bg-amber-300 text-stone-950 shadow-md font-black scale-105'
-                  : 'bg-emerald-950/80 text-amber-200 border border-amber-300/40 hover:bg-emerald-900'
-              }`}
-            >
-              <Crown className="w-3.5 h-3.5 text-amber-300 fill-amber-300/40" />
-              <span>👑 Mehman Nawazi (Party &amp; Handi)</span>
-            </button>
-            {categories
-              .filter((c) => c.id !== 'mehman_nawazi')
-              .map((c) => {
-                const count = items.filter((i) => i.categoryId === c.id).length
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setActiveCat(c.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 ${
-                      activeCat === c.id
-                        ? 'bg-white text-emerald-900 shadow-sm font-extrabold'
-                        : 'bg-transparent text-white border border-white/85 hover:bg-white/10'
-                    }`}
-                  >
-                    {c.name} {count > 0 ? `(${count})` : ''}
-                  </button>
-                )
-              })}
-          </div>
         </div>
       </header>
 
-      {/* ====== Special Menu Banner ====== */}
-      <div className="max-w-2xl mx-auto px-3 pt-3">
-        <Link
-          href={`/order/${slug}/special-menu${backParams.toString() ? `?${backParams.toString()}` : ''}`}
-          className="block p-3 rounded-2xl bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-700 text-white shadow-md hover:shadow-lg transition-all group relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-[url('/logo.png')] bg-right bg-no-repeat bg-contain opacity-[0.08]" />
-          <div className="relative flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
-                <Crown className="w-4.5 h-4.5 text-yellow-300 fill-yellow-400/30" />
-              </div>
-              <div>
-                <p className="text-xs font-black tracking-wide">Mehman Nawazi • Party Packs</p>
-                <p className="text-[10px] text-emerald-100/80">Shan-E-Biryani, Catering & Event Orders</p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-0.5 transition-transform shrink-0" />
-          </div>
-        </Link>
-      </div>
-
       {/* Staff Toast Message */}
       {staffMsg && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-30 px-5 py-2.5 rounded-full bg-stone-900 text-white text-xs font-bold shadow-2xl border border-stone-700 animate-in fade-in slide-in-from-top-3 duration-200 flex items-center gap-2">
-          <BellRing className="w-4 h-4 text-amber-400" />
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-40 px-5 py-2.5 rounded-full bg-[#1f2041] text-[#f0c14b] text-xs font-bold shadow-2xl border border-[#d4a234]/50 animate-in fade-in slide-in-from-top-3 duration-200 flex items-center gap-2">
+          <BellRing className="w-4 h-4 text-[#d4a234]" />
           <span>{staffMsg}</span>
         </div>
       )}
 
-      {/* Main Content Layout (Responsive Dual-Pane for Desktop) */}
-      <div className="max-w-6xl mx-auto px-3 py-4 lg:grid lg:grid-cols-12 lg:gap-8 items-start">
-        <main className="lg:col-span-8 space-y-5">
-          {/* Active Dining Session Banner if customer already placed an order */}
-          {activeSession && (
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50/70 to-emerald-50 border border-emerald-300 text-left space-y-1.5 shadow-xs animate-in fade-in">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-emerald-950 flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  <span>Active Dine-in Order at {formatTableDisplay(activeSession.tableLabel)}</span>
+      {/* Main Content: TOP-DOWN SCROLL OF ALL CATEGORIES */}
+      <main className="max-w-2xl mx-auto px-3 py-4 space-y-2 relative z-10">
+        {/* Active Dining Session Banner if customer already placed an order */}
+        {activeSession && (
+          <div className="p-3.5 rounded-2xl bg-[#1f2041]/90 border border-[#d4a234]/40 text-left space-y-1.5 shadow-md mb-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-[#f0c14b] flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4caf50] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4caf50]"></span>
                 </span>
-                <span className="text-[10px] font-extrabold uppercase bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full">
-                  Cooking
-                </span>
-              </div>
-              <p className="text-[11px] text-emerald-900/80">
-                Your order has been sent to the kitchen. You can track live status or add more dishes below.
-              </p>
-              <div className="pt-0.5">
-                <Link
-                  href={`/order/${slug}/confirmation/${activeSession.orderId}?accessToken=${encodeURIComponent(
-                    activeSession.accessToken || ''
-                  )}`}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 underline"
-                >
-                  <span>Track Live Order &amp; Kitchen Status →</span>
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {/* Special Menu View when "👑 Mehman Nawazi (Party & Handi)" pill is active */}
-          {activeCat === 'special-menu' ? (
-            <div className="space-y-4">
-              <SpecialMenuSection
-                slug={slug}
-                phone={contactPhone}
-                cart={cart}
-                onAddToCart={(itemId) => addLine(itemId, [])}
-                onIncrement={(itemId) => addLine(itemId, [])}
-                onDecrement={(itemId) => handleQuickDecrement(itemId)}
-              />
-            </div>
-          ) : (
-            <>
-              {featured.length > 0 && (
-                <section className="space-y-2.5">
-                  <h2 className="text-sm font-extrabold flex items-center gap-1.5 text-stone-900">
-                    <Star className="w-4 h-4 text-amber-500 fill-amber-400" /> Chef&apos;s Specials
-                  </h2>
-                  <div className="grid grid-cols-1 gap-2.5">
-                    {featured.map((item) => (
-                      <ItemCard
-                        key={item.id}
-                        item={item}
-                        onAdd={() => openCustomize(item)}
-                        justAdded={addedKey === cartLineKey(item.id, [])}
-                        qtyInCart={getItemQtyInCart(item.id)}
-                        onIncrement={() => handleQuickIncrement(item)}
-                        onDecrement={() => handleQuickDecrement(item.id)}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              <section className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-extrabold text-stone-900">
-                    {search ? `Search Results (${filtered.length})` : 'Menu Catalog'}
-                  </h2>
-                </div>
-
-                {filtered.length === 0 && (
-                  <div className="p-10 text-center text-sm text-stone-500 bg-white rounded-2xl border border-stone-200 space-y-2">
-                    <Search className="w-8 h-8 mx-auto text-stone-300" />
-                    <p className="font-semibold">No dishes match your search.</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearch('')
-                        setActiveCat('all')
-                        setDietFilter('all')
-                      }}
-                      className="text-xs text-amber-700 font-bold hover:underline"
-                    >
-                      Clear search &amp; show all dishes
-                    </button>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 gap-2.5">
-                  {filtered.map((item) => (
-                    <ItemCard
-                      key={item.id}
-                      item={item}
-                      onAdd={() => openCustomize(item)}
-                      justAdded={addedKey === cartLineKey(item.id, [])}
-                      qtyInCart={getItemQtyInCart(item.id)}
-                      onIncrement={() => handleQuickIncrement(item)}
-                      onDecrement={() => handleQuickDecrement(item.id)}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Also show Mehman Nawazi & Shan-E-Biryani section on all dishes view */}
-              {activeCat === 'all' && !search.trim() && dietFilter === 'all' && (
-                <div className="pt-4 border-t border-stone-200">
-                  <SpecialMenuSection
-                    slug={slug}
-                    phone={contactPhone}
-                    cart={cart}
-                    onAddToCart={(itemId) => addLine(itemId, [])}
-                    onIncrement={(itemId) => addLine(itemId, [])}
-                    onDecrement={(itemId) => handleQuickDecrement(itemId)}
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Subtle Guest Feedback / Google Review Card */}
-          <div className="pt-2 pb-6">
-            <a
-              href={googleReviewUrl || (reviewSlug ? `/r/${reviewSlug}` : `/r/${slug}`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block p-3.5 rounded-2xl bg-white border border-stone-200/90 hover:border-amber-300 text-stone-800 transition-all shadow-xs"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-500 flex items-center justify-center shrink-0">
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-xs font-black text-stone-900">Enjoying your dining experience?</p>
-                    <p className="text-[11px] text-stone-500">Rate us &amp; share feedback on Google</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-0.5 text-amber-400 shrink-0">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3 h-3 fill-amber-400" />
-                  ))}
-                </div>
-              </div>
-            </a>
-          </div>
-        </main>
-
-        {/* Desktop Sticky Dining Folio & Cart Tray (Visible on large screens) */}
-        <aside className="hidden lg:block lg:col-span-4 sticky top-24 space-y-4">
-          <div className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-              <div>
-                <h2 className="text-base font-black text-stone-900 flex items-center gap-1.5">
-                  <ShoppingBag className="w-4 h-4 text-amber-600" /> Dining Folio
-                </h2>
-                <p className="text-[11px] text-stone-500">
-                  {tableLabel ? `Delivering to ${formatTableDisplay(tableLabel)}` : 'Dine-in Order'}
-                </p>
-              </div>
-              {!token && (
-                <button
-                  type="button"
-                  onClick={() => setTableModalOpen(true)}
-                  className="text-[11px] font-bold text-amber-700 hover:text-amber-800 underline cursor-pointer"
-                >
-                  {tableLabel ? 'Change' : 'Select Table'}
-                </button>
-              )}
-            </div>
-
-            {/* Badshah VIP Status inside desktop folio */}
-            <div className="p-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-yellow-500/10 border border-amber-300/50 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <Crown className="w-4 h-4 text-amber-600 fill-amber-400" />
-                <span className="font-bold text-amber-950 text-[11px]">
-                  {loyaltyCustomer ? `VIP: ${loyaltyPoints ?? 0} pts` : 'Badshah VIP Member'}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setLoyaltyModalOpen(true)}
-                className="text-[10px] font-black text-amber-800 bg-white/90 border border-amber-300 px-2.5 py-0.5 rounded-full hover:bg-amber-100 transition-colors shadow-xs cursor-pointer"
-              >
-                {loyaltyCustomer ? 'Perks' : 'Join'}
-              </button>
-            </div>
-
-            {cart.length === 0 ? (
-              <div className="text-center py-8 space-y-2">
-                <ShoppingBag className="w-10 h-10 mx-auto text-stone-300" />
-                <p className="text-xs font-semibold text-stone-500">Your tray is empty.</p>
-                <p className="text-[11px] text-stone-400">Click &ldquo;+ Add&rdquo; on any dish to begin.</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
-                  {cart.map((line) => {
-                    const item = itemById.get(line.itemId)
-                    const special = !item ? ALL_SPECIAL_ITEMS_MAP.get(line.itemId) : null
-                    if (!item && !special) return null
-                    const itemName = item ? item.name : special!.name
-                    const unitPrice = item ? item.pricePaise : special!.pricePaise
-                    const optTotal = item
-                      ? line.selections.reduce((sum, sel) => {
-                          const g = item.options.find((grp) => grp.id === sel.groupId)
-                          const c = g?.choices.find((ch) => ch.id === sel.optionId)
-                          return sum + (c?.pricePaise || 0)
-                        }, 0)
-                      : 0
-                    const lineTotal = (unitPrice + optTotal) * line.quantity
-
-                    return (
-                      <div key={line.key} className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/70 space-y-1.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-stone-900 truncate">{itemName}</p>
-                            {line.selections.length > 0 && item && (
-                              <p className="text-[10px] text-stone-500 truncate">
-                                {line.selections
-                                  .map((s) => item.options.find((g) => g.id === s.groupId)?.choices.find((c) => c.id === s.optionId)?.name)
-                                  .filter(Boolean)
-                                  .join(', ')}
-                              </p>
-                            )}
-                          </div>
-                          <span className="text-xs font-black text-stone-900 shrink-0">{formatPaise(lineTotal)}</span>
-                        </div>
-                        <div className="flex items-center justify-between pt-1 border-t border-stone-200/50">
-                          <div className="inline-flex items-center rounded-lg border border-stone-200 bg-white p-0.5">
-                            <button
-                              type="button"
-                              onClick={() => changeQty(line.key, -1)}
-                              className="w-5 h-5 rounded flex items-center justify-center hover:bg-stone-100 text-stone-700 text-xs font-bold cursor-pointer"
-                              aria-label="Decrease"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <span className="w-6 text-center text-xs font-black text-stone-900">{line.quantity}</span>
-                            <button
-                              type="button"
-                              onClick={() => changeQty(line.key, 1)}
-                              className="w-5 h-5 rounded flex items-center justify-center hover:bg-stone-100 text-stone-700 text-xs font-bold cursor-pointer"
-                              aria-label="Increase"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeLine(line.key)}
-                            className="text-[10px] text-rose-500 hover:text-rose-700 font-bold cursor-pointer"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                <div className="pt-3 border-t border-stone-100 space-y-2">
-                  <div className="flex justify-between items-center text-xs text-stone-600">
-                    <span>Items Subtotal</span>
-                    <span className="font-extrabold text-sm text-stone-900">{formatPaise(cartEstimate)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-[11px] text-stone-500">
-                    <span>Estimated GST (5%)</span>
-                    <span>{formatPaise(Math.round((cartEstimate * 500) / 10000))}</span>
-                  </div>
-
-                  <Link
-                    href={checkoutHref}
-                    className="w-full h-11 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 active:scale-[0.99] transition-all cursor-pointer"
-                  >
-                    <span>Review &amp; Place Order</span>
-                    <span>→</span>
-                  </Link>
-                </div>
-              </>
-            )}
-
-            {/* Service Request Button */}
-            <div className="pt-2 border-t border-stone-100">
-              <button
-                type="button"
-                onClick={() => setServiceModalOpen(true)}
-                className="w-full py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <BellRing className="w-3.5 h-3.5 text-amber-600" />
-                <span>Need Water / Napkins / Call Waiter</span>
-              </button>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      {/* Floating Cart Button (Mobile / Tablet < lg) */}
-      {cartCount > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-20 p-3 bg-gradient-to-t from-[#faf8f5] via-[#faf8f5]/90 to-transparent lg:hidden">
-          <button
-            type="button"
-            onClick={() => setCartOpen(true)}
-            className="max-w-2xl mx-auto w-full h-14 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold shadow-xl shadow-amber-600/25 flex items-center justify-between px-5 cursor-pointer active:scale-[0.99] transition-transform animate-in fade-in slide-in-from-bottom-4 duration-300"
-          >
-            <span className="flex items-center gap-2.5">
-              <span className="w-7 h-7 rounded-lg bg-black/20 flex items-center justify-center font-extrabold text-xs">
-                {cartCount}
+                <span>Active Dine-in Order at {formatTableDisplay(activeSession.tableLabel)}</span>
               </span>
-              <span>View Tray</span>
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="font-black text-base">{formatPaise(cartEstimate)}</span>
-              <span className="text-xs opacity-90">→</span>
-            </span>
-          </button>
-        </div>
-      )}
+              <span className="text-[10px] font-extrabold uppercase bg-[#4caf50]/20 text-[#4caf50] border border-[#4caf50]/40 px-2 py-0.5 rounded-full">
+                Cooking
+              </span>
+            </div>
+            <p className="text-[11px] text-[#a0a0b8]">
+              Your order has been sent to the kitchen. You can track live status or add more dishes below.
+            </p>
+            <div className="pt-0.5">
+              <Link
+                href={`/order/${slug}/confirmation/${activeSession.orderId}?accessToken=${encodeURIComponent(
+                  activeSession.accessToken || ''
+                )}`}
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#f0c14b] hover:underline"
+              >
+                <span>Track Live Order &amp; Kitchen Status →</span>
+              </Link>
+            </div>
+          </div>
+        )}
 
-      {/* Cart Drawer Modal */}
-      {cartOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-stone-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 animate-in fade-in duration-200"
-          onClick={() => setCartOpen(false)}
-        >
-          <div
-            className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+        {/* Empty state when search yields no matches */}
+        {categorizedSections.length === 0 && (
+          <div className="p-10 text-center text-sm text-[#a0a0b8] bg-[#1f2041]/70 rounded-2xl border border-[rgba(212,162,52,0.2)] space-y-2 my-6">
+            <Search className="w-8 h-8 mx-auto text-[#d4a234]/50" />
+            <p className="font-semibold text-[#f5f5f0]">No dishes match your search.</p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('')
+                setDietFilter('all')
+              }}
+              className="text-xs text-[#f0c14b] font-bold hover:underline"
+            >
+              Clear search &amp; show full menu
+            </button>
+          </div>
+        )}
+
+        {/* THE WHOLE MENU IN TOP-DOWN APPROACH (NO BUTTON WAY) */}
+        {categorizedSections.map((section, sIdx) => {
+          if (section.items.length === 0) return null
+          return (
+            <ZaikaCategorySection
+              key={section.id}
+              id={section.id}
+              name={section.name}
+              animationDelay={sIdx * 40}
+            >
+              {section.items.map((item, itemIdx) => (
+                <ZaikaItemRow
+                  key={item.id}
+                  id={item.id}
+                  name={item.name}
+                  description={item.description}
+                  pricePaise={item.pricePaise}
+                  veg={item.veg}
+                  available={item.available}
+                  imageUrl={item.imageUrl}
+                  quantity={getItemQtyInCart(item.id)}
+                  hasOptions={Boolean(item.options && item.options.length > 0)}
+                  isLast={itemIdx === section.items.length - 1}
+                  onAdd={() => handleQuickIncrement(item)}
+                  onDecrement={() => handleQuickDecrement(item.id)}
+                  onOpenDetail={() => openCustomize(item)}
+                />
+              ))}
+            </ZaikaCategorySection>
+          )
+        })}
+
+        {/* Subtle Guest Feedback / Google Review Card */}
+        <div className="pt-4 pb-6">
+          <a
+            href={googleReviewUrl || (reviewSlug ? `/r/${reviewSlug}` : `/r/${slug}`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block p-3.5 rounded-2xl bg-[#1f2041]/80 border border-[rgba(212,162,52,0.3)] hover:border-[#d4a234] text-[#f5f5f0] transition-all shadow-md"
           >
-            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#d4a234]/15 border border-[#d4a234]/30 text-[#d4a234] flex items-center justify-center shrink-0">
+                  <Star className="w-4 h-4 fill-[#d4a234] text-[#d4a234]" />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-black text-[#f5f5f0]">Enjoying your food at PM Zaika?</p>
+                  <p className="text-[11px] text-[#a0a0b8]">Rate your experience &amp; share feedback</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-0.5 text-[#d4a234] shrink-0">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 fill-[#d4a234]" />
+                ))}
+              </div>
+            </div>
+          </a>
+        </div>
+      </main>
+
+      {/* Floating Quick Category Jump FAB */}
+      {categories.length > 0 && <ZaikaCategoryJump categories={categories} />}
+
+      {/* Bottom Sticky Cart Summary Bar */}
+      <ZaikaCartBar
+        itemCount={cartCount}
+        totalPaise={cartEstimate}
+        checkoutHref={checkoutHref}
+        onViewCart={() => setCartOpen(true)}
+      />
+
+      {/* Cart Drawer / Bottom Sheet */}
+      {cartOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+            onClick={() => setCartOpen(false)}
+          />
+
+          <div
+            className="relative z-10 w-full max-w-lg max-h-[85vh] rounded-t-3xl sm:rounded-3xl p-5 overflow-hidden flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-200"
+            style={{
+              background: 'linear-gradient(180deg, #1f2041 0%, #16213e 100%)',
+              border: '1px solid rgba(212, 162, 52, 0.35)',
+              color: '#f5f5f0',
+            }}
+          >
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-[rgba(212,162,52,0.2)]">
               <div>
-                <h2 className="font-black text-lg text-stone-900">Your Tray</h2>
-                <p className="text-xs text-amber-700 font-semibold">
+                <h3 className="text-base font-black flex items-center gap-2 text-[#f0c14b] uppercase tracking-wide">
+                  <ShoppingBag className="w-4 h-4 text-[#d4a234]" />
+                  <span>Your Order Tray</span>
+                </h3>
+                <p className="text-[11px] text-[#a0a0b8]">
                   {tableLabel ? `${formatTableDisplay(tableLabel)} • Dine-in` : 'Dine-in Order'}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setCartOpen(false)}
-                className="p-2 rounded-xl hover:bg-stone-100 cursor-pointer transition-colors text-stone-400 hover:text-stone-700"
+                className="p-2 rounded-xl bg-[#252550] hover:bg-[#2e2e60] transition-colors text-[#a0a0b8] hover:text-[#f5f5f0]"
                 aria-label="Close cart"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
+            {/* Empty Tray State */}
             {cart.length === 0 && (
-              <div className="text-center py-10 space-y-2">
-                <ShoppingBag className="w-10 h-10 mx-auto text-stone-300" />
-                <p className="text-sm font-semibold text-stone-500">Your tray is empty.</p>
+              <div className="text-center py-12 space-y-2">
+                <ShoppingBag className="w-10 h-10 mx-auto text-[#d4a234]/40" />
+                <p className="text-sm font-semibold text-[#a0a0b8]">Your tray is empty.</p>
               </div>
             )}
 
-            <div className="space-y-2.5 divide-y divide-stone-100">
+            {/* Cart Lines */}
+            <div className="space-y-2.5 divide-y divide-[rgba(212,162,52,0.1)] overflow-y-auto flex-1 my-3 pr-1">
               {cart.map((line) => {
                 const item = itemById.get(line.itemId)
                 if (!item) return null
@@ -1281,9 +988,9 @@ export default function OrderMenuPage() {
                 return (
                   <div key={line.key} className="pt-2.5 first:pt-0 flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-stone-900 truncate">{item.name}</p>
+                      <p className="text-sm font-bold text-[#f5f5f0] truncate">{item.name}</p>
                       {line.selections.length > 0 && (
-                        <p className="text-[11px] text-stone-500 truncate">
+                        <p className="text-[11px] text-[#a0a0b8] truncate">
                           {line.selections
                             .map((s) =>
                               item.options.find((g) => g.id === s.groupId)?.choices.find((c) => c.id === s.optionId)?.name
@@ -1292,23 +999,23 @@ export default function OrderMenuPage() {
                             .join(', ')}
                         </p>
                       )}
-                      <p className="text-xs font-black text-amber-700 mt-0.5">{formatPaise(lineTotal)}</p>
+                      <p className="text-xs font-black text-[#f0c14b] mt-0.5">{formatPaise(lineTotal)}</p>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0 bg-stone-100 p-1 rounded-xl">
+                    <div className="flex items-center gap-1 shrink-0 bg-[#252550] p-1 rounded-xl border border-[rgba(212,162,52,0.2)]">
                       <button
                         type="button"
                         onClick={() => changeQty(line.key, -1)}
-                        className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center cursor-pointer hover:bg-stone-50 active:scale-95 transition-all text-stone-700"
+                        className="w-7 h-7 rounded-lg bg-[#1f2041] flex items-center justify-center cursor-pointer hover:bg-[#2b2b5c] active:scale-95 transition-all text-[#f5f5f0]"
                         aria-label="Decrease"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="text-xs font-black w-6 text-center text-stone-900">{line.quantity}</span>
+                      <span className="text-xs font-black w-6 text-center text-[#f0c14b]">{line.quantity}</span>
                       <button
                         type="button"
                         onClick={() => changeQty(line.key, 1)}
-                        className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center cursor-pointer hover:bg-stone-50 active:scale-95 transition-all text-stone-700"
+                        className="w-7 h-7 rounded-lg bg-[#1f2041] flex items-center justify-center cursor-pointer hover:bg-[#2b2b5c] active:scale-95 transition-all text-[#f5f5f0]"
                         aria-label="Increase"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -1316,7 +1023,7 @@ export default function OrderMenuPage() {
                       <button
                         type="button"
                         onClick={() => removeLine(line.key)}
-                        className="w-7 h-7 rounded-lg text-rose-500 hover:bg-rose-50 flex items-center justify-center cursor-pointer active:scale-95 transition-all ml-1"
+                        className="w-7 h-7 rounded-lg text-[#e53935] hover:bg-[#e53935]/15 flex items-center justify-center cursor-pointer active:scale-95 transition-all ml-1"
                         aria-label="Remove"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1327,34 +1034,28 @@ export default function OrderMenuPage() {
               })}
             </div>
 
+            {/* Cart Footer */}
             {cart.length > 0 && (
-              <div className="pt-2 space-y-2 border-t border-stone-100">
-                <div className="flex justify-between items-center text-xs text-stone-600">
+              <div className="pt-3 space-y-2.5 border-t border-[rgba(212,162,52,0.2)]">
+                <div className="flex justify-between items-center text-xs text-[#a0a0b8]">
                   <span>Estimated Subtotal</span>
-                  <span className="font-extrabold text-sm text-stone-900">{formatPaise(cartEstimate)}</span>
-                </div>
-                {/* Badshah VIP Points Preview Banner */}
-                <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-yellow-500/10 border border-amber-300/40 flex items-center justify-between text-[11px]">
-                  <span className="flex items-center gap-1.5 font-bold text-amber-950 truncate">
-                    <Crown className="w-3.5 h-3.5 text-amber-600 fill-amber-500/30 shrink-0" />
-                    {loyaltyPoints !== null
-                      ? `VIP Balance: ${loyaltyPoints} pts available to redeem`
-                      : 'Earn Badshah VIP points on this meal'}
-                  </span>
-                  <span className="text-[10px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200 shrink-0">
-                    +20 pts
-                  </span>
+                  <span className="font-extrabold text-sm text-[#f0c14b]">{formatPaise(cartEstimate)}</span>
                 </div>
 
                 <Link
                   href={checkoutHref}
-                  className="w-full h-13 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-center leading-[3.25rem] active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20"
+                  className="w-full h-12 rounded-xl text-[#0f0f23] font-black text-center leading-[3rem] active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #f0c14b 0%, #d4a234 100%)',
+                    boxShadow: '0 4px 20px rgba(212, 162, 52, 0.4)',
+                  }}
+                  onClick={() => setCartOpen(false)}
                 >
                   <span>Proceed to Checkout</span>
                   <span>•</span>
                   <span>{formatPaise(cartEstimate)}</span>
                 </Link>
-                <p className="text-[10px] text-stone-400 text-center">
+                <p className="text-[10px] text-[#6b6b88] text-center">
                   Taxes (GST 5%) applied at checkout. Pay at counter upon ordering.
                 </p>
               </div>
@@ -1397,7 +1098,7 @@ export default function OrderMenuPage() {
         onSubmit={submitServiceRequest}
       />
 
-      {/* Badshah VIP & Orders Hub Modal */}
+      {/* VIP Club & Orders Hub Modal */}
       <VipOrdersHubModal
         isOpen={loyaltyModalOpen}
         onClose={() => setLoyaltyModalOpen(false)}

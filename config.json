@@ -1,26 +1,26 @@
 {
-  "name": "Biryani Badshah",
-  "slug": "biryani-badshah-patna",
+  "name": "PM Zaika Restaurant",
+  "slug": "pm-zaika",
   "contact": {
-    "phone": "77639 49496",
-    "helpline": "77639 49496",
-    "email": "contact@biryanibadshah.com"
+    "phone": "7488260572",
+    "helpline": "9525748843",
+    "email": "contact@pmzaika.com"
   },
   "location": {
-    "address": "Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505",
+    "address": "Zaika Restaurant, Patna, Bihar",
     "city": "Patna",
     "state": "Bihar",
     "country": "India"
   },
   "google": {
-    "reviewUrl": "https://search.google.com/local/writereview?placeid=ChIJv4XCqyuo8jkRSKhDFGoClDo"
+    "reviewUrl": ""
   },
   "branding": {
     "logoUrl": "/logo.png",
     "faviconUrl": "/logo.png",
-    "primaryColor": "#1a6234",
-    "secondaryColor": "#0f3d1f",
-    "accentColor": "#2d8a4e"
+    "primaryColor": "#d4a234",
+    "secondaryColor": "#1a1a2e",
+    "accentColor": "#e8a317"
   },
   "features": {
     "aiReviews": true,
@@ -37,6 +37,6 @@
     "timezone": "Asia/Kolkata"
   },
   "welcomeMessage": {
-    "en": "Thanks for dining with Biryani Badshah! We'd love to hear about your royal experience today."
+    "en": "Welcome to PM Zaika Restaurant! Indian || Chinese || Tandoor || Rolls"
   }
 }

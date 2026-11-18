@@ -98,7 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <style dangerouslySetInnerHTML={{ __html: generateBrandingCSS(config) }} />
       </head>
-      <body className={`${inter.className} ${rajdhani.variable} ${kaushan.variable} ${bruceForever.variable} ${onStageSerial.variable} min-h-screen min-h-[100dvh] bg-slate-950 text-slate-100 antialiased overflow-x-hidden`}>
+      <body className={`${inter.className} ${rajdhani.variable} ${kaushan.variable} ${bruceForever.variable} ${onStageSerial.variable} min-h-screen min-h-[100dvh] antialiased overflow-x-hidden`} style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)' }}>
         <ClientConfigProvider config={config}>
           <PwaProvider>
             <OfflineIndicator />

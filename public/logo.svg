@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <!-- Royal Gold Linear Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff0a8" />
+      <stop offset="25%" stop-color="#f5d061" />
+      <stop offset="50%" stop-color="#d4a234" />
+      <stop offset="75%" stop-color="#b8860b" />
+      <stop offset="100%" stop-color="#8a6108" />
+    </linearGradient>
+
+    <!-- Accent Light Gold Gradient -->
+    <linearGradient id="goldLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff8db" />
+      <stop offset="50%" stop-color="#f0c14b" />
+      <stop offset="100%" stop-color="#c69214" />
+    </linearGradient>
+
+    <!-- Deep Luxury Royal Dark Background -->
+    <radialGradient id="darkBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#222340" />
+      <stop offset="65%" stop-color="#1a1a2e" />
+      <stop offset="100%" stop-color="#0f0f21" />
+    </radialGradient>
+
+    <!-- Subtle Glow Filter -->
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Dark Circular Background Plate -->
+  <circle cx="100" cy="100" r="95" fill="url(#darkBg)" />
+
+  <!-- Outer Ornate Gold Rings -->
+  <circle cx="100" cy="100" r="95" stroke="url(#goldGrad)" stroke-width="2.5" fill="none" />
+  <circle cx="100" cy="100" r="90" stroke="#d4a234" stroke-width="0.8" stroke-dasharray="3 2" fill="none" opacity="0.65" />
+  <circle cx="100" cy="100" r="86" stroke="url(#goldGrad)" stroke-width="1.2" fill="none" opacity="0.8" />
+
+  <!-- Cardinal & Diagonal Accent Jewels -->
+  <g fill="url(#goldGrad)">
+    <circle cx="100" cy="8" r="2.2" />
+    <circle cx="100" cy="192" r="2.2" />
+    <circle cx="8" cy="100" r="2.2" />
+    <circle cx="192" cy="100" r="2.2" />
+    <polygon points="35,35 37,38 35,41 33,38" />
+    <polygon points="165,35 167,38 165,41 163,38" />
+    <polygon points="35,165 37,168 35,171 33,168" />
+    <polygon points="165,165 167,168 165,171 163,168" />
+  </g>
+
+  <!-- Circular Laurel / Leaf Wreath (Left & Right) -->
+  <g fill="url(#goldGrad)" stroke="#a17510" stroke-width="0.2">
+    <!-- Left Branch Stem -->
+    <path d="M100 174 C58 174 34 140 34 102 C34 76 46 54 62 42" fill="none" stroke="url(#goldGrad)" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Left Leaves -->
+    <path d="M38 148 C32 144 30 134 38 136 C42 137 42 144 38 148 Z" />
+    <path d="M34 132 C28 128 26 118 35 120 C39 121 38 128 34 132 Z" />
+    <path d="M32 115 C26 110 26 100 35 102 C39 104 37 111 32 115 Z" />
+    <path d="M34 97 C28 92 30 82 39 85 C42 87 40 94 34 97 Z" />
+    <path d="M39 80 C34 74 38 65 46 69 C48 72 45 78 39 80 Z" />
+    <path d="M48 65 C44 59 49 51 57 56 C59 58 55 64 48 65 Z" />
+    <path d="M59 52 C56 46 64 39 70 45 C71 48 66 52 59 52 Z" />
+    <!-- Inner Left Leaves -->
+    <path d="M46 142 C44 136 50 132 52 138 C53 142 49 145 46 142 Z" />
+    <path d="M42 124 C40 118 46 114 49 120 C50 124 45 127 42 124 Z" />
+    <path d="M42 105 C40 99 47 96 49 102 C50 106 45 109 42 105 Z" />
+    <path d="M45 88 C44 82 51 79 53 85 C54 89 48 91 45 88 Z" />
+
+    <!-- Right Branch Stem -->
+    <path d="M100 174 C142 174 166 140 166 102 C166 76 154 54 138 42" fill="none" stroke="url(#goldGrad)" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Right Leaves -->
+    <path d="M162 148 C168 144 170 134 162 136 C158 137 158 144 162 148 Z" />
+    <path d="M166 132 C172 128 174 118 165 120 C161 121 162 128 166 132 Z" />
+    <path d="M168 115 C174 110 174 100 165 102 C161 104 163 111 168 115 Z" />
+    <path d="M166 97 C172 92 170 82 161 85 C158 87 160 94 166 97 Z" />
+    <path d="M161 80 C166 74 162 65 154 69 C152 72 155 78 161 80 Z" />
+    <path d="M152 65 C156 59 151 51 143 56 C141 58 145 64 152 65 Z" />
+    <path d="M141 52 C144 46 136 39 130 45 C129 48 134 52 141 52 Z" />
+    <!-- Inner Right Leaves -->
+    <path d="M154 142 C156 136 150 132 148 138 C147 142 151 145 154 142 Z" />
+    <path d="M158 124 C160 118 154 114 151 120 C150 124 155 127 158 124 Z" />
+    <path d="M158 105 C160 99 153 96 151 102 C150 106 155 109 158 105 Z" />
+    <path d="M155 88 C156 82 149 79 147 85 C146 89 152 91 155 88 Z" />
+  </g>
+
+  <!-- Wreath Ribbon Bow at Bottom -->
+  <g fill="url(#goldLight)" stroke="#997018" stroke-width="0.5">
+    <ellipse cx="100" cy="174" rx="4" ry="3.5" />
+    <path d="M97 175 C91 176 86 182 89 187 C93 186 96 180 98 177 Z" />
+    <path d="M103 175 C109 176 114 182 111 187 C107 186 104 180 102 177 Z" />
+  </g>
+
+  <!-- Royal Crown at Top -->
+  <g filter="url(#goldGlow)">
+    <!-- Crown Base Band -->
+    <path d="M72 63 L128 63 C127 65.5 125 67 121 67 L79 67 C75 67 73 65.5 72 63 Z" fill="url(#goldGrad)" stroke="#f5d061" stroke-width="0.6"/>
+    
+    <!-- Crown Band Jewels -->
+    <circle cx="82" cy="65" r="1.3" fill="#ffffff" opacity="0.9" />
+    <circle cx="91" cy="65" r="1.3" fill="#ffffff" opacity="0.9" />
+    <circle cx="100" cy="65" r="1.6" fill="#ffffff" />
+    <circle cx="109" cy="65" r="1.3" fill="#ffffff" opacity="0.9" />
+    <circle cx="118" cy="65" r="1.3" fill="#ffffff" opacity="0.9" />
+
+    <!-- Crown Spikes and Body -->
+    <path d="M73 63 L70 45 L84 54 L100 34 L116 54 L130 45 L127 63 Z" 
+          fill="url(#goldLight)" 
+          stroke="url(#goldGrad)" 
+          stroke-width="1" 
+          stroke-linejoin="round"/>
+
+    <!-- Pearl Jewels on Crown Peaks -->
+    <circle cx="100" cy="33" r="3.2" fill="#fff5d0" stroke="#d4a234" stroke-width="0.8"/>
+    <circle cx="70" cy="44" r="2.2" fill="#fff5d0" stroke="#d4a234" stroke-width="0.6"/>
+    <circle cx="130" cy="44" r="2.2" fill="#fff5d0" stroke="#d4a234" stroke-width="0.6"/>
+    <circle cx="84" cy="53" r="1.8" fill="#fff5d0" stroke="#d4a234" stroke-width="0.5"/>
+    <circle cx="116" cy="53" r="1.8" fill="#fff5d0" stroke="#d4a234" stroke-width="0.5"/>
+
+    <!-- Center Crown Cross or Diamond Insignia -->
+    <polygon points="100,43 103,48 100,53 97,48" fill="#ffffff" opacity="0.85"/>
+  </g>
+
+  <!-- Ornate "PM" Monogram -->
+  <!-- Letter P -->
+  <g fill="url(#goldLight)" stroke="url(#goldGrad)" stroke-width="0.8">
+    <text x="82" y="122" 
+          font-family="'Playfair Display', 'Cinzel', 'Georgia', 'Times New Roman', serif" 
+          font-size="44" 
+          font-weight="900" 
+          letter-spacing="-1"
+          text-anchor="middle"
+          filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.7))">P</text>
+    
+    <!-- Letter M -->
+    <text x="119" y="122" 
+          font-family="'Playfair Display', 'Cinzel', 'Georgia', 'Times New Roman', serif" 
+          font-size="44" 
+          font-weight="900" 
+          letter-spacing="-1"
+          text-anchor="middle"
+          filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.7))">M</text>
+  </g>
+
+  <!-- Decorative Separator Flourish Under Monogram -->
+  <path d="M70 133 Q100 130 130 133" stroke="url(#goldGrad)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <polygon points="100,129 103,132 100,135 97,132" fill="url(#goldLight)"/>
+  <circle cx="78" cy="133" r="1" fill="#d4a234"/>
+  <circle cx="122" cy="133" r="1" fill="#d4a234"/>
+
+  <!-- "ZAIKA" Wordmark in Emblem -->
+  <text x="100" y="148" 
+        font-family="'Rajdhani', 'Cinzel', 'Montserrat', sans-serif" 
+        font-size="14" 
+        font-weight="800" 
+        letter-spacing="5" 
+        text-anchor="middle" 
+        fill="url(#goldGrad)"
+        filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.8))">ZAIKA</text>
+
+  <!-- "RESTAURANT" Tagline -->
+  <text x="100" y="161" 
+        font-family="'Montserrat', 'Arial', sans-serif" 
+        font-size="6.5" 
+        font-weight="600" 
+        letter-spacing="3" 
+        text-anchor="middle" 
+        fill="#f0c14b" 
+        opacity="0.85">RESTAURANT</text>
+</svg>
