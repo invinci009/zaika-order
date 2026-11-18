@@ -880,6 +880,7 @@ export default function OrderMenuPage() {
                   quantity={getItemQtyInCart(item.id)}
                   hasOptions={Boolean(item.options && item.options.length > 0)}
                   isLast={itemIdx === section.items.length - 1}
+                  categoryId={section.id}
                   onAdd={() => handleQuickIncrement(item)}
                   onDecrement={() => handleQuickDecrement(item.id)}
                   onOpenDetail={() => openCustomize(item)}

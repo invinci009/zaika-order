@@ -1,183 +1,172 @@
 'use client'
 
+/**
+ * MandalaBackground
+ * Exact reproduction of the brochure background from user reference:
+ * - Deep dark eggplant/purple canvas gradient
+ * - Single prominent, finely-etched floral mandala watermark placed on the left
+ * - Subtle bottom-corner radial glow
+ */
 export function MandalaBackground() {
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* Deep Plum/Eggplant Radial Vignette */}
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">
+      {/* Deep Royal Eggplant Gradient Canvas */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(circle at 20% 30%, rgba(45, 28, 58, 0.4) 0%, rgba(20, 13, 27, 0.95) 75%, #0f0914 100%)',
+          background: 'linear-gradient(165deg, #231630 0%, #170e22 45%, #0f0817 100%)',
         }}
       />
 
-      {/* Prominent Left-Side Mandala (Matching the user screenshot) */}
+      {/* Subtle warm radial highlight */}
       <div
-        className="absolute -left-36 top-24 w-[520px] h-[520px] sm:w-[620px] sm:h-[620px] sm:-left-44 opacity-[0.14] select-none"
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(circle at 15% 35%, rgba(68, 38, 92, 0.28) 0%, transparent 60%)',
+        }}
+      />
+
+      {/* Prominent Floral Mandala Watermark (Matches user screenshot 1:1) */}
+      <div
+        className="absolute -left-[140px] sm:-left-[180px] top-[10%] w-[580px] h-[580px] sm:w-[760px] sm:h-[760px] opacity-[0.11] pointer-events-none"
         style={{ transformOrigin: 'center center' }}
       >
-        <BrochureMandala />
+        <DetailedBrochureMandala />
       </div>
 
-      {/* Subtle Repeating Mandala on Middle-Right */}
+      {/* Faint repeating echo mandala far bottom-right for tall scroll depth */}
       <div
-        className="absolute -right-40 top-[55%] w-[480px] h-[480px] sm:w-[580px] sm:h-[580px] opacity-[0.11] select-none"
+        className="absolute -right-[160px] top-[60%] w-[520px] h-[520px] sm:w-[680px] sm:h-[680px] opacity-[0.07] pointer-events-none"
         style={{ transformOrigin: 'center center' }}
       >
-        <BrochureMandala />
-      </div>
-
-      {/* Subtle Repeating Mandala on Bottom-Left */}
-      <div
-        className="absolute -left-36 bottom-[-100px] w-[500px] h-[500px] opacity-[0.12] select-none"
-        style={{ transformOrigin: 'center center' }}
-      >
-        <BrochureMandala />
+        <DetailedBrochureMandala />
       </div>
     </div>
   )
 }
 
-/**
- * Exact replica of the floral mandala from the PM Zaika physical menu brochure:
- * - Concentric center with sunburst star rays
- * - Pearl bead circle ring
- * - Scalloped petal arches with internal droplets
- * - Pointed lotus petals with double outline
- * - Large radiating outer floral petal crown with diamond tips
- */
-function BrochureMandala() {
-  const spokes16 = Array.from({ length: 16 }, (_, i) => i * (360 / 16))
-  const spokes32 = Array.from({ length: 32 }, (_, i) => i * (360 / 32))
+function DetailedBrochureMandala() {
+  const spokes16 = Array.from({ length: 16 }, (_, i) => i * 22.5)
+  const spokes32 = Array.from({ length: 32 }, (_, i) => i * 11.25)
 
   return (
     <svg
-      viewBox="0 0 500 500"
+      viewBox="0 0 600 600"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="w-full h-full"
     >
-      <g stroke="#ffffff" strokeWidth="1" opacity="0.9">
-        {/* Core Center Rings */}
-        <circle cx="250" cy="250" r="14" strokeWidth="1.2" />
-        <circle cx="250" cy="250" r="24" strokeWidth="0.8" />
-        <circle cx="250" cy="250" r="38" strokeWidth="1" />
-        <circle cx="250" cy="250" r="54" strokeWidth="0.8" />
-        <circle cx="250" cy="250" r="72" strokeWidth="1.2" />
-        <circle cx="250" cy="250" r="102" strokeWidth="0.9" />
-        <circle cx="250" cy="250" r="132" strokeWidth="1.2" />
-        <circle cx="250" cy="250" r="172" strokeWidth="0.8" />
-        <circle cx="250" cy="250" r="215" strokeWidth="1" />
+      <g stroke="#ffffff" strokeWidth="0.9" opacity="0.95">
+        {/* Core Concentric Circles */}
+        <circle cx="300" cy="300" r="16" strokeWidth="1.2" />
+        <circle cx="300" cy="300" r="28" strokeWidth="0.8" />
+        <circle cx="300" cy="300" r="46" strokeWidth="1.1" />
+        <circle cx="300" cy="300" r="66" strokeWidth="0.8" />
+        <circle cx="300" cy="300" r="88" strokeWidth="1.2" />
+        <circle cx="300" cy="300" r="124" strokeWidth="0.9" />
+        <circle cx="300" cy="300" r="160" strokeWidth="1.3" />
+        <circle cx="300" cy="300" r="208" strokeWidth="0.8" />
+        <circle cx="300" cy="300" r="260" strokeWidth="1.2" />
 
         {/* Center 16 Starburst Triangle Rays */}
         {spokes16.map((deg) => (
-          <g key={`star-${deg}`} transform={`rotate(${deg} 250 250)`}>
-            <polygon points="250,226 253,237 247,237" fill="#ffffff" opacity="0.3" stroke="none" />
+          <g key={`star-${deg}`} transform={`rotate(${deg} 300 300)`}>
+            <polygon points="300,272 303.5,284 296.5,284" fill="#ffffff" opacity="0.4" stroke="none" />
           </g>
         ))}
 
-        {/* Pearl Beads Ring (at r=46) */}
+        {/* Pearl Beads Ring (at r=56) */}
         {spokes16.map((deg) => (
           <circle
             key={`bead-${deg}`}
-            cx={250 + 46 * Math.cos((deg * Math.PI) / 180)}
-            cy={250 + 46 * Math.sin((deg * Math.PI) / 180)}
-            r="3"
+            cx={300 + 56 * Math.cos((deg * Math.PI) / 180)}
+            cy={300 + 56 * Math.sin((deg * Math.PI) / 180)}
+            r="3.5"
+            strokeWidth="0.9"
+          />
+        ))}
+
+        {/* Scalloped Floral Arches (r=66 to r=88) */}
+        {spokes16.map((deg) => (
+          <g key={`arch-${deg}`} transform={`rotate(${deg} 300 300)`}>
+            <path
+              d="M 288 234 C 291 220, 309 220, 312 234"
+              strokeWidth="1.1"
+            />
+            <circle cx="300" cy="226" r="2.2" fill="#ffffff" opacity="0.6" stroke="none" />
+          </g>
+        ))}
+
+        {/* Intermediate Pointed Lotus Petals (r=88 to r=124) */}
+        {spokes16.map((deg) => (
+          <g key={`mid-petal-${deg}`} transform={`rotate(${deg} 300 300)`}>
+            <path
+              d="M 282 212 C 288 190, 300 176, 300 176 C 300 176, 312 190, 318 212"
+              strokeWidth="1.1"
+            />
+            <path
+              d="M 286 212 C 291 197, 300 185, 300 185 C 300 185, 309 197, 314 212"
+              strokeWidth="0.7"
+              opacity="0.75"
+            />
+            <line x1="300" y1="212" x2="300" y2="180" strokeWidth="0.6" strokeDasharray="3 2" />
+          </g>
+        ))}
+
+        {/* Intermediate Pearl Ring (at r=142) */}
+        {spokes32.map((deg) => (
+          <circle
+            key={`outer-bead-${deg}`}
+            cx={300 + 142 * Math.cos((deg * Math.PI) / 180)}
+            cy={300 + 142 * Math.sin((deg * Math.PI) / 180)}
+            r="2.6"
             strokeWidth="0.8"
           />
         ))}
 
-        {/* Scalloped Floral Arches (r=54 to r=72) */}
+        {/* Large Pointed Floral Lotus Petals (r=160 to r=208) */}
         {spokes16.map((deg) => (
-          <g key={`arch-${deg}`} transform={`rotate(${deg} 250 250)`}>
+          <g key={`large-petal-${deg}`} transform={`rotate(${deg} 300 300)`}>
             <path
-              d="M 239.5 196 C 242 184, 258 184, 260.5 196"
-              strokeWidth="1"
+              d="M 268 140 C 278 110, 300 92, 300 92 C 300 92, 322 110, 332 140"
+              strokeWidth="1.3"
             />
-            {/* Droplet inside arch */}
-            <circle cx="250" cy="190" r="1.8" fill="#ffffff" opacity="0.6" stroke="none" />
-          </g>
-        ))}
-
-        {/* Intermediate Lotus Petals (r=72 to r=102) */}
-        {spokes16.map((deg) => (
-          <g key={`mid-petal-${deg}`} transform={`rotate(${deg} 250 250)`}>
-            {/* Outer pointed petal */}
             <path
-              d="M 235 178 C 240 160, 250 148, 250 148 C 250 148, 260 160, 265 178"
-              strokeWidth="1"
-            />
-            {/* Inner echo petal */}
-            <path
-              d="M 239 178 C 243 166, 250 156, 250 156 C 250 156, 257 166, 261 178"
-              strokeWidth="0.7"
-              opacity="0.7"
-            />
-            {/* Petal center vein */}
-            <line x1="250" y1="178" x2="250" y2="152" strokeWidth="0.6" strokeDasharray="2 2" />
-          </g>
-        ))}
-
-        {/* Outer Pearl Ring (at r=117) */}
-        {spokes32.map((deg) => (
-          <circle
-            key={`outer-bead-${deg}`}
-            cx={250 + 117 * Math.cos((deg * Math.PI) / 180)}
-            cy={250 + 117 * Math.sin((deg * Math.PI) / 180)}
-            r="2.2"
-            strokeWidth="0.7"
-          />
-        ))}
-
-        {/* Large Pointed Floral Lotus Petals (r=132 to r=172) */}
-        {spokes16.map((deg) => (
-          <g key={`large-petal-${deg}`} transform={`rotate(${deg} 250 250)`}>
-            <path
-              d="M 224 118 C 232 94, 250 78, 250 78 C 250 78, 268 94, 276 118"
-              strokeWidth="1.2"
-            />
-            {/* Inner petal layer */}
-            <path
-              d="M 230 118 C 237 101, 250 88, 250 88 C 250 88, 263 101, 270 118"
+              d="M 276 140 C 284 119, 300 104, 300 104 C 300 104, 316 119, 324 140"
               strokeWidth="0.8"
               opacity="0.7"
             />
-            {/* Leaf eyelet */}
-            <circle cx="250" cy="100" r="3.2" strokeWidth="0.8" />
+            <circle cx="300" cy="118" r="3.8" strokeWidth="0.9" />
           </g>
         ))}
 
-        {/* Outermost Radiating Flourish Crown (r=172 to r=245) */}
+        {/* Outermost Radiating Flourish Crown (r=208 to r=295) */}
         {spokes16.map((deg) => (
-          <g key={`crown-petal-${deg + 11.25}`} transform={`rotate(${deg + 11.25} 250 250)`}>
-            {/* Big majestic floral petal */}
+          <g key={`crown-petal-${deg + 11.25}`} transform={`rotate(${deg + 11.25} 300 300)`}>
             <path
-              d="M 216 78 C 228 42, 250 8, 250 8 C 250 8, 272 42, 284 78"
-              strokeWidth="1.2"
+              d="M 258 92 C 274 48, 300 8, 300 8 C 300 8, 326 48, 342 92"
+              strokeWidth="1.3"
             />
-            {/* Inner echo */}
             <path
-              d="M 226 78 C 234 52, 250 24, 250 24 C 250 24, 266 52, 274 78"
+              d="M 270 92 C 280 60, 300 26, 300 26 C 300 26, 320 60, 330 92"
               strokeWidth="0.8"
               opacity="0.6"
             />
-            {/* Center vein */}
-            <line x1="250" y1="78" x2="250" y2="16" strokeWidth="0.7" opacity="0.6" />
-            {/* Diamond tip flourish */}
-            <polygon points="250,5 252.5,8 250,11 247.5,8" fill="#ffffff" opacity="0.5" stroke="none" />
+            <line x1="300" y1="92" x2="300" y2="16" strokeWidth="0.8" opacity="0.6" />
+            <polygon points="300,5 303,8 300,11 297,8" fill="#ffffff" opacity="0.6" stroke="none" />
           </g>
         ))}
 
-        {/* Radiating Spoke Lines connecting the layers */}
+        {/* Connecting Axis Lines */}
         {spokes16.map((deg) => (
           <line
             key={`spoke-${deg}`}
-            x1="250"
-            y1="250"
-            x2={250 + 245 * Math.cos((deg * Math.PI) / 180)}
-            y2={250 + 245 * Math.sin((deg * Math.PI) / 180)}
+            x1="300"
+            y1="300"
+            x2={300 + 295 * Math.cos((deg * Math.PI) / 180)}
+            y2={300 + 295 * Math.sin((deg * Math.PI) / 180)}
             strokeWidth="0.4"
-            opacity="0.3"
+            opacity="0.25"
           />
         ))}
       </g>
