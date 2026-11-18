@@ -2,6 +2,7 @@ import QuizFlow, { type QuizAnswerValue } from '@/components/quiz/QuizFlow'
 import { Sparkles, AlertTriangle } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { getRestaurantConfig } from '@/config/loader'
+import { MandalaBackground } from '@/components/ordering/MandalaBackground'
 
 interface PublicQuizPageProps {
   params: Promise<{ slug: string }>
@@ -14,9 +15,6 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
   const config = getRestaurantConfig()
 
   // 1. Look up campaign by slug.
-  // The backend is imported lazily inside try/catch: if the Firebase Admin
-  // bundle cannot even be loaded in this runtime, `firestore` stays null
-  // and we show a friendly "unavailable" screen instead of a generic 500.
   let backendUnavailable = false
   let firestore: typeof import('@/lib/firebase/firestore') | null = null
   try {
@@ -46,23 +44,29 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
     campaign = campaigns?.find((c) => c.active) || null
   }
 
-  // Backend (Firestore) unreachable — friendly fallback instead of a 500
+  // Backend (Firestore) unreachable — friendly fallback in PM Zaika royal dark theme
   if (backendUnavailable) {
     return (
-      <div className="min-h-screen bg-stone-50 text-stone-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm text-center p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-xl space-y-4">
-          <div className="w-12 h-12 mx-auto rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+      <div
+        className="min-h-screen text-[#f5f0e8] flex items-center justify-center p-4 relative"
+        style={{ background: 'linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%)' }}
+      >
+        <MandalaBackground />
+        <div className="w-full max-w-sm text-center p-6 sm:p-8 rounded-3xl bg-[#170e24]/90 border border-amber-500/30 shadow-2xl relative z-10 space-y-4 backdrop-blur-md">
+          <div className="w-12 h-12 mx-auto rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 flex items-center justify-center">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold text-stone-900">Feedback Temporarily Unavailable</h1>
-          <p className="text-sm text-stone-500">
+          <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37]">
+            Feedback Temporarily Unavailable
+          </h1>
+          <p className="text-xs text-amber-200/70">
             We&apos;re having trouble reaching our servers right now. Please try again in a moment, or ask your server at {config.name} for assistance.
           </p>
           {config.contact.phone && (
             <div className="pt-2">
               <a
                 href={`tel:${config.contact.phone}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-900 hover:bg-amber-100 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-400/40 text-xs font-semibold text-amber-300 hover:bg-amber-400/25 transition-colors"
               >
                 Call: {config.contact.phone}
               </a>
@@ -76,20 +80,24 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
   // Fallback screen if no campaign exists at all
   if (!campaign) {
     return (
-      <div className="min-h-screen bg-stone-50 text-stone-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm text-center p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-xl space-y-4">
-          <div className="w-12 h-12 mx-auto rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center">
+      <div
+        className="min-h-screen text-[#f5f0e8] flex items-center justify-center p-4 relative"
+        style={{ background: 'linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%)' }}
+      >
+        <MandalaBackground />
+        <div className="w-full max-w-sm text-center p-6 sm:p-8 rounded-3xl bg-[#170e24]/90 border border-rose-500/30 shadow-2xl relative z-10 space-y-4 backdrop-blur-md">
+          <div className="w-12 h-12 mx-auto rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold text-stone-900">QR Code Not Found</h1>
-          <p className="text-sm text-stone-500">
+          <h1 className="text-xl font-bold text-[#f5f0e8]">QR Code Not Found</h1>
+          <p className="text-xs text-amber-200/70">
             This QR code is not valid or has been removed. Please ask your server at {config.name} for assistance.
           </p>
           {config.contact.phone && (
             <div className="pt-2">
               <a
                 href={`tel:${config.contact.phone}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-900 hover:bg-amber-100 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-400/40 text-xs font-semibold text-amber-300 hover:bg-amber-400/25 transition-colors"
               >
                 Call: {config.contact.phone}
               </a>
@@ -103,20 +111,24 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
   // Inactive campaign fallback screen
   if (!campaign.active) {
     return (
-      <div className="min-h-screen bg-stone-50 text-stone-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm text-center p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-xl space-y-4">
-          <div className="w-12 h-12 mx-auto rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+      <div
+        className="min-h-screen text-[#f5f0e8] flex items-center justify-center p-4 relative"
+        style={{ background: 'linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%)' }}
+      >
+        <MandalaBackground />
+        <div className="w-full max-w-sm text-center p-6 sm:p-8 rounded-3xl bg-[#170e24]/90 border border-amber-500/30 shadow-2xl relative z-10 space-y-4 backdrop-blur-md">
+          <div className="w-12 h-12 mx-auto rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 flex items-center justify-center">
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold text-stone-900">Survey Temporarily Inactive</h1>
-          <p className="text-sm text-stone-500">
+          <h1 className="text-xl font-bold text-[#f5f0e8]">Survey Temporarily Inactive</h1>
+          <p className="text-xs text-amber-200/70">
             This feedback code is currently paused by {config.name}. Please check with your server.
           </p>
           {config.contact.phone && (
             <div className="pt-2">
               <a
                 href={`tel:${config.contact.phone}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-900 hover:bg-amber-100 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-400/40 text-xs font-semibold text-amber-300 hover:bg-amber-400/25 transition-colors"
               >
                 Call: {config.contact.phone}
               </a>
@@ -129,7 +141,7 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
 
   const googleReviewUrl = campaign.googleReviewUrlOverride || config.google.reviewUrl
 
-  // 2. Fetch menu items for the ordered items step (empty list if backend fails)
+  // 2. Fetch menu items for the ordered items step
   const menuItems = firestore
     ? await firestore.getMenuItems().catch((err) => {
         console.error('PublicQuizPage: menu items lookup failed:', err)
@@ -147,11 +159,8 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
     const cookieStore = await cookies()
     const sessionCookie = cookieStore.get('rp_session')
     if (sessionCookie?.value) {
-      // Session resume is best-effort: if the backend fails, start fresh
-      // instead of crashing the page.
       try {
         const session = await firestore.getSession(sessionCookie.value)
-
         if (session && session.campaignId === campaign.id) {
           existingSessionId = session.id
           existingStatus = session.status
@@ -178,16 +187,18 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
   const welcomeText = config.welcomeMessage[config.settings.defaultLanguage] || config.welcomeMessage['en'] || ''
 
   return (
-    <div className="min-h-screen min-h-[100dvh] min-h-safe-screen bg-[#faf8f5] bg-gradient-to-b from-[#fdfbf7] via-[#fbf7ee] to-[#f6efe0] text-stone-900 flex flex-col justify-between px-3 sm:px-6 pt-safe pb-safe py-3 sm:py-6 selection:bg-amber-600 selection:text-white relative overflow-x-hidden font-sans">
-      {/* Ambient warm gold & saffron glows */}
-      <div className="fixed -top-12 left-1/2 -translate-x-1/2 w-80 h-80 bg-amber-300/25 rounded-full blur-3xl pointer-events-none" />
-      <div className="fixed bottom-0 right-1/4 w-80 h-80 bg-yellow-300/20 rounded-full blur-3xl pointer-events-none" />
+    <div
+      className="min-h-screen min-h-[100dvh] min-h-safe-screen text-[#f5f0e8] flex flex-col justify-between px-3 sm:px-6 pt-safe pb-safe py-3 sm:py-6 selection:bg-amber-500 selection:text-black relative overflow-x-hidden font-sans"
+      style={{ background: 'linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%)' }}
+    >
+      {/* Ornamental Mandala Background Layer */}
+      <MandalaBackground />
 
       {/* Header Badge */}
       <header className="relative z-10 flex items-center justify-center pt-1 sm:pt-2">
-        <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/95 border border-stone-200/90 shadow-xs backdrop-blur-md">
-          <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-amber-600 shrink-0" />
-          <span className="text-[10px] sm:text-[11px] font-bold text-amber-950 tracking-wide">
+        <div className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[#1b1026]/90 border border-amber-500/30 shadow-md backdrop-blur-md">
+          <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-amber-400 shrink-0" />
+          <span className="text-[10px] sm:text-[11px] font-bold text-amber-200 tracking-wider uppercase">
             {restaurantName} • Guest Feedback
           </span>
         </div>
@@ -209,15 +220,15 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
       />
 
       {/* Mobile-Friendly Footer */}
-      <footer className="relative z-10 text-center py-2 sm:py-3 text-[10px] sm:text-[11px] text-stone-500 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+      <footer className="relative z-10 text-center py-2 sm:py-3 text-[10px] sm:text-[11px] text-amber-200/50 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
         <div className="flex items-center gap-1.5">
           <span>Powered by</span>
-          <span className="font-bold text-stone-700">ReviewPulse</span>
+          <span className="font-bold text-amber-300">PM Zaika</span>
           <span>•</span>
-          <span className="font-semibold text-stone-800">{restaurantName}</span>
+          <span className="font-semibold text-amber-100">{restaurantName}</span>
         </div>
         {config.contact.phone && (
-          <div className="flex items-center gap-1 text-amber-800 font-medium">
+          <div className="flex items-center gap-1 text-amber-300 font-medium">
             <span>•</span>
             <a href={`tel:${config.contact.phone}`} className="hover:underline flex items-center gap-1">
               <span>Helpline:</span>

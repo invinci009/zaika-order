@@ -1,7 +1,6 @@
 'use client'
 
-import { ShoppingBag, ChevronRight } from 'lucide-react'
-import Link from 'next/link'
+import { ShoppingBag, ArrowRight } from 'lucide-react'
 
 interface ZaikaCartBarProps {
   itemCount: number
@@ -14,44 +13,54 @@ function formatPrice(paise: number): string {
   return `₹${Math.round(paise / 100)}`
 }
 
-export function ZaikaCartBar({ itemCount, totalPaise, checkoutHref, onViewCart }: ZaikaCartBarProps) {
+/**
+ * ZaikaCartBar
+ * Ultra-refined floating gold cart bar matching PM Zaika royal branding
+ */
+export function ZaikaCartBar({ itemCount, totalPaise, onViewCart }: ZaikaCartBarProps) {
   if (itemCount === 0) return null
 
   return (
-    <div className="zaika-cart-bar">
-      <div className="max-w-2xl mx-auto px-3">
-        <Link
-          href={checkoutHref}
-          className="flex items-center justify-between gap-3 w-full py-2.5 px-4 rounded-xl transition-all active:scale-[0.98]"
-          style={{
-            background: 'linear-gradient(135deg, #d4a234 0%, #e8a317 100%)',
-            boxShadow: '0 4px 20px rgba(212, 162, 52, 0.4)',
-          }}
+    <div className="zaika-cart-bar fixed bottom-4 left-0 right-0 z-40 px-3 pointer-events-none">
+      <div className="max-w-2xl mx-auto pointer-events-auto">
+        <button
+          type="button"
           onClick={onViewCart}
+          className="flex items-center justify-between gap-3 w-full py-3 px-4 rounded-2xl transition-all active:scale-[0.98] cursor-pointer shadow-2xl relative overflow-hidden group"
+          style={{
+            background: 'linear-gradient(90deg, #bf8d2c 0%, #f6d47b 35%, #eed48f 65%, #a6741b 100%)',
+            boxShadow: '0 8px 30px rgba(212, 175, 55, 0.35), 0 2px 8px rgba(0,0,0,0.5)',
+          }}
+          aria-label="View current cart"
         >
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: 'rgba(0,0,0,0.15)' }}
-            >
-              <ShoppingBag className="w-4 h-4" style={{ color: '#0f0f1a' }} />
+          {/* Subtle shine animation */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+
+          {/* Left: Bag Icon + Count */}
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#140b00]/15 shadow-inner">
+              <ShoppingBag className="w-4 h-4 text-[#140b00] stroke-[2.5]" />
             </div>
-            <div>
-              <p className="text-xs font-black" style={{ color: '#0f0f1a' }}>
-                {itemCount} {itemCount === 1 ? 'item' : 'items'} added
+            <div className="text-left">
+              <p className="text-xs font-black uppercase tracking-wider text-[#140b00] leading-tight">
+                {itemCount} {itemCount === 1 ? 'Dish' : 'Dishes'} in Order
               </p>
-              <p className="text-[10px] font-medium" style={{ color: 'rgba(15,15,26,0.7)' }}>
-                View full cart
+              <p className="text-[11px] font-bold text-[#140b00]/75">
+                Tap to review &amp; place order
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-base font-black" style={{ color: '#0f0f1a' }}>
+
+          {/* Right: Total + Arrow */}
+          <div className="flex items-center gap-2 relative z-10">
+            <span className="text-base sm:text-lg font-black font-serif text-[#140b00] tracking-tight">
               {formatPrice(totalPaise)}
             </span>
-            <ChevronRight className="w-4 h-4" style={{ color: '#0f0f1a' }} />
+            <div className="w-7 h-7 rounded-full bg-[#140b00] text-amber-300 flex items-center justify-center shadow-xs">
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+            </div>
           </div>
-        </Link>
+        </button>
       </div>
     </div>
   )

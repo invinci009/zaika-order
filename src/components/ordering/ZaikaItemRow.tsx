@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Minus } from 'lucide-react'
-import { getFoodImage } from '@/lib/ordering/foodImages'
+import { Plus, Minus, Check } from 'lucide-react'
 
 interface ZaikaItemRowProps {
   id: string
@@ -21,6 +20,15 @@ interface ZaikaItemRowProps {
   onOpenDetail?: () => void
 }
 
+/**
+ * ZaikaItemRow
+ * Fine-dining, typographic menu row styled after PM Zaika's physical brochure:
+ * - Clean dish title with delicate veg/non-veg emblem
+ * - Dotted leader line connecting dish name to price
+ * - Elegant warm champagne gold numerals
+ * - Discreet, tasteful gold plus interaction (no noisy discount badges)
+ * - Compact gold capsule stepper when item is added to cart
+ */
 export function ZaikaItemRow({
   name,
   description,
@@ -31,7 +39,6 @@ export function ZaikaItemRow({
   quantity,
   hasOptions,
   isLast,
-  categoryId,
   onAdd,
   onDecrement,
   onOpenDetail,
@@ -43,22 +50,19 @@ export function ZaikaItemRow({
   const isEgg = veg === 'egg'
   const isNonVeg = veg === 'nonveg' || (!isVeg && !isEgg && veg !== 'none')
 
-  // Resolve image if item doesn't already have one
-  const resolvedImage = imageUrl || getFoodImage(name, categoryId)
-
   const handleAdd = () => {
     if (!available) return
     onAdd()
     setJustAdded(true)
-    setTimeout(() => setJustAdded(false), 800)
+    setTimeout(() => setJustAdded(false), 600)
   }
 
   return (
     <div
-      className={`group py-3 sm:py-3.5 px-3 rounded-xl transition-all cursor-pointer ${
-        !isLast ? 'border-b border-white/[0.06]' : ''
-      } ${available ? 'hover:bg-white/[0.04]' : 'opacity-40 cursor-not-allowed'} ${
-        quantity > 0 ? 'bg-[#f5a623]/[0.06]' : ''
+      className={`group py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl transition-all cursor-pointer select-none ${
+        !isLast ? 'border-b border-white/[0.04]' : ''
+      } ${available ? 'hover:bg-white/[0.03]' : 'opacity-40 cursor-not-allowed'} ${
+        quantity > 0 ? 'bg-amber-400/[0.05]' : ''
       }`}
       onClick={() => {
         if (!available) return
@@ -69,117 +73,93 @@ export function ZaikaItemRow({
         }
       }}
     >
-      <div className="flex items-center justify-between gap-3 sm:gap-4">
-        {/* Left Side: Diet Badge + Dish Name + Description */}
-        <div className="flex-1 min-w-0 pr-1">
-          <div className="flex items-start gap-2.5">
-            {/* Fine-dining Veg / Non-Veg badge */}
+      <div className="flex items-center justify-between gap-3">
+        {/* Left Side: Diet Indicator + Name + Description */}
+        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+          {/* Refined Fine-Dining Veg / Non-Veg emblem */}
+          <span
+            className="mt-1 w-3.5 h-3.5 rounded-xs border flex items-center justify-center shrink-0"
+            style={{
+              borderColor: isVeg ? '#4caf50' : isEgg ? '#ff9800' : '#e53935',
+            }}
+            title={isVeg ? 'Vegetarian' : isEgg ? 'Egg' : 'Non-Vegetarian'}
+          >
             <span
-              className="mt-0.5 w-3.5 h-3.5 rounded-xs border flex items-center justify-center shrink-0"
+              className="w-1.5 h-1.5 rounded-full"
               style={{
-                borderColor: isVeg ? '#4caf50' : isEgg ? '#ff9800' : '#e53935',
+                backgroundColor: isVeg ? '#4caf50' : isEgg ? '#ff9800' : '#e53935',
               }}
-              title={isVeg ? 'Vegetarian' : isEgg ? 'Egg' : 'Non-Vegetarian'}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{
-                  backgroundColor: isVeg ? '#4caf50' : isEgg ? '#ff9800' : '#e53935',
-                }}
-              />
-            </span>
+            />
+          </span>
 
-            {/* Dish Name (Full title, never cramped or truncated) */}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-[14px] sm:text-[15px] font-semibold text-[#f2f0f7] group-hover:text-white transition-colors leading-snug">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-[14px] sm:text-[15px] font-medium text-[#f6f2ea] group-hover:text-[#ffe49e] transition-colors leading-snug tracking-wide">
                 {name}
               </h3>
-
-              {/* Clean description on its own line with breathing room */}
-              {description && (
-                <p className="text-xs text-[#a09bb0] mt-1 leading-relaxed line-clamp-2">
-                  {description}
-                </p>
-              )}
-
-              {/* Mobile price display when an image is present */}
-              <div className="flex items-center gap-2 mt-1.5 sm:hidden">
-                <span className="text-sm font-bold text-[#f5be51] font-mono">
-                  ₹{price}
-                </span>
-                {quantity > 0 && (
-                  <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-[#f5a623]/20 text-[#fbd578]">
-                    {quantity} in cart
-                  </span>
-                )}
-              </div>
             </div>
+
+            {description && (
+              <p className="text-[11px] sm:text-xs text-amber-200/50 mt-0.5 leading-relaxed line-clamp-1 sm:line-clamp-2">
+                {description}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Right Side: Food Image Thumbnail + Price & Add Button */}
+        {/* Dotted Leader Line (Classic high-end restaurant menu detail) */}
+        <div className="hidden sm:block flex-1 border-b border-dotted border-amber-500/20 mx-2 self-center" />
+
+        {/* Right Side: Price + Subtle Gold Add / Stepper */}
         <div
-          className="flex items-center gap-3 sm:gap-4 shrink-0"
+          className="flex items-center gap-3 shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Price (Visible on larger screens or beside image) */}
-          <span className="hidden sm:inline text-sm sm:text-base font-bold text-[#f5be51] font-mono tracking-tight text-right min-w-[50px]">
+          {/* Price in warm champagne gold */}
+          <span className="text-[14px] sm:text-[15px] font-bold text-[#f7d77a] font-serif tracking-tight text-right min-w-[45px]">
             ₹{price}
           </span>
 
-          {/* Delicious Food Image Thumbnail (Appetizing visual presentation) */}
-          {resolvedImage && (
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-[#d4a234]/25 shadow-md bg-[#1f1728]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={resolvedImage}
-                alt={name}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.parentElement!.style.display = 'none'
-                }}
-              />
-            </div>
-          )}
-
-          {/* Interactive ADD / Quantity Button */}
+          {/* Understated, Classy Interaction Control */}
           {available && (
             quantity === 0 ? (
               <button
                 type="button"
                 onClick={handleAdd}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black tracking-wider uppercase transition-all shadow-sm active:scale-95 flex items-center gap-1 ${
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border transition-all duration-200 flex items-center justify-center cursor-pointer shadow-xs active:scale-90 ${
                   justAdded
-                    ? 'scale-105 bg-[#f5a623] text-[#1a1100]'
-                    : 'bg-[#d4a234]/15 hover:bg-[#f5a623] text-[#f5be51] hover:text-[#1a1100] border border-[#d4a234]/40'
+                    ? 'bg-amber-400 text-[#120816] border-amber-300 scale-105'
+                    : 'border-amber-400/35 text-amber-300/90 hover:bg-amber-400 hover:text-[#120816] hover:border-amber-400 hover:shadow-amber-400/20 bg-amber-400/[0.04]'
                 }`}
                 title={`Add ${name}`}
                 aria-label={`Add ${name}`}
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>ADD</span>
+                {justAdded ? (
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                ) : (
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                )}
               </button>
             ) : (
-              <div className="flex items-center rounded-lg overflow-hidden border border-[#f5a623]/60 bg-[#1e1526] shadow-md">
+              <div className="flex items-center rounded-full bg-gradient-to-r from-[#d4af37] to-[#f6d77a] text-[#120816] shadow-md shadow-amber-500/20 px-1 py-0.5">
                 <button
                   type="button"
                   onClick={onDecrement}
-                  className="w-7 h-7 flex items-center justify-center text-[#f5a623] hover:bg-[#f5a623]/20 active:scale-90 transition-all"
+                  className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10 active:scale-90 transition-all cursor-pointer"
                   aria-label="Decrease quantity"
                 >
-                  <Minus className="w-3 h-3" />
+                  <Minus className="w-3 h-3 stroke-[2.5]" />
                 </button>
-                <span className="w-6 text-center text-xs font-black text-[#fbd578]">
+                <span className="w-5 text-center text-xs font-black tracking-tight">
                   {quantity}
                 </span>
                 <button
                   type="button"
                   onClick={handleAdd}
-                  className="w-7 h-7 flex items-center justify-center text-[#f5a623] hover:bg-[#f5a623]/20 active:scale-90 transition-all"
+                  className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10 active:scale-90 transition-all cursor-pointer"
                   aria-label="Increase quantity"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3 h-3 stroke-[2.5]" />
                 </button>
               </div>
             )

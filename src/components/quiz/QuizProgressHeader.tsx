@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, Utensils, Phone } from 'lucide-react'
+import { ArrowLeft, Phone } from 'lucide-react'
 
 interface QuizProgressHeaderProps {
   restaurantName: string
@@ -19,7 +19,7 @@ export default function QuizProgressHeader({
   onBack,
   canGoBack,
 }: QuizProgressHeaderProps) {
-  const progressPercent = Math.round(((currentStep) / totalSteps) * 100)
+  const progressPercent = Math.round((currentStep / totalSteps) * 100)
 
   return (
     <div className="w-full max-w-lg mx-auto space-y-3">
@@ -30,7 +30,7 @@ export default function QuizProgressHeader({
             <button
               type="button"
               onClick={onBack}
-              className="p-2 -ml-2 rounded-xl text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+              className="p-2 -ml-2 rounded-xl text-amber-200/70 hover:text-amber-100 hover:bg-white/10 transition-colors cursor-pointer"
               aria-label="Previous question"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -38,47 +38,52 @@ export default function QuizProgressHeader({
           )}
 
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white text-white flex items-center justify-center font-bold text-xs overflow-hidden shrink-0 shadow-sm border border-emerald-300">
+            <div className="w-9 h-9 rounded-full bg-[#1b1028] flex items-center justify-center overflow-hidden shrink-0 shadow-md border border-amber-400/60 p-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={logoUrl || '/logo.png'}
+                src="/logo.svg"
                 alt={restaurantName}
                 className="w-full h-full object-contain"
                 onError={(e) => {
-                  e.currentTarget.src = '/logo.png'
+                  e.currentTarget.src = logoUrl || '/logo.png'
                 }}
               />
             </div>
             <div>
-              <span className="text-sm font-onstage font-bruce font-black tracking-wider uppercase text-stone-900 truncate block max-w-[180px] sm:max-w-xs leading-none">
-                {restaurantName || 'Biryani Badshah'}
+              <span className="text-sm font-heading font-black tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37] truncate block max-w-[180px] sm:max-w-xs leading-none">
+                {restaurantName || 'PM Zaika Restaurant'}
               </span>
-              <span className="font-script text-[11px] text-emerald-800 font-normal block leading-tight mt-0.5">A Family Restaurant</span>
+              <span className="font-script text-[11px] text-amber-200/80 font-normal block leading-tight mt-0.5">
+                Indian ‖ Chinese ‖ Tandoor ‖ Rolls
+              </span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <a
-            href="tel:7763949496"
-            className="flex items-center gap-1 text-[11px] font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-full border border-amber-300 transition-colors shadow-2xs"
-            title="Helpline: +91 77639 49496"
+            href="tel:7488260572"
+            className="flex items-center gap-1 text-[11px] font-bold text-amber-200 bg-amber-400/10 hover:bg-amber-400/20 px-2.5 py-1 rounded-full border border-amber-400/30 transition-colors shadow-xs"
+            title="Helpline: +91 74882 60572"
           >
-            <Phone className="w-3 h-3 text-amber-700" />
+            <Phone className="w-3 h-3 text-amber-400" />
             <span className="hidden sm:inline">Call:</span>
-            <span>77639 49496</span>
+            <span>74882 60572</span>
           </a>
-          <div className="text-xs font-semibold text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200">
-            Step <span className="text-amber-800 font-bold">{currentStep}</span> of {totalSteps}
+          <div className="text-xs font-semibold text-amber-200/70 bg-[#170e24] px-2.5 py-1 rounded-full border border-amber-500/25">
+            Step <span className="text-amber-400 font-bold">{currentStep}</span> of {totalSteps}
           </div>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full h-2 bg-stone-200/90 rounded-full overflow-hidden p-0.5">
+      <div className="w-full h-2 bg-[#201230] rounded-full overflow-hidden p-0.5 border border-amber-500/20">
         <div
-          className="h-full bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 rounded-full transition-all duration-300 ease-out shadow-xs"
-          style={{ width: `${progressPercent}%` }}
+          className="h-full rounded-full transition-all duration-300 ease-out shadow-xs"
+          style={{
+            width: `${progressPercent}%`,
+            background: 'linear-gradient(90deg, #bf8d2c 0%, #f6d47b 50%, #d4af37 100%)',
+          }}
         />
       </div>
     </div>

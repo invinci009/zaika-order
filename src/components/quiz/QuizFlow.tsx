@@ -67,7 +67,7 @@ export default function QuizFlow({
 
   const handleCopyPhone = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const phoneToCopy = helplinePhone || '77639 49496'
+    const phoneToCopy = helplinePhone || '74882 60572'
     if (navigator.clipboard && phoneToCopy) {
       navigator.clipboard.writeText(phoneToCopy)
       setPhoneCopied(true)
@@ -283,66 +283,66 @@ export default function QuizFlow({
       <>
         <OfflineBanner hasSyncError={hasSyncError} onRetry={handleRetry} />
         <main className="relative z-10 w-full max-w-md mx-auto my-auto py-2 sm:py-6">
-          <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white border border-stone-200 shadow-[0_20px_60px_-15px_rgba(180,83,9,0.08),0_4px_20px_rgba(0,0,0,0.03)] space-y-5 sm:space-y-6 text-center animate-in fade-in zoom-in-95 duration-300">
-            {/* Crest / Monogram Icon */}
+          <div className="p-5 sm:p-8 rounded-3xl bg-[#170e24]/95 backdrop-blur-xl border border-amber-500/30 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8),0_0_35px_rgba(212,175,55,0.08)] space-y-5 sm:space-y-6 text-center animate-in fade-in zoom-in-95 duration-300 text-[#f5f0e8]">
+            {/* PM Zaika Royal Crest */}
             <div className="relative mx-auto w-20 h-20">
-              <div className="w-20 h-20 mx-auto rounded-3xl bg-white text-white flex items-center justify-center shadow-xl shadow-emerald-600/25 overflow-hidden border-2 border-emerald-300">
+              <div className="w-20 h-20 mx-auto rounded-full bg-[#1b1028] text-white flex items-center justify-center shadow-xl shadow-amber-500/20 overflow-hidden border-2 border-amber-400/60 p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={logoUrl || '/logo.png'}
+                  src="/logo.svg"
                   alt={restaurantName}
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    e.currentTarget.src = '/logo.png'
+                    e.currentTarget.src = logoUrl || '/logo.png'
                   }}
                 />
               </div>
-              <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-white shadow-xs border border-stone-200 text-amber-600">
-                <Sparkles className="w-4 h-4 fill-amber-400" />
+              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-300 shadow-md text-[#140b00] border border-amber-200">
+                <Sparkles className="w-3.5 h-3.5 fill-black" />
               </div>
             </div>
 
             {/* Restaurant Name & Subtitle */}
             <div className="space-y-1.5">
-              <h1 className="text-2xl sm:text-3xl font-onstage font-bruce font-black tracking-wider uppercase text-stone-900">
-                {restaurantName || 'Biryani Badshah'}
+              <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37]">
+                {restaurantName || 'PM Zaika Restaurant'}
               </h1>
-              <p className="font-script text-lg text-emerald-800 font-normal">
-                A Family Restaurant
+              <p className="font-script text-lg text-amber-200/90 font-normal">
+                Indian ‖ Chinese ‖ Tandoor ‖ Rolls
               </p>
-              <div className="pt-1 flex items-center justify-center gap-2 text-xs text-stone-500">
-                <span className="flex items-center gap-1 font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
-                  <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" /> 4.5 • Royal Dining Experience
+              <div className="pt-1 flex items-center justify-center gap-2 text-xs">
+                <span className="flex items-center gap-1 font-semibold text-amber-300 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> 4.8 • Royal Dining Experience
                 </span>
-                <span>•</span>
-                <span>Phulwari Sharif, Patna</span>
+                <span className="text-amber-500/50">•</span>
+                <span className="text-amber-200/70">Phulwari Sharif, Patna</span>
               </div>
             </div>
 
             {/* Prominent Customer Contact Box (Main Phone Display for Customers) */}
-            <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-amber-100/60 to-yellow-50 border border-amber-300 shadow-sm space-y-2 text-left">
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-400/10 to-amber-500/15 border border-amber-500/35 shadow-sm space-y-2 text-left">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold tracking-wider text-amber-950 uppercase flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
-                  Restaurant Contact & Orders
+                <span className="text-[10px] font-extrabold tracking-wider text-amber-300 uppercase flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                  Restaurant Contact &amp; Orders
                 </span>
-                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full border border-emerald-300/70">
+                <span className="text-[10px] font-bold text-amber-950 bg-amber-400 px-2 py-0.5 rounded-full shadow-xs">
                   Main Helpline
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-2 bg-white/95 p-2 sm:p-2.5 rounded-xl border border-amber-200 shadow-xs">
+              <div className="flex items-center justify-between gap-2 bg-[#12081a]/95 p-2 sm:p-2.5 rounded-xl border border-amber-500/25 shadow-inner">
                 <a
-                  href={`tel:${(helplinePhone || '7763949496').replace(/\s+/g, '')}`}
-                  className="flex items-center gap-2.5 text-stone-900 hover:text-amber-800 transition-colors flex-1"
+                  href={`tel:7488260572`}
+                  className="flex items-center gap-2.5 text-[#f5f0e8] hover:text-amber-300 transition-colors flex-1"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-amber-600/30">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 text-[#120816] flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/30 font-bold">
                     <Phone className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-base sm:text-lg font-black tracking-wide text-stone-900 block leading-tight">
-                      +91 77639 49496
+                    <span className="text-base sm:text-lg font-black tracking-wide text-amber-100 block leading-tight">
+                      +91 74882 60572
                     </span>
-                    <span className="text-[10px] text-amber-700 font-semibold block">
+                    <span className="text-[10px] text-amber-400/80 font-semibold block">
                       Tap to call restaurant directly
                     </span>
                   </div>
@@ -350,63 +350,63 @@ export default function QuizFlow({
                 <button
                   type="button"
                   onClick={handleCopyPhone}
-                  className="px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border border-stone-200"
+                  className="px-2.5 py-1.5 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border border-amber-400/30"
                   title="Copy number"
                 >
                   {phoneCopied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span className="text-emerald-700 font-bold text-[11px]">Copied</span>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400 font-bold text-[11px]">Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-stone-500" />
+                      <Copy className="w-3.5 h-3.5 text-amber-300" />
                       <span className="text-[11px]">Copy</span>
                     </>
                   )}
                 </button>
               </div>
               {/* Helpline Note */}
-              <div className="flex items-center justify-between text-[10px] text-stone-600 px-1 pt-0.5">
-                <span className="text-stone-500">Helpline:</span>
+              <div className="flex items-center justify-between text-[10px] text-amber-200/70 px-1 pt-0.5">
+                <span className="text-amber-200/50">Helpline:</span>
                 <div className="flex items-center gap-2">
-                  <a href="tel:7763949496" className="hover:text-amber-800 font-semibold hover:underline">
-                    77639 49496
+                  <a href="tel:9525748843" className="hover:text-amber-300 font-semibold hover:underline">
+                    95257 48843
                   </a>
                 </div>
               </div>
             </div>
 
             {/* Address Pill */}
-            <div className="p-3 rounded-2xl bg-stone-50/90 border border-stone-200/90 text-left space-y-0.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-stone-900">
-                <MapPin className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+            <div className="p-3 rounded-2xl bg-[#140b1e]/80 border border-amber-500/20 text-left space-y-0.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-200">
+                <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>Phulwari Rd, Near Shaheed Bhagat Singh Chowk</span>
               </div>
-              <p className="text-[11px] text-stone-600 pl-5 leading-relaxed">
+              <p className="text-[11px] text-amber-200/60 pl-5 leading-relaxed">
                 Birla Colony, Phulwari Sharif, Patna, Bihar 801505
               </p>
             </div>
 
             {/* Welcome Message */}
-            <p className="text-xs text-stone-600 leading-relaxed max-w-sm mx-auto">
+            <p className="text-xs text-amber-100/70 leading-relaxed max-w-sm mx-auto">
               {welcomeMessage}
             </p>
 
             {/* Features Row */}
-            <div className="flex items-center justify-center gap-4 py-2.5 border-y border-stone-100 text-xs text-stone-600">
+            <div className="flex items-center justify-center gap-4 py-2.5 border-y border-amber-500/20 text-xs text-amber-200/70">
               <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
                 <span className="font-medium">Takes ~30 sec</span>
               </div>
-              <div className="w-1 h-1 rounded-full bg-stone-300" />
+              <div className="w-1 h-1 rounded-full bg-amber-500/30" />
               <div className="flex items-center gap-1.5">
-                <MessageCircle className="w-3.5 h-3.5 text-amber-600" />
+                <MessageCircle className="w-3.5 h-3.5 text-amber-400" />
                 <span className="font-medium">5 Quick Questions</span>
               </div>
-              <div className="w-1 h-1 rounded-full bg-stone-300" />
+              <div className="w-1 h-1 rounded-full bg-amber-500/30" />
               <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 <span className="font-medium">Optional</span>
               </div>
             </div>
@@ -417,7 +417,10 @@ export default function QuizFlow({
                 type="button"
                 onClick={handleStart}
                 disabled={isStarting}
-                className="inline-flex items-center justify-center w-full h-12 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-700 hover:to-amber-700 text-white font-bold shadow-lg shadow-amber-600/25 group transition-all duration-200 cursor-pointer text-sm sm:text-base active:scale-[0.98] disabled:opacity-80"
+                className="inline-flex items-center justify-center w-full h-12 rounded-xl text-[#120816] font-black shadow-lg shadow-amber-500/25 group transition-all duration-200 cursor-pointer text-sm sm:text-base active:scale-[0.98] disabled:opacity-80"
+                style={{
+                  background: 'linear-gradient(90deg, #bf8d2c 0%, #f6d47b 35%, #eed48f 65%, #a6741b 100%)',
+                }}
               >
                 {isStarting ? (
                   <>
@@ -426,7 +429,7 @@ export default function QuizFlow({
                   </>
                 ) : (
                   <>
-                    <Star className="w-4 h-4 mr-2 fill-amber-300 text-amber-300" />
+                    <Star className="w-4 h-4 mr-2 fill-black text-black" />
                     Review &amp; Share Feedback
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </>
@@ -435,39 +438,39 @@ export default function QuizFlow({
 
               <Link
                 href={`/order/${slug}`}
-                className="inline-flex items-center justify-center w-full h-12 rounded-xl bg-amber-50 hover:bg-amber-100/90 border border-amber-300 text-amber-950 font-bold transition-all duration-200 cursor-pointer text-sm active:scale-[0.98] px-4"
+                className="inline-flex items-center justify-center w-full h-12 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-200 font-bold transition-all duration-200 cursor-pointer text-sm active:scale-[0.98] px-4"
               >
-                <Utensils className="w-4 h-4 mr-2 text-amber-700 shrink-0" />
+                <Utensils className="w-4 h-4 mr-2 text-amber-400 shrink-0" />
                 <span>Order Food through Table</span>
-                <ArrowRight className="w-4 h-4 ml-auto text-amber-700/60" />
+                <ArrowRight className="w-4 h-4 ml-auto text-amber-400/60" />
               </Link>
 
               {/* Direct Complaint & Admin Escalation Option */}
               <button
                 type="button"
                 onClick={() => setIsComplaintModalOpen(true)}
-                className="inline-flex items-center justify-between w-full p-3 rounded-xl bg-rose-50/70 hover:bg-rose-100/80 border border-rose-200/80 text-rose-950 transition-all duration-200 cursor-pointer text-left group active:scale-[0.98]"
+                className="inline-flex items-center justify-between w-full p-3 rounded-xl bg-rose-950/40 hover:bg-rose-950/60 border border-rose-500/30 text-rose-200 transition-all duration-200 cursor-pointer text-left group active:scale-[0.98]"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-rose-500/15 border border-rose-300/40 flex items-center justify-center text-rose-600 group-hover:bg-rose-500/25 transition-colors shrink-0">
-                    <AlertTriangle className="w-4 h-4 text-rose-600" />
+                  <div className="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-400 shrink-0">
+                    <AlertTriangle className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                    <div className="text-xs font-bold text-rose-200 flex items-center gap-1.5">
                       <span>Have a Complaint or Issue?</span>
-                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.2 rounded bg-rose-200/70 text-rose-800">
+                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-300">
                         Admin Direct
                       </span>
                     </div>
-                    <p className="text-[11px] text-rose-700/90 font-medium truncate">
+                    <p className="text-[11px] text-rose-300/80 font-medium truncate">
                       Call / Text admin directly or register a complaint
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-rose-500 group-hover:translate-x-1 transition-transform shrink-0" />
+                <ArrowRight className="w-4 h-4 text-rose-400 group-hover:translate-x-1 transition-transform shrink-0" />
               </button>
 
-              <p className="text-[11px] text-stone-400">
+              <p className="text-[11px] text-amber-200/40">
                 Seated at a dining table? Tap above to browse menu or rate your meal.
               </p>
             </div>
@@ -478,7 +481,7 @@ export default function QuizFlow({
           isOpen={isComplaintModalOpen}
           onClose={() => setIsComplaintModalOpen(false)}
           restaurantName={restaurantName}
-          helplinePhone={helplinePhone || '+91 77639 49496'}
+          helplinePhone={helplinePhone || '+91 74882 60572'}
           slug={slug}
         />
       </>
@@ -557,7 +560,7 @@ export default function QuizFlow({
         />
 
         <div className="my-auto py-3 sm:py-6">
-          <div className="relative p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-white border border-stone-200/90 shadow-[0_20px_50px_-15px_rgba(180,83,9,0.08),0_4px_16px_rgba(0,0,0,0.03)] overflow-hidden">
+          <div className="relative p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-[#170e24]/95 border border-amber-500/30 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.8),0_4px_16px_rgba(212,175,55,0.06)] overflow-hidden text-[#f5f0e8]">
             {/* Subtle warm accent glows */}
             <div className="absolute -top-24 -left-24 w-52 h-52 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-24 -right-24 w-52 h-52 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />

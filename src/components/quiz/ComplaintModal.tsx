@@ -37,8 +37,8 @@ const COMPLAINT_CATEGORIES = [
 export default function ComplaintModal({
   isOpen,
   onClose,
-  restaurantName = 'Biryani Badshah',
-  helplinePhone = '+91 77639 49496',
+  restaurantName = 'PM Zaika Restaurant',
+  helplinePhone = '+91 74882 60572',
   slug,
 }: ComplaintModalProps) {
   const [name, setName] = useState('')

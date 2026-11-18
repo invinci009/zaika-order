@@ -32,7 +32,8 @@ import { ZaikaCategorySection } from '@/components/ordering/ZaikaCategorySection
 import { ZaikaItemRow } from '@/components/ordering/ZaikaItemRow'
 import { ZaikaCartBar } from '@/components/ordering/ZaikaCartBar'
 import { ZaikaCategoryJump } from '@/components/ordering/ZaikaCategoryJump'
-import { SpecialMenuSection } from '@/components/ordering/SpecialMenuSection'
+import { ChefSignaturesShowcase } from '@/components/ordering/ChefSignaturesShowcase'
+import type { ChefSignatureItem } from '@/lib/ordering/foodImages'
 import { ALL_SPECIAL_ITEMS_MAP } from '@/lib/ordering/specialMenuData'
 
 function formatOrderDate(isoString: string): string {
@@ -409,6 +410,48 @@ export default function OrderMenuPage() {
     }
   }
 
+  const handleAddSignature = (dish: ChefSignatureItem) => {
+    const dishNameNorm = dish.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+    const matched = items.find((m) => {
+      const mNorm = m.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+      return mNorm.includes(dishNameNorm) || dishNameNorm.includes(mNorm)
+    })
+    if (matched) {
+      handleQuickIncrement(matched)
+    } else {
+      addLine(dish.id, [])
+    }
+  }
+
+  const handleDecrementSignature = (dishId: string, dishName: string) => {
+    const dishNameNorm = dishName.toLowerCase().replace(/[^a-z0-9]/g, '')
+    const matched = items.find((m) => {
+      const mNorm = m.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+      return mNorm.includes(dishNameNorm) || dishNameNorm.includes(mNorm)
+    })
+    if (matched) {
+      handleQuickDecrement(matched.id)
+    } else {
+      const line = cart.find((l) => l.itemId === dishId)
+      if (line) {
+        changeQty(line.key, -1)
+      }
+    }
+  }
+
+  const getSignatureQty = (dishId: string, dishName: string): number => {
+    const dishNameNorm = dishName.toLowerCase().replace(/[^a-z0-9]/g, '')
+    const matched = items.find((m) => {
+      const mNorm = m.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+      return mNorm.includes(dishNameNorm) || dishNameNorm.includes(mNorm)
+    })
+    if (matched) {
+      return getItemQtyInCart(matched.id)
+    }
+    const line = cart.find((l) => l.itemId === dishId)
+    return line ? line.quantity : 0
+  }
+
   const itemById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items])
 
   const cartCount = cart.reduce((s, l) => s + l.quantity, 0)
@@ -646,10 +689,10 @@ export default function OrderMenuPage() {
       <MandalaBackground />
 
       {/* Sticky Header with PM Zaika Identity */}
-      <header className="sticky top-0 z-30 backdrop-blur-md border-b border-[rgba(245,166,35,0.2)] bg-[#181022]/90 px-3 py-2.5 space-y-2.5 shadow-lg">
+      <header className="sticky top-0 z-30 backdrop-blur-md border-b border-amber-500/25 bg-[#170e24]/95 px-3 py-2.5 space-y-2.5 shadow-xl">
         <div className="flex items-center gap-2.5 max-w-2xl mx-auto">
           {/* PM Zaika Logo Emblem */}
-          <div className="w-10 h-10 rounded-full border border-[#d4a234] shadow-xs shrink-0 bg-[#1f2041] flex items-center justify-center p-1">
+          <div className="w-10 h-10 rounded-full border-2 border-amber-400/60 shadow-md shrink-0 bg-[#1b1028] flex items-center justify-center p-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.svg"
@@ -662,26 +705,26 @@ export default function OrderMenuPage() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="font-heading font-black text-sm sm:text-base truncate flex items-center gap-1.5 leading-tight uppercase tracking-wider text-gold-gradient">
+            <h1 className="font-heading font-black text-sm sm:text-base truncate flex items-center gap-1.5 leading-tight uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37]">
               <span>{restaurantName || 'PM ZAIKA RESTAURANT'}</span>
             </h1>
-            <span className="font-script text-[11px] text-[#f0c14b] font-normal leading-none block -mt-0.5">
+            <span className="font-script text-[11px] text-amber-200/90 font-normal leading-none block -mt-0.5">
               Indian ‖ Chinese ‖ Tandoor ‖ Rolls
             </span>
             {token ? (
-              <p className="text-[11px] font-semibold text-[#f0c14b] flex items-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#4caf50] inline-block" />
+              <p className="text-[11px] font-semibold text-amber-300 flex items-center gap-1 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
                 {formatTableDisplay(tableLabel)} • Dine-in
               </p>
             ) : (
               <button
                 type="button"
                 onClick={() => setTableModalOpen(true)}
-                className="mt-0.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#d4a234]/15 hover:bg-[#d4a234]/25 border border-[#d4a234]/40 text-[11px] font-bold text-[#f0c14b] cursor-pointer transition-all shadow-xs active:scale-95"
+                className="mt-0.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-[11px] font-bold text-amber-200 cursor-pointer transition-all shadow-xs active:scale-95"
               >
-                <MapPin className="w-3 h-3 text-[#d4a234] shrink-0" />
+                <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
                 <span>{tableLabel ? formatTableDisplay(tableLabel) : 'Choose Table'}</span>
-                <ChevronDown className="w-3 h-3 text-[#d4a234] shrink-0" />
+                <ChevronDown className="w-3 h-3 text-amber-400 shrink-0" />
               </button>
             )}
           </div>
@@ -689,7 +732,7 @@ export default function OrderMenuPage() {
           {contactPhone && (
             <a
               href={`tel:${contactPhone}`}
-              className="p-2 rounded-xl bg-[#1f2041] text-[#f0c14b] border border-[#d4a234]/30 hover:bg-[#252550] transition-colors"
+              className="p-2 rounded-xl bg-white/5 text-amber-300 border border-amber-400/30 hover:bg-white/10 transition-colors"
               aria-label="Call restaurant"
             >
               <Phone className="w-4 h-4" />
@@ -699,11 +742,11 @@ export default function OrderMenuPage() {
           <button
             type="button"
             onClick={() => setLoyaltyModalOpen(true)}
-            className="px-2.5 py-1.5 rounded-xl bg-[#d4a234]/15 text-[#f0c14b] border border-[#d4a234]/40 hover:bg-[#d4a234]/25 transition-all flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
+            className="px-2.5 py-1.5 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
             aria-label="Loyalty and rewards"
             title="VIP Club"
           >
-            <Crown className="w-3.5 h-3.5 text-[#d4a234] fill-[#d4a234]/30 shrink-0" />
+            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30 shrink-0" />
             {loyaltyPoints === null ? (
               <span className="text-[11px] font-black tracking-tight">VIP</span>
             ) : (
@@ -717,7 +760,7 @@ export default function OrderMenuPage() {
           <button
             type="button"
             onClick={() => setServiceModalOpen(true)}
-            className="p-2 rounded-xl bg-[#d4a234]/15 text-[#f0c14b] border border-[#d4a234]/40 hover:bg-[#d4a234]/25 transition-colors flex items-center gap-1 cursor-pointer"
+            className="p-2 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/30 hover:bg-amber-400/20 transition-colors flex items-center gap-1 cursor-pointer"
             aria-label="Call staff"
             title="Call staff"
           >
@@ -728,18 +771,18 @@ export default function OrderMenuPage() {
 
         {/* Search Bar */}
         <div className="relative max-w-2xl mx-auto">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0b8]" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-amber-300/60" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search soup, paneer, chicken, biryani, noodles…"
-            className="w-full h-10 pl-9 pr-9 rounded-xl bg-[#1f2041]/90 border border-[rgba(212,162,52,0.3)] text-xs focus:outline-none focus:border-[#d4a234] focus:ring-2 focus:ring-[#d4a234]/20 transition-all text-[#f5f5f0] placeholder:text-[#6b6b88]"
+            placeholder="Search soup, paneer, chicken, biryani, tandoori…"
+            className="w-full h-10 pl-9 pr-9 rounded-xl bg-[#140b1e]/90 border border-amber-500/30 text-xs focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all text-[#f7f2ea] placeholder:text-amber-200/40 shadow-inner"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#a0a0b8] hover:text-[#f5f5f0]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-amber-300/70 hover:text-white"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -751,10 +794,10 @@ export default function OrderMenuPage() {
           <button
             type="button"
             onClick={() => setDietFilter('all')}
-            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 shadow-xs ${
               dietFilter === 'all'
-                ? 'bg-[#d4a234] text-[#0f0f23] shadow-md font-black'
-                : 'bg-[#1f2041] text-[#a0a0b8] hover:text-[#f5f5f0] border border-[rgba(212,162,52,0.2)]'
+                ? 'bg-gradient-to-r from-[#d4af37] to-[#f6d77a] text-[#120816] font-black shadow-md shadow-amber-500/20'
+                : 'bg-[#180e24]/80 text-amber-200/70 hover:text-amber-100 border border-amber-500/25'
             }`}
           >
             <span>All Dishes</span>
@@ -762,37 +805,37 @@ export default function OrderMenuPage() {
           <button
             type="button"
             onClick={() => setDietFilter('veg')}
-            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shadow-xs ${
               dietFilter === 'veg'
-                ? 'bg-[#4caf50] text-[#0f0f23] shadow-md font-black'
-                : 'bg-[#1f2041] text-[#4caf50] border border-[#4caf50]/40'
+                ? 'bg-emerald-600 text-white font-black shadow-md shadow-emerald-600/30'
+                : 'bg-[#180e24]/80 text-emerald-400 border border-emerald-500/35 hover:bg-emerald-950/40'
             }`}
           >
-            <span className="diet-dot diet-dot-veg" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             <span>Pure Veg</span>
           </button>
           <button
             type="button"
             onClick={() => setDietFilter('nonveg')}
-            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shadow-xs ${
               dietFilter === 'nonveg'
-                ? 'bg-[#e53935] text-[#f5f5f0] shadow-md font-black'
-                : 'bg-[#1f2041] text-[#e53935] border border-[#e53935]/40'
+                ? 'bg-rose-700 text-white font-black shadow-md shadow-rose-700/30'
+                : 'bg-[#180e24]/80 text-rose-400 border border-rose-500/35 hover:bg-rose-950/40'
             }`}
           >
-            <span className="diet-dot diet-dot-nonveg" />
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
             <span>Non-Veg</span>
           </button>
           <button
             type="button"
             onClick={() => setDietFilter('bestsellers')}
-            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 shadow-xs ${
               dietFilter === 'bestsellers'
-                ? 'bg-[#f0c14b] text-[#0f0f23] shadow-md font-black'
-                : 'bg-[#1f2041] text-[#f0c14b] border border-[#f0c14b]/40'
+                ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-[#120816] font-black shadow-md shadow-amber-400/25'
+                : 'bg-[#180e24]/80 text-amber-300 border border-amber-400/35 hover:bg-amber-950/40'
             }`}
           >
-            <Star className="w-3 h-3 fill-[#f0c14b] text-[#f0c14b]" />
+            <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
             <span>Specials</span>
           </button>
         </div>
@@ -800,8 +843,8 @@ export default function OrderMenuPage() {
 
       {/* Staff Toast Message */}
       {staffMsg && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-40 px-5 py-2.5 rounded-full bg-[#1f2041] text-[#f0c14b] text-xs font-bold shadow-2xl border border-[#d4a234]/50 animate-in fade-in slide-in-from-top-3 duration-200 flex items-center gap-2">
-          <BellRing className="w-4 h-4 text-[#d4a234]" />
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-40 px-5 py-2.5 rounded-full bg-[#180e24] text-amber-300 text-xs font-bold shadow-2xl border border-amber-500/50 animate-in fade-in slide-in-from-top-3 duration-200 flex items-center gap-2">
+          <BellRing className="w-4 h-4 text-amber-400" />
           <span>{staffMsg}</span>
         </div>
       )}
@@ -810,20 +853,20 @@ export default function OrderMenuPage() {
       <main className="max-w-2xl mx-auto px-3 py-4 space-y-2 relative z-10">
         {/* Active Dining Session Banner if customer already placed an order */}
         {activeSession && (
-          <div className="p-3.5 rounded-2xl bg-[#1f2041]/90 border border-[#d4a234]/40 text-left space-y-1.5 shadow-md mb-4">
+          <div className="p-3.5 rounded-2xl bg-[#180e24]/90 border border-amber-500/40 text-left space-y-1.5 shadow-md mb-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-[#f0c14b] flex items-center gap-1.5">
+              <span className="text-xs font-black text-amber-300 flex items-center gap-1.5">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4caf50] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4caf50]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                 </span>
                 <span>Active Dine-in Order at {formatTableDisplay(activeSession.tableLabel)}</span>
               </span>
-              <span className="text-[10px] font-extrabold uppercase bg-[#4caf50]/20 text-[#4caf50] border border-[#4caf50]/40 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full">
                 Cooking
               </span>
             </div>
-            <p className="text-[11px] text-[#a0a0b8]">
+            <p className="text-[11px] text-amber-200/70">
               Your order has been sent to the kitchen. You can track live status or add more dishes below.
             </p>
             <div className="pt-0.5">
@@ -831,7 +874,7 @@ export default function OrderMenuPage() {
                 href={`/order/${slug}/confirmation/${activeSession.orderId}?accessToken=${encodeURIComponent(
                   activeSession.accessToken || ''
                 )}`}
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#f0c14b] hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:underline"
               >
                 <span>Track Live Order &amp; Kitchen Status →</span>
               </Link>
@@ -839,18 +882,27 @@ export default function OrderMenuPage() {
           </div>
         )}
 
+        {/* Curated Chef's Royal Signatures Showcase (Appetizing photo cards) */}
+        {!search && dietFilter === 'all' && (
+          <ChefSignaturesShowcase
+            getItemQty={getSignatureQty}
+            onAdd={handleAddSignature}
+            onDecrement={handleDecrementSignature}
+          />
+        )}
+
         {/* Empty state when search yields no matches */}
         {categorizedSections.length === 0 && (
-          <div className="p-10 text-center text-sm text-[#a0a0b8] bg-[#1f2041]/70 rounded-2xl border border-[rgba(212,162,52,0.2)] space-y-2 my-6">
-            <Search className="w-8 h-8 mx-auto text-[#d4a234]/50" />
-            <p className="font-semibold text-[#f5f5f0]">No dishes match your search.</p>
+          <div className="p-10 text-center text-sm text-amber-200/70 bg-[#170e24]/90 rounded-2xl border border-amber-500/25 space-y-2 my-6">
+            <Search className="w-8 h-8 mx-auto text-amber-400/50" />
+            <p className="font-semibold text-[#f5f0e8]">No dishes match your search.</p>
             <button
               type="button"
               onClick={() => {
                 setSearch('')
                 setDietFilter('all')
               }}
-              className="text-xs text-[#f0c14b] font-bold hover:underline"
+              className="text-xs text-amber-300 font-bold hover:underline"
             >
               Clear search &amp; show full menu
             </button>
@@ -892,29 +944,27 @@ export default function OrderMenuPage() {
 
         {/* Subtle Guest Feedback / Google Review Card */}
         <div className="pt-4 pb-6">
-          <a
-            href={googleReviewUrl || (reviewSlug ? `/r/${reviewSlug}` : `/r/${slug}`)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block p-3.5 rounded-2xl bg-[#1f2041]/80 border border-[rgba(212,162,52,0.3)] hover:border-[#d4a234] text-[#f5f5f0] transition-all shadow-md"
+          <Link
+            href={reviewSlug ? `/r/${reviewSlug}` : `/r/${slug}`}
+            className="block p-3.5 rounded-2xl bg-[#170e24]/90 border border-amber-500/30 hover:border-amber-400 text-[#f5f0e8] transition-all shadow-md"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#d4a234]/15 border border-[#d4a234]/30 text-[#d4a234] flex items-center justify-center shrink-0">
-                  <Star className="w-4 h-4 fill-[#d4a234] text-[#d4a234]" />
+                <div className="w-8 h-8 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-300 flex items-center justify-center shrink-0">
+                  <Star className="w-4 h-4 fill-amber-300 text-amber-300" />
                 </div>
                 <div className="text-left">
-                  <p className="text-xs font-black text-[#f5f5f0]">Enjoying your food at PM Zaika?</p>
-                  <p className="text-[11px] text-[#a0a0b8]">Rate your experience &amp; share feedback</p>
+                  <p className="text-xs font-black text-amber-100">Enjoying your dining at PM Zaika?</p>
+                  <p className="text-[11px] text-amber-200/60">Rate your experience &amp; share feedback</p>
                 </div>
               </div>
-              <div className="flex items-center gap-0.5 text-[#d4a234] shrink-0">
+              <div className="flex items-center gap-0.5 text-amber-300 shrink-0">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 fill-[#d4a234]" />
+                  <Star key={i} className="w-3 h-3 fill-amber-300" />
                 ))}
               </div>
             </div>
-          </a>
+          </Link>
         </div>
       </main>
 
@@ -940,26 +990,26 @@ export default function OrderMenuPage() {
           <div
             className="relative z-10 w-full max-w-lg max-h-[85vh] rounded-t-3xl sm:rounded-3xl p-5 overflow-hidden flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-200"
             style={{
-              background: 'linear-gradient(180deg, #1f2041 0%, #16213e 100%)',
-              border: '1px solid rgba(212, 162, 52, 0.35)',
-              color: '#f5f5f0',
+              background: 'linear-gradient(180deg, #1b0f2a 0%, #12081a 100%)',
+              border: '1px solid rgba(212, 175, 55, 0.4)',
+              color: '#f5f0e8',
             }}
           >
             {/* Drawer Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-[rgba(212,162,52,0.2)]">
+            <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
               <div>
-                <h3 className="text-base font-black flex items-center gap-2 text-[#f0c14b] uppercase tracking-wide">
-                  <ShoppingBag className="w-4 h-4 text-[#d4a234]" />
+                <h3 className="text-base font-black flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37] uppercase tracking-wide">
+                  <ShoppingBag className="w-4 h-4 text-amber-400" />
                   <span>Your Order Tray</span>
                 </h3>
-                <p className="text-[11px] text-[#a0a0b8]">
+                <p className="text-[11px] text-amber-200/60">
                   {tableLabel ? `${formatTableDisplay(tableLabel)} • Dine-in` : 'Dine-in Order'}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setCartOpen(false)}
-                className="p-2 rounded-xl bg-[#252550] hover:bg-[#2e2e60] transition-colors text-[#a0a0b8] hover:text-[#f5f5f0]"
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/15 transition-colors text-amber-200 cursor-pointer"
                 aria-label="Close cart"
               >
                 <X className="w-5 h-5" />
@@ -969,13 +1019,13 @@ export default function OrderMenuPage() {
             {/* Empty Tray State */}
             {cart.length === 0 && (
               <div className="text-center py-12 space-y-2">
-                <ShoppingBag className="w-10 h-10 mx-auto text-[#d4a234]/40" />
-                <p className="text-sm font-semibold text-[#a0a0b8]">Your tray is empty.</p>
+                <ShoppingBag className="w-10 h-10 mx-auto text-amber-400/40" />
+                <p className="text-sm font-semibold text-amber-200/60">Your tray is empty.</p>
               </div>
             )}
 
             {/* Cart Lines */}
-            <div className="space-y-2.5 divide-y divide-[rgba(212,162,52,0.1)] overflow-y-auto flex-1 my-3 pr-1">
+            <div className="space-y-2.5 divide-y divide-amber-500/10 overflow-y-auto flex-1 my-3 pr-1">
               {cart.map((line) => {
                 const item = itemById.get(line.itemId)
                 if (!item) return null
@@ -989,9 +1039,9 @@ export default function OrderMenuPage() {
                 return (
                   <div key={line.key} className="pt-2.5 first:pt-0 flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-[#f5f5f0] truncate">{item.name}</p>
+                      <p className="text-sm font-bold text-[#f5f0e8] truncate">{item.name}</p>
                       {line.selections.length > 0 && (
-                        <p className="text-[11px] text-[#a0a0b8] truncate">
+                        <p className="text-[11px] text-amber-200/50 truncate">
                           {line.selections
                             .map((s) =>
                               item.options.find((g) => g.id === s.groupId)?.choices.find((c) => c.id === s.optionId)?.name
@@ -1000,23 +1050,23 @@ export default function OrderMenuPage() {
                             .join(', ')}
                         </p>
                       )}
-                      <p className="text-xs font-black text-[#f0c14b] mt-0.5">{formatPaise(lineTotal)}</p>
+                      <p className="text-xs font-black text-amber-300 mt-0.5">{formatPaise(lineTotal)}</p>
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0 bg-[#252550] p-1 rounded-xl border border-[rgba(212,162,52,0.2)]">
+                    <div className="flex items-center gap-1 shrink-0 bg-[#241335] p-1 rounded-xl border border-amber-500/25">
                       <button
                         type="button"
                         onClick={() => changeQty(line.key, -1)}
-                        className="w-7 h-7 rounded-lg bg-[#1f2041] flex items-center justify-center cursor-pointer hover:bg-[#2b2b5c] active:scale-95 transition-all text-[#f5f5f0]"
+                        className="w-7 h-7 rounded-lg bg-[#180e24] flex items-center justify-center cursor-pointer hover:bg-[#2e1844] active:scale-95 transition-all text-amber-300"
                         aria-label="Decrease"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="text-xs font-black w-6 text-center text-[#f0c14b]">{line.quantity}</span>
+                      <span className="text-xs font-black w-6 text-center text-amber-300">{line.quantity}</span>
                       <button
                         type="button"
                         onClick={() => changeQty(line.key, 1)}
-                        className="w-7 h-7 rounded-lg bg-[#1f2041] flex items-center justify-center cursor-pointer hover:bg-[#2b2b5c] active:scale-95 transition-all text-[#f5f5f0]"
+                        className="w-7 h-7 rounded-lg bg-[#180e24] flex items-center justify-center cursor-pointer hover:bg-[#2e1844] active:scale-95 transition-all text-amber-300"
                         aria-label="Increase"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -1024,7 +1074,7 @@ export default function OrderMenuPage() {
                       <button
                         type="button"
                         onClick={() => removeLine(line.key)}
-                        className="w-7 h-7 rounded-lg text-[#e53935] hover:bg-[#e53935]/15 flex items-center justify-center cursor-pointer active:scale-95 transition-all ml-1"
+                        className="w-7 h-7 rounded-lg text-rose-400 hover:bg-rose-500/20 flex items-center justify-center cursor-pointer active:scale-95 transition-all ml-1"
                         aria-label="Remove"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1037,26 +1087,26 @@ export default function OrderMenuPage() {
 
             {/* Cart Footer */}
             {cart.length > 0 && (
-              <div className="pt-3 space-y-2.5 border-t border-[rgba(212,162,52,0.2)]">
-                <div className="flex justify-between items-center text-xs text-[#a0a0b8]">
+              <div className="pt-3 space-y-2.5 border-t border-amber-500/20">
+                <div className="flex justify-between items-center text-xs text-amber-200/70">
                   <span>Estimated Subtotal</span>
-                  <span className="font-extrabold text-sm text-[#f0c14b]">{formatPaise(cartEstimate)}</span>
+                  <span className="font-extrabold text-sm text-amber-300 font-serif">{formatPaise(cartEstimate)}</span>
                 </div>
 
                 <Link
                   href={checkoutHref}
-                  className="w-full h-12 rounded-xl text-[#0f0f23] font-black text-center leading-[3rem] active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full h-12 rounded-xl text-[#140b00] font-black text-center leading-[3rem] active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-lg"
                   style={{
-                    background: 'linear-gradient(135deg, #f0c14b 0%, #d4a234 100%)',
-                    boxShadow: '0 4px 20px rgba(212, 162, 52, 0.4)',
+                    background: 'linear-gradient(90deg, #bf8d2c 0%, #f6d47b 35%, #eed48f 65%, #a6741b 100%)',
+                    boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)',
                   }}
                   onClick={() => setCartOpen(false)}
                 >
-                  <span>Proceed to Checkout</span>
+                  <span>Proceed to Table Checkout</span>
                   <span>•</span>
                   <span>{formatPaise(cartEstimate)}</span>
                 </Link>
-                <p className="text-[10px] text-[#6b6b88] text-center">
+                <p className="text-[10px] text-amber-200/50 text-center">
                   Taxes (GST 5%) applied at checkout. Pay at counter upon ordering.
                 </p>
               </div>
