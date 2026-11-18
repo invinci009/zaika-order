@@ -66,3 +66,6 @@ ehthumbs.db
 *.idsig
 *.keystore
 *.jks
+
+.vercel
+.env*
