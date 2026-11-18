@@ -1,5 +1,5 @@
 import { Phone, AlertTriangle } from 'lucide-react'
-import { getCampaignBySlug } from '@/lib/firebase/firestore'
+import { getCampaignBySlug, getCampaigns } from '@/lib/firebase/firestore'
 import { resolveTableToken, getOrderingConfig } from '@/lib/firebase/ordering'
 import { hashToken } from '@/lib/ordering/tokens'
 import { getRestaurantConfig } from '@/config/loader'
@@ -15,7 +15,14 @@ export default async function OrderPortalPage({ params, searchParams }: PortalPa
   const { token, table: tableParam } = await searchParams
   const config = getRestaurantConfig()
 
-  const campaign = await getCampaignBySlug(slug).catch(() => null)
+  let campaign = await getCampaignBySlug(slug).catch(() => null)
+  if (!campaign) {
+    campaign = await getCampaignBySlug(config.slug).catch(() => null)
+  }
+  if (!campaign) {
+    const all = await getCampaigns().catch(() => [])
+    campaign = all.find((c) => c.active) || all[0] || null
+  }
 
   const fallbackCard = (title: string, body: string, tone: 'amber' | 'rose' = 'amber') => (
     <div

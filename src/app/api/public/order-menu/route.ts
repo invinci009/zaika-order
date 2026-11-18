@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCampaignBySlug, getRestaurantSettings } from '@/lib/firebase/firestore'
+import { getCampaignBySlug, getCampaigns, getRestaurantSettings } from '@/lib/firebase/firestore'
 import {
   getOrderMenuCategories,
   getOrderMenuItems,
@@ -22,7 +22,14 @@ export async function GET(request: NextRequest) {
     const token = searchParams.get('token')
 
     const config = getRestaurantConfig()
-    const campaign = await getCampaignBySlug(slug).catch(() => null)
+    let campaign = await getCampaignBySlug(slug).catch(() => null)
+    if (!campaign || !campaign.active) {
+      campaign = await getCampaignBySlug(config.slug).catch(() => null)
+    }
+    if (!campaign || !campaign.active) {
+      const allCampaigns = await getCampaigns().catch(() => [])
+      campaign = allCampaigns.find((c) => c.active) || null
+    }
     if (!campaign || !campaign.active) {
       return NextResponse.json({ error: 'Ordering is not available for this link' }, { status: 404 })
     }
