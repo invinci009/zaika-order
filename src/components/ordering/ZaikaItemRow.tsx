@@ -28,7 +28,6 @@ export function ZaikaItemRow({
   imageUrl,
   quantity,
   hasOptions,
-  isLast,
   onAdd,
   onDecrement,
   onOpenDetail,
@@ -36,10 +35,10 @@ export function ZaikaItemRow({
   const [justAdded, setJustAdded] = useState(false)
 
   const price = Math.round(pricePaise / 100)
-  const dotClass =
-    veg === 'veg' ? 'diet-dot diet-dot-veg' :
-    veg === 'nonveg' ? 'diet-dot diet-dot-nonveg' :
-    veg === 'egg' ? 'diet-dot diet-dot-egg' : ''
+  const dotColor =
+    veg === 'veg' ? '#4caf50' :
+    veg === 'nonveg' ? '#e53935' :
+    veg === 'egg' ? '#ff9800' : null
 
   const handleAdd = () => {
     if (!available) return
@@ -50,13 +49,9 @@ export function ZaikaItemRow({
 
   return (
     <div
-      className={`flex items-start gap-2.5 px-3.5 py-2.5 group transition-colors ${
-        available ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'
-      } ${!isLast ? 'border-b' : ''}`}
-      style={{
-        borderColor: 'rgba(212, 162, 52, 0.1)',
-        background: quantity > 0 ? 'rgba(212, 162, 52, 0.04)' : 'transparent',
-      }}
+      className={`group flex items-center justify-between py-1.5 px-2 rounded-lg transition-colors cursor-pointer ${
+        available ? 'hover:bg-white/[0.04]' : 'opacity-40 cursor-not-allowed'
+      } ${quantity > 0 ? 'bg-[rgba(245,166,35,0.06)]' : ''}`}
       onClick={() => {
         if (!available) return
         if (hasOptions && onOpenDetail) {
@@ -66,120 +61,71 @@ export function ZaikaItemRow({
         }
       }}
     >
-      {/* Left: diet dot + name + description */}
-      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-        <div className="flex items-start gap-2">
-          {/* Diet indicator */}
-          {dotClass && (
-            <span
-              className={dotClass}
-              style={{ marginTop: '3px', flexShrink: 0 }}
-              aria-label={veg === 'veg' ? 'Vegetarian' : veg === 'egg' ? 'Egg' : 'Non-vegetarian'}
-            />
-          )}
-          {/* Name */}
+      {/* Left: Optional diet dot + Item Name */}
+      <div className="flex items-center gap-2 min-w-0 pr-4">
+        {dotColor && (
           <span
-            className="text-sm font-medium leading-tight flex-1"
-            style={{ color: available ? '#f5f5f0' : '#6b6b88' }}
-          >
-            {name}
-          </span>
-        </div>
-        {description && (
-          <p
-            className="text-xs leading-relaxed ml-5"
-            style={{ color: '#7a7a9a' }}
-          >
-            {description}
-          </p>
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: dotColor }}
+            title={veg === 'veg' ? 'Veg' : veg === 'egg' ? 'Egg' : 'Non-Veg'}
+          />
         )}
-        {!available && (
-          <span className="text-[10px] ml-5 font-medium" style={{ color: '#e53935' }}>
-            Currently unavailable
+        <span
+          className="text-[13px] sm:text-sm font-medium tracking-wide text-[#e8e7ee] group-hover:text-white transition-colors truncate"
+          style={{ fontFamily: 'var(--font-sans), sans-serif' }}
+        >
+          {name}
+        </span>
+        {description && (
+          <span className="hidden sm:inline text-[11px] text-[#8e8a9c] truncate ml-1">
+            • {description}
           </span>
         )}
       </div>
 
-      {/* Right: image (optional) + price + cart control */}
-      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-        {/* Item image (small thumbnail) */}
-        {imageUrl && (
-          <div
-            className="w-14 h-14 rounded-lg overflow-hidden mb-1"
-            style={{ border: '1px solid rgba(212, 162, 52, 0.2)' }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imageUrl}
-              alt={name}
-              className="w-full h-full object-cover"
-              onError={(e) => { e.currentTarget.parentElement!.style.display = 'none' }}
-            />
-          </div>
-        )}
-
-        {/* Price */}
+      {/* Right: Price + Elegant Add / Quantity Adjuster */}
+      <div className="flex items-center gap-2.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+        {/* Clean price number matching the brochure */}
         <span
-          className="text-sm font-bold"
-          style={{ color: '#d4a234' }}
+          className="text-[13px] sm:text-sm font-medium tracking-wider text-[#e8e7ee] min-w-[36px] text-right font-mono"
         >
-          ₹{price}
+          {price}
         </span>
 
-        {/* Cart control */}
+        {/* Interactive Cart Control (subtle, clean, and gold) */}
         {available && (
           quantity === 0 ? (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); handleAdd() }}
-              className={`flex items-center gap-0.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all active:scale-95 ${
-                justAdded ? 'scale-110' : ''
+              onClick={handleAdd}
+              className={`w-6 h-6 rounded-md flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 active:scale-90 ${
+                justAdded ? 'scale-110 bg-[#f5a623] text-[#1a1100]' : 'bg-white/10 hover:bg-[#f5a623] hover:text-[#1a1100] text-[#e8e7ee]'
               }`}
-              style={{
-                background: justAdded
-                  ? 'rgba(212, 162, 52, 0.3)'
-                  : 'rgba(212, 162, 52, 0.12)',
-                border: '1px solid rgba(212, 162, 52, 0.4)',
-                color: '#d4a234',
-              }}
+              title={`Add ${name}`}
               aria-label={`Add ${name}`}
             >
-              <Plus className="w-3 h-3" />
-              <span>ADD</span>
+              <Plus className="w-3.5 h-3.5" />
             </button>
           ) : (
             <div
-              className="flex items-center gap-0 rounded-md overflow-hidden"
-              style={{ border: '1px solid rgba(212, 162, 52, 0.4)' }}
-              onClick={(e) => e.stopPropagation()}
+              className="flex items-center rounded-md overflow-hidden border border-[#f5a623]/50 bg-[#1f1728]"
             >
               <button
                 type="button"
-                onClick={() => onDecrement()}
-                className="w-7 h-7 flex items-center justify-center transition-colors"
-                style={{
-                  background: 'rgba(212, 162, 52, 0.1)',
-                  color: '#d4a234',
-                }}
-                aria-label="Remove one"
+                onClick={onDecrement}
+                className="w-6 h-6 flex items-center justify-center text-[#f5a623] hover:bg-[#f5a623]/20 active:scale-90 transition-all"
+                aria-label="Decrease quantity"
               >
                 <Minus className="w-3 h-3" />
               </button>
-              <span
-                className="w-6 text-center text-xs font-black"
-                style={{ color: '#f0c14b' }}
-              >
+              <span className="w-5 text-center text-xs font-black text-[#fbd578]">
                 {quantity}
               </span>
               <button
                 type="button"
-                onClick={() => handleAdd()}
-                className="w-7 h-7 flex items-center justify-center transition-colors"
-                style={{
-                  background: 'rgba(212, 162, 52, 0.2)',
-                  color: '#d4a234',
-                }}
-                aria-label="Add one more"
+                onClick={handleAdd}
+                className="w-6 h-6 flex items-center justify-center text-[#f5a623] hover:bg-[#f5a623]/20 active:scale-90 transition-all"
+                aria-label="Increase quantity"
               >
                 <Plus className="w-3 h-3" />
               </button>

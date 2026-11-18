@@ -557,10 +557,10 @@ export default function OrderMenuPage() {
     return (
       <div
         className="min-h-screen pb-28 relative"
-        style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)' }}
+        style={{ background: 'linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%)' }}
       >
         <MandalaBackground />
-        <header className="sticky top-0 z-20 px-3 py-3 backdrop-blur-md border-b border-[rgba(212,162,52,0.2)] bg-[#1a1a2e]/90">
+        <header className="sticky top-0 z-20 px-3 py-3 backdrop-blur-md border-b border-[rgba(245,166,35,0.2)] bg-[#181022]/90">
           <div className="flex items-center justify-between gap-2 max-w-2xl mx-auto">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-full border border-[#d4a234] flex items-center justify-center bg-[#1f2041] p-1">
@@ -640,13 +640,13 @@ export default function OrderMenuPage() {
   return (
     <div
       className="min-h-screen text-[#f5f5f0] pb-28 relative overflow-x-hidden"
-      style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)' }}
+      style={{ background: 'linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%)' }}
     >
       {/* Ornamental Mandala Background Layer */}
       <MandalaBackground />
 
       {/* Sticky Header with PM Zaika Identity */}
-      <header className="sticky top-0 z-30 backdrop-blur-md border-b border-[rgba(212,162,52,0.25)] bg-[#1a1a2e]/90 px-3 py-2.5 space-y-2.5 shadow-lg">
+      <header className="sticky top-0 z-30 backdrop-blur-md border-b border-[rgba(245,166,35,0.2)] bg-[#181022]/90 px-3 py-2.5 space-y-2.5 shadow-lg">
         <div className="flex items-center gap-2.5 max-w-2xl mx-auto">
           {/* PM Zaika Logo Emblem */}
           <div className="w-10 h-10 rounded-full border border-[#d4a234] shadow-xs shrink-0 bg-[#1f2041] flex items-center justify-center p-1">

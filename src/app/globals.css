@@ -158,7 +158,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+    background: linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%);
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -webkit-touch-callout: none;

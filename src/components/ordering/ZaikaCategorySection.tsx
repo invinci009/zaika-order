@@ -9,38 +9,29 @@ export function ZaikaCategorySection({ id, name, children, animationDelay = 0 }:
   return (
     <section
       id={`cat-${id}`}
-      className="scroll-mt-32 animate-fade-in-up"
+      className="scroll-mt-32 mb-8 animate-fade-in-up"
       style={{ animationDelay: `${animationDelay}ms`, animationFillMode: 'both' }}
     >
-      {/* Category Header — gold bar matching brochure */}
-      <div className="zaika-category-header mb-1">
-        <div className="zaika-category-line flex-shrink-0 w-5" />
+      {/* Category Header — Gold rounded pill badge matching the brochure image */}
+      <div className="flex items-center mb-3">
         <div
-          className="px-4 py-1.5 rounded-sm flex-shrink-0"
+          className="inline-flex items-center px-6 py-1.5 rounded-r-full rounded-l-sm shadow-md"
           style={{
-            background: 'linear-gradient(135deg, #e8a317 0%, #d4a234 100%)',
-            boxShadow: '0 2px 12px rgba(212, 162, 52, 0.25)',
+            background: 'linear-gradient(90deg, #f5a623 0%, #f7b733 45%, #fbd578 100%)',
+            boxShadow: '0 2px 10px rgba(245, 166, 35, 0.25)',
           }}
         >
           <h2
-            className="text-xs font-black tracking-widest uppercase"
-            style={{ color: '#0f0f1a', fontFamily: 'Rajdhani, var(--font-heading), sans-serif' }}
+            className="text-[13px] sm:text-sm font-black tracking-wider uppercase text-[#1a1100]"
+            style={{ fontFamily: 'var(--font-heading), sans-serif' }}
           >
             {name}
           </h2>
         </div>
-        <div className="zaika-category-line flex-1" />
       </div>
 
-      {/* Items container */}
-      <div
-        className="rounded-xl overflow-hidden mb-6"
-        style={{
-          background: 'rgba(31, 32, 65, 0.6)',
-          border: '1px solid rgba(212, 162, 52, 0.15)',
-          backdropFilter: 'blur(4px)',
-        }}
-      >
+      {/* Items list — Clean, floating directly on dark canvas matching the physical menu */}
+      <div className="space-y-0.5 pl-1 pr-2">
         {children}
       </div>
     </section>
