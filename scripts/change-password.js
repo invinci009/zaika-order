@@ -15,11 +15,12 @@
 const fs = require('fs')
 const path = require('path')
 
-const PRIMARY_EMAIL = 'invincibleperson9@gmail.com'
+const PRIMARY_EMAIL = 'admin@zaika.com'
 const ALIASES = new Set([
   'admin',
   'owner',
   'zaika',
+  'admin@zaika.com',
   'pmzaika',
   'pm-zaika',
   'admin@pmzaika.com',
