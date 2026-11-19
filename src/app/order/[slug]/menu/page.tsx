@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useMemo, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams, useParams } from 'next/navigation';
 import {
   Menu as MenuIcon,
   Bell,
@@ -33,7 +34,8 @@ import {
   Clock,
   Award,
   Flame,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Crown
 } from 'lucide-react';
 
 // --- FALLBACK FOOD IMAGE ---
@@ -2933,6 +2935,40 @@ const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
   },
   {
+    id: "double-egg-chicken-roll",
+    name: "Double Egg Chicken Roll",
+    category: "Rolls",
+    menuGroup: "CHINESE & ROLLS",
+    veg: false,
+    price: 180,
+    halfPrice: null,
+    rating: 4.9,
+    ratingCount: "820+",
+    badge: "BESTSELLER",
+    badgeType: "saffron",
+    popular: true,
+    customizable: true,
+    description: "Flaky layered paratha wrapped around succulent spiced chicken tikka, dual farm eggs, crisp onions, and zesty green chutney.",
+    image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    id: "paneer-kathi-roll",
+    name: "Paneer Kathi Roll",
+    category: "Rolls",
+    menuGroup: "CHINESE & ROLLS",
+    veg: true,
+    price: 150,
+    halfPrice: null,
+    rating: 4.8,
+    ratingCount: "610+",
+    badge: "POPULAR",
+    badgeType: "emerald",
+    popular: true,
+    customizable: true,
+    description: "Char-grilled malai paneer wrapped in flaky tandoori paratha with mint relish and sliced bell peppers.",
+    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+  },
+  {
     id: "special-motter-pulao-1kg",
     name: "Motter Pulao (1 Kg)",
     category: "Party Packs",
@@ -3562,6 +3598,10 @@ const PmZaikaCrest = () => (
 );
 
 function MainApp() {
+  const searchParams = useSearchParams();
+  const params = useParams();
+  const slug = (params?.slug as string) || 'pm-zaika';
+
   // Navigation Tab: 'home' | 'menu' | 'offers' | 'hub'
   const [activeTab, setActiveTab] = useState('home');
 
@@ -3574,10 +3614,32 @@ function MainApp() {
     }, 2600);
   };
 
+  // Derive initial table from URL query param (?table=02 or ?table=Table%2002)
+  const initialTable = useMemo(() => {
+    const raw = searchParams?.get('table');
+    if (!raw) return 'Table 04';
+    const trimmed = raw.trim();
+    if (/^takeaway$/i.test(trimmed)) return 'Takeaway';
+    if (/^table\s*\d+/i.test(trimmed)) {
+      const num = trimmed.replace(/\D/g, '').padStart(2, '0');
+      return `Table ${num}`;
+    }
+    if (/^\d+$/.test(trimmed)) {
+      return `Table ${trimmed.padStart(2, '0')}`;
+    }
+    return trimmed;
+  }, [searchParams]);
+
   // Table & Steward State
-  const [selectedTable, setSelectedTable] = useState('Table 04');
+  const [selectedTable, setSelectedTable] = useState(initialTable);
   const [tableModalOpen, setTableModalOpen] = useState(false);
   const [stewardAlerted, setStewardAlerted] = useState(false);
+
+  useEffect(() => {
+    if (initialTable) {
+      setSelectedTable(initialTable);
+    }
+  }, [initialTable]);
 
   // Hero Carousel State
   const [heroIndex, setHeroIndex] = useState(0);
@@ -3597,28 +3659,83 @@ function MainApp() {
   const mainScrollRef = useRef(null);
   const sentinelRef = useRef(null);
 
-  // Favorites Set
-  const [favorites, setFavorites] = useState({
-    'mutton-handi-biryani': true,
-    'paneer-tikka-shashlik': true
-  });
-
-  // Cart State: { [key]: { key, dish, portion, spice, addons, notes, unitPrice, qty } }
-  const [cart, setCart] = useState({
-    'mutton-handi-biryani__Full__Medium__': {
-      key: 'mutton-handi-biryani__Full__Medium__',
-      dish: MENU_ITEMS[0],
-      portion: 'Full',
-      spice: 'Medium',
-      addons: [],
-      notes: '',
-      unitPrice: 380,
-      qty: 1
+  // Favorites Set (persisted)
+  const [favorites, setFavorites] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('pm_zaika_favorites');
+        if (saved) return JSON.parse(saved);
+      } catch {}
     }
+    return {
+      'mutton-handi-biryani': true,
+      'paneer-tikka-shashlik': true
+    };
   });
 
-  // Rewards & Coupons
-  const [royalPoints, setRoyalPoints] = useState(120);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('pm_zaika_favorites', JSON.stringify(favorites));
+      } catch {}
+    }
+  }, [favorites]);
+
+  // Cart State (persisted)
+  const [cart, setCart] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('pm_zaika_cart');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+            return parsed;
+          }
+        }
+      } catch {}
+    }
+    return {
+      'mutton-handi-biryani__Full__Medium__': {
+        key: 'mutton-handi-biryani__Full__Medium__',
+        dish: MENU_ITEMS[0],
+        portion: 'Full',
+        spice: 'Medium',
+        addons: [],
+        notes: '',
+        unitPrice: 380,
+        qty: 1
+      }
+    };
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('pm_zaika_cart', JSON.stringify(cart));
+      } catch {}
+    }
+  }, [cart]);
+
+  // Rewards & Coupons (persisted)
+  const [royalPoints, setRoyalPoints] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem('pm_zaika_royal_points');
+      if (saved) {
+        const n = parseInt(saved, 10);
+        if (!isNaN(n)) return n;
+      }
+    }
+    return 120;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('pm_zaika_royal_points', String(royalPoints));
+      } catch {}
+    }
+  }, [royalPoints]);
+
   const [redeemPoints, setRedeemPoints] = useState(false);
   const [appliedCouponCode, setAppliedCouponCode] = useState(null);
   const [couponInput, setCouponInput] = useState('');
@@ -3630,10 +3747,39 @@ function MainApp() {
   const [customAddons, setCustomAddons] = useState([]);
   const [customNotes, setCustomNotes] = useState('');
 
-  // Cart & Order Tracker Drawer
+  // Cart & Order Tracker Drawer (persisted live order)
   const [cartOpen, setCartOpen] = useState(false);
   const [cookingNotes, setCookingNotes] = useState('');
-  const [liveOrder, setLiveOrder] = useState(null);
+  const [liveOrder, setLiveOrder] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('pm_zaika_live_order');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        if (liveOrder) {
+          window.localStorage.setItem('pm_zaika_live_order', JSON.stringify(liveOrder));
+        } else {
+          window.localStorage.removeItem('pm_zaika_live_order');
+        }
+      } catch {}
+    }
+  }, [liveOrder]);
+
+  // Auto-advance live order stages smoothly (simulated kitchen flow)
+  useEffect(() => {
+    if (!liveOrder || liveOrder.stage >= 2) return;
+    const timer = setTimeout(() => {
+      setLiveOrder((prev) => (prev && prev.stage < 2 ? { ...prev, stage: prev.stage + 1 } : prev));
+    }, 28000);
+    return () => clearTimeout(timer);
+  }, [liveOrder]);
 
   // Guest Feedback Sheet
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -3651,6 +3797,8 @@ function MainApp() {
   const [complaintOpen, setComplaintOpen] = useState(false);
   const [complaintCategory, setComplaintCategory] = useState('Food Quality');
   const [complaintNote, setComplaintNote] = useState('');
+  const [complaintPhone, setComplaintPhone] = useState('');
+  const [complaintSubmitting, setComplaintSubmitting] = useState(false);
 
   // Copy Phone Feedback
   const [phoneCopied, setPhoneCopied] = useState(false);
@@ -3725,8 +3873,24 @@ function MainApp() {
     ) {
       return false;
     }
-    if (applyCategory && selectedCategory !== 'All' && dish.category !== selectedCategory) {
-      return false;
+    if (applyCategory && selectedCategory !== 'All') {
+      const catLower = selectedCategory.toLowerCase();
+      if (catLower === 'mains' || catLower === 'curries') {
+        const dCat = dish.category.toLowerCase();
+        const dGrp = dish.menuGroup.toLowerCase();
+        if (!dCat.includes('curries') && !dGrp.includes('curries')) {
+          return false;
+        }
+      } else if (catLower === 'rolls') {
+        if (!dish.name.toLowerCase().includes('roll') && !dish.category.toLowerCase().includes('roll')) {
+          return false;
+        }
+      } else if (
+        !dish.category.toLowerCase().includes(catLower) &&
+        !dish.menuGroup.toLowerCase().includes(catLower)
+      ) {
+        return false;
+      }
     }
     if (vegOnly && !dish.veg) return false;
     if (nonVegOnly && dish.veg) return false;
@@ -3926,23 +4090,39 @@ function MainApp() {
     }
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     const orderId = `PMZ-${Math.floor(400 + Math.random() * 580)}`;
     const usedPoints = cartSummary.pointsDiscount > 0;
     if (usedPoints) {
       setRoyalPoints((p) => Math.max(0, p - 50));
       setRedeemPoints(false);
     }
-    setLiveOrder({
+    const newOrder = {
       id: orderId,
       table: selectedTable,
       total: cartSummary.grandTotal,
       itemsCount: cartSummary.itemCount,
-      stage: 0
-    });
+      stage: 0,
+      createdAt: new Date().toISOString()
+    };
+    setLiveOrder(newOrder);
     setCart({});
     setCookingNotes('');
     showToast(`Order #${orderId} placed for ${selectedTable}!`);
+
+    // Non-blocking background notification to kitchen service queue
+    try {
+      await fetch('/api/public/service-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          tableLabel: selectedTable,
+          type: 'steward',
+          notes: `New Order #${orderId} (${newOrder.itemsCount} items, ₹${newOrder.total})`
+        })
+      });
+    } catch {}
   };
 
   const handleRedeemRoyalPoints = () => {
@@ -3955,10 +4135,48 @@ function MainApp() {
     }
   };
 
-  const handleRingSteward = () => {
+  const handleRingSteward = async () => {
     setStewardAlerted(true);
     showToast(`Steward notified for ${selectedTable}`);
+    try {
+      await fetch('/api/public/service-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          tableLabel: selectedTable,
+          type: 'steward'
+        })
+      });
+    } catch {}
     setTimeout(() => setStewardAlerted(false), 9000);
+  };
+
+  const handleRegisterComplaint = async () => {
+    if (!complaintNote.trim()) {
+      showToast('Please describe your concern');
+      return;
+    }
+    setComplaintSubmitting(true);
+    try {
+      await fetch('/api/public/complaints', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          name: `Guest at ${selectedTable}`,
+          phone: complaintPhone.trim() || '9876543210',
+          complaint: complaintNote.trim(),
+          category: complaintCategory,
+          tableNumber: selectedTable
+        })
+      });
+    } catch {}
+    setComplaintSubmitting(false);
+    setComplaintOpen(false);
+    setComplaintNote('');
+    setComplaintPhone('');
+    showToast(`Manager alerted for ${selectedTable}. Priority support assigned.`);
   };
 
   const handleCopyPhone = () => {
@@ -4056,11 +4274,24 @@ function MainApp() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                  {/* Rewards Points */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('offers')}
+                    className="h-10 px-2.5 rounded-2xl bg-white shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center gap-1.5 text-[#2D1148] hover:bg-[#F7F1FA] transition-colors cursor-pointer"
+                    title="View PM Zaika Rewards & Offers"
+                    aria-label="View PM Zaika Rewards"
+                  >
+                    <Crown className="w-3.5 h-3.5 text-[#E89223]" />
+                    <span className="text-[11px] font-black text-[#2D1148] tnum">{royalPoints}</span>
+                    <span className="text-[9px] font-bold text-[#E89223]">PTS</span>
+                  </button>
+
                   {/* Steward Bell */}
                   <button
                     type="button"
-                    onClick={handleRingSteward}
-                    className={`relative w-11 h-11 rounded-2xl shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center transition-colors cursor-pointer ${
+                    onClick={() => handleRingSteward()}
+                    className={`relative w-10 h-10 rounded-2xl shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center transition-colors cursor-pointer ${
                       stewardAlerted
                         ? 'bg-[#2D1148] text-[#E89223]'
                         : 'bg-white text-[#2D1148] hover:bg-[#F7F1FA]'
@@ -4068,8 +4299,8 @@ function MainApp() {
                     aria-label="Notify Steward"
                     title="Call Steward to Table"
                   >
-                    <Bell className="w-[19px] h-[19px]" />
-                    <span className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full bg-[#3B155E] text-white text-[9px] font-bold flex items-center justify-center border-2 border-[#FAF5F0] tnum">
+                    <Bell className="w-[18px] h-[18px]" />
+                    <span className="absolute -top-1 -right-1 w-[16px] h-[16px] rounded-full bg-[#3B155E] text-white text-[9px] font-bold flex items-center justify-center border-2 border-[#FAF5F0] tnum">
                       {stewardAlerted ? '✓' : '1'}
                     </span>
                   </button>
@@ -4078,12 +4309,12 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => setCartOpen(true)}
-                    className="relative w-11 h-11 rounded-2xl bg-white shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center text-[#2D1148] hover:bg-[#F7F1FA] transition-colors cursor-pointer"
+                    className="relative w-10 h-10 rounded-2xl bg-white shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center text-[#2D1148] hover:bg-[#F7F1FA] transition-colors cursor-pointer"
                     aria-label="Open Order Bag"
                   >
-                    <ShoppingBag className="w-[19px] h-[19px]" />
+                    <ShoppingBag className="w-[18px] h-[18px]" />
                     {cartSummary.itemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#3B155E] text-white text-[10px] font-bold flex items-center justify-center border-2 border-[#FAF5F0] tnum">
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#3B155E] text-white text-[9px] font-bold flex items-center justify-center border-2 border-[#FAF5F0] tnum">
                         {cartSummary.itemCount}
                       </span>
                     )}
@@ -4300,7 +4531,21 @@ function MainApp() {
                   </h2>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('menu')}
+                    onClick={() => {
+                      setActiveTab('menu');
+                      setVisibleGroupCount(MENU_GROUPS.length);
+                      if (selectedCategory !== 'All') {
+                        setTimeout(() => {
+                          const matchedGroup = MENU_GROUPS.find((g) =>
+                            g.toLowerCase().includes(selectedCategory.toLowerCase())
+                          );
+                          if (matchedGroup) {
+                            const targetId = `section-${matchedGroup.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+                            document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }, 120);
+                      }
+                    }}
                     className="text-[13px] font-bold text-[#461B6E] hover:text-[#2D1148] inline-flex items-center gap-1 cursor-pointer"
                   >
                     <span>View All</span>
@@ -5234,6 +5479,16 @@ function MainApp() {
                     type="button"
                     onClick={() => {
                       setSelectedTable(tbl);
+                      try {
+                        const url = new URL(window.location.href);
+                        if (tbl === 'Takeaway') {
+                          url.searchParams.set('table', 'takeaway');
+                        } else {
+                          const num = tbl.replace(/\D/g, '');
+                          url.searchParams.set('table', num ? num.padStart(2, '0') : tbl.toLowerCase());
+                        }
+                        window.history.replaceState({}, '', url.toString());
+                      } catch {}
                       setTableModalOpen(false);
                       showToast(`Switched to ${tbl}`);
                     }}
@@ -5657,17 +5912,26 @@ function MainApp() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setLiveOrder((prev) =>
-                          prev ? { ...prev, stage: (prev.stage + 1) % 3 } : prev
-                        )
-                      }
-                      className="h-11 rounded-full bg-white border border-[#2D1148]/15 text-[#2D1148] text-xs font-extrabold cursor-pointer"
-                    >
-                      Simulate Status
-                    </button>
+                    {liveOrder.stage === 2 ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLiveOrder(null);
+                          showToast('Order completed. Ready for new orders!');
+                        }}
+                        className="h-11 rounded-full bg-[#15803D] hover:bg-[#166534] text-white text-xs font-extrabold cursor-pointer transition-colors"
+                      >
+                        Start New Order
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleRingSteward('Table Assistance / Order Status')}
+                        className="h-11 rounded-full bg-white border border-[#2D1148]/15 text-[#2D1148] hover:bg-[#FAF5F0] text-xs font-extrabold cursor-pointer transition-colors"
+                      >
+                        Call Steward
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -6040,6 +6304,14 @@ function MainApp() {
                   )}
                 </div>
 
+                <input
+                  type="tel"
+                  value={complaintPhone}
+                  onChange={(e) => setComplaintPhone(e.target.value)}
+                  placeholder="Your phone number (e.g. 9876543210)"
+                  className="w-full h-11 px-3.5 rounded-2xl bg-[#FAF5F0] text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#C81E3A]/30"
+                />
+
                 <textarea
                   rows={3}
                   value={complaintNote}
@@ -6058,14 +6330,11 @@ function MainApp() {
                   </a>
                   <button
                     type="button"
-                    onClick={() => {
-                      setComplaintOpen(false);
-                      setComplaintNote('');
-                      showToast(`Manager alerted for ${selectedTable}.`);
-                    }}
-                    className="h-11 rounded-full bg-[#C81E3A] hover:bg-[#A61730] text-white text-xs font-extrabold cursor-pointer"
+                    disabled={complaintSubmitting}
+                    onClick={handleRegisterComplaint}
+                    className="h-11 rounded-full bg-[#C81E3A] hover:bg-[#A61730] text-white text-xs font-extrabold cursor-pointer disabled:opacity-50 transition-colors"
                   >
-                    Register Complaint
+                    {complaintSubmitting ? 'Submitting...' : 'Register Complaint'}
                   </button>
                 </div>
               </div>
