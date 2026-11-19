@@ -41,6 +41,7 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-heading, var(--font-sans));
+  --font-cinzel: var(--font-cinzel), 'Cinzel', Georgia, serif;
   --font-onstage: var(--font-onstage, 'On Stage Serial Xbold', 'OnStageSerial-Xbold', sans-serif);
   --font-bruce: var(--font-onstage, var(--font-bruce), 'On Stage Serial Xbold', sans-serif);
   --font-script: var(--font-script, 'Kaushan Script', cursive);

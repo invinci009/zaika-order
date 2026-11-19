@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Rajdhani, Kaushan_Script } from 'next/font/google'
+import { Inter, Rajdhani, Kaushan_Script, Cinzel } from 'next/font/google'
 import localFont from 'next/font/local'
 import './globals.css'
 import { PwaProvider } from '@/components/pwa/PwaProvider'
@@ -20,6 +20,12 @@ const kaushan = Kaushan_Script({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-script',
+  display: 'swap',
+})
+const cinzel = Cinzel({
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800'],
+  variable: '--font-cinzel',
   display: 'swap',
 })
 const bruceForever = localFont({
@@ -98,7 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <style dangerouslySetInnerHTML={{ __html: generateBrandingCSS(config) }} />
       </head>
-      <body className={`${inter.className} ${rajdhani.variable} ${kaushan.variable} ${bruceForever.variable} ${onStageSerial.variable} min-h-screen min-h-[100dvh] antialiased overflow-x-hidden`} style={{ background: 'linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%)' }}>
+      <body className={`${inter.className} ${rajdhani.variable} ${kaushan.variable} ${cinzel.variable} ${bruceForever.variable} ${onStageSerial.variable} min-h-screen min-h-[100dvh] antialiased overflow-x-hidden`} style={{ background: 'linear-gradient(175deg, #1c1426 0%, #150e1f 45%, #0e0815 100%)' }}>
         <ClientConfigProvider config={config}>
           <PwaProvider>
             <OfflineIndicator />

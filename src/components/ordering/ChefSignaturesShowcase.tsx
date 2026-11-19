@@ -11,8 +11,10 @@ interface ChefSignaturesShowcaseProps {
 
 /**
  * ChefSignaturesShowcase
- * Curated horizontal gallery of PM Zaika's most celebrated dishes.
- * Gives rich photographic hunger appeal without cluttering the typographic brochure menu.
+ * Curated horizontal gallery of PM Zaika's most celebrated dishes:
+ * - Editorial serif typography
+ * - Verified authentic photography
+ * - Regal gold borders & glassmorphic velvet cards
  */
 export function ChefSignaturesShowcase({
   getItemQty,
@@ -28,19 +30,27 @@ export function ChefSignaturesShowcase({
             <Sparkles className="w-3 h-3 fill-amber-300" />
           </div>
           <div>
-            <h3 className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.16em] text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37]">
+            <h3
+              className="text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37]"
+              style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+            >
               Chef&apos;s Royal Signatures
             </h3>
-            <p className="text-[10px] text-amber-200/60 font-medium">Handcrafted Awadhi &amp; Tandoori masterpieces</p>
+            <p className="text-[10px] text-amber-200/60 font-medium tracking-wide">
+              Handcrafted Awadhi &amp; Tandoori masterpieces
+            </p>
           </div>
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300/80 px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/25">
+        <span
+          className="text-[9px] font-bold uppercase tracking-wider text-amber-300 px-2.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30"
+          style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+        >
           Must Try
         </span>
       </div>
 
       {/* Horizontal Carousel */}
-      <div className="flex gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar scrollbar-hide -mx-3 px-3 snap-x snap-mandatory">
+      <div className="flex gap-3.5 overflow-x-auto pb-3 pt-1 no-scrollbar scrollbar-hide -mx-3 px-3 snap-x snap-mandatory">
         {CHEF_SIGNATURES.map((dish) => {
           const qty = getItemQty(dish.id, dish.name)
           const price = Math.round(dish.pricePaise / 100)
@@ -49,7 +59,7 @@ export function ChefSignaturesShowcase({
           return (
             <div
               key={dish.id}
-              className="snap-start shrink-0 w-[240px] sm:w-[260px] rounded-2xl bg-[#180f24]/90 backdrop-blur-md border border-amber-500/25 hover:border-amber-400/50 shadow-lg shadow-black/40 overflow-hidden group transition-all duration-300 flex flex-col justify-between"
+              className="snap-start shrink-0 w-[240px] sm:w-[260px] rounded-2xl bg-gradient-to-b from-[#1e1133]/95 via-[#170c26]/95 to-[#12071f]/95 backdrop-blur-md border border-amber-500/20 hover:border-amber-400/50 shadow-[0_8px_25px_-5px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,235,170,0.06)] overflow-hidden group transition-all duration-300 flex flex-col justify-between"
             >
               {/* Photo with Tag Badge */}
               <div className="relative h-32 w-full overflow-hidden bg-[#241335]">
@@ -57,42 +67,48 @@ export function ChefSignaturesShowcase({
                 <img
                   src={dish.imageUrl}
                   alt={dish.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#180f24] via-transparent to-black/30" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#150a22] via-black/20 to-transparent" />
 
                 {/* Tag Badge */}
-                <span className="absolute top-2 left-2 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-amber-300 border border-amber-400/30">
+                <span
+                  className="absolute top-2.5 left-2.5 text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-amber-300 border border-amber-400/40"
+                  style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+                >
                   {dish.tag}
                 </span>
 
-                {/* Diet Dot */}
-                <span
-                  className="absolute top-2 right-2 w-4 h-4 rounded-xs border flex items-center justify-center bg-black/60 backdrop-blur-md"
-                  style={{ borderColor: isVeg ? '#4caf50' : '#e53935' }}
-                >
+                {/* Diet Dot in Corner */}
+                <div className="absolute top-2.5 right-2.5 w-4 h-4 rounded-[3px] bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center">
                   <span
                     className="w-1.5 h-1.5 rounded-full"
                     style={{ backgroundColor: isVeg ? '#4caf50' : '#e53935' }}
                   />
-                </span>
+                </div>
               </div>
 
-              {/* Content Body */}
-              <div className="p-3 flex-1 flex flex-col justify-between">
+              {/* Content Box */}
+              <div className="p-3.5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h4 className="text-sm font-bold text-[#f7f2ea] group-hover:text-amber-200 transition-colors line-clamp-1 leading-snug">
+                  <h4
+                    className="text-sm font-semibold text-[#fbf7f0] group-hover:text-amber-200 transition-colors line-clamp-1 mb-1 tracking-wide"
+                    style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+                  >
                     {dish.name}
                   </h4>
-                  <p className="text-[11px] text-amber-200/55 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-amber-100/50 line-clamp-2 leading-relaxed mb-3 font-light">
                     {dish.description}
                   </p>
                 </div>
 
                 {/* Price & Action Row */}
-                <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-amber-500/15">
-                  <span className="text-sm font-bold text-[#f7d77a] font-serif">
+                <div className="flex items-center justify-between pt-2 border-t border-amber-500/10">
+                  <span
+                    className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37]"
+                    style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+                  >
                     ₹{price}
                   </span>
 
@@ -100,31 +116,27 @@ export function ChefSignaturesShowcase({
                     <button
                       type="button"
                       onClick={() => onAdd(dish)}
-                      className="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-400/15 hover:bg-amber-400 hover:text-[#120816] text-amber-300 border border-amber-400/40 transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                      className="px-3.5 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase transition-all bg-[#180e25] hover:bg-gradient-to-r hover:from-[#d4af37] hover:to-[#f7d77a] text-amber-300 hover:text-stone-950 border border-amber-400/40 shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer"
                     >
                       <Plus className="w-3 h-3 stroke-[2.5]" />
-                      <span>Add</span>
+                      <span>ADD</span>
                     </button>
                   ) : (
-                    <div className="flex items-center rounded-full bg-gradient-to-r from-[#d4af37] to-[#f6d77a] text-[#120816] shadow-sm px-1 py-0.5">
+                    <div className="flex items-center rounded-full bg-gradient-to-r from-[#d4af37] via-[#f7d77a] to-[#d4af37] text-stone-950 shadow-md px-1 py-0.5">
                       <button
                         type="button"
                         onClick={() => onDecrement(dish.id, dish.name)}
-                        className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-black/10 active:scale-90 transition-all cursor-pointer"
-                        aria-label="Decrease quantity"
+                        className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-black/10 active:scale-90"
                       >
-                        <Minus className="w-2.5 h-2.5 stroke-[2.5]" />
+                        <Minus className="w-3 h-3 stroke-[2.5]" />
                       </button>
-                      <span className="w-4 text-center text-xs font-black">
-                        {qty}
-                      </span>
+                      <span className="w-5 text-center text-xs font-black">{qty}</span>
                       <button
                         type="button"
                         onClick={() => onAdd(dish)}
-                        className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-black/10 active:scale-90 transition-all cursor-pointer"
-                        aria-label="Increase quantity"
+                        className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-black/10 active:scale-90"
                       >
-                        <Plus className="w-2.5 h-2.5 stroke-[2.5]" />
+                        <Plus className="w-3 h-3 stroke-[2.5]" />
                       </button>
                     </div>
                   )}

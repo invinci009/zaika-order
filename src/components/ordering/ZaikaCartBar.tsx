@@ -53,7 +53,10 @@ export function ZaikaCartBar({ itemCount, totalPaise, onViewCart }: ZaikaCartBar
 
           {/* Right: Total + Arrow */}
           <div className="flex items-center gap-2 relative z-10">
-            <span className="text-base sm:text-lg font-black font-serif text-[#140b00] tracking-tight">
+            <span
+              className="text-base sm:text-lg font-bold text-[#140b00] tracking-tight"
+              style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+            >
               {formatPrice(totalPaise)}
             </span>
             <div className="w-7 h-7 rounded-full bg-[#140b00] text-amber-300 flex items-center justify-center shadow-xs">

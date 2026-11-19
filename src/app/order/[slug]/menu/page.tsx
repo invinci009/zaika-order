@@ -689,10 +689,10 @@ export default function OrderMenuPage() {
       <MandalaBackground />
 
       {/* Sticky Header with PM Zaika Identity */}
-      <header className="sticky top-0 z-30 backdrop-blur-md border-b border-amber-500/25 bg-[#170e24]/95 px-3 py-2.5 space-y-2.5 shadow-xl">
+      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-amber-500/20 bg-[#160c23]/95 px-3 py-2.5 space-y-2.5 shadow-[0_4px_25px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-2.5 max-w-2xl mx-auto">
-          {/* PM Zaika Logo Emblem */}
-          <div className="w-10 h-10 rounded-full border-2 border-amber-400/60 shadow-md shrink-0 bg-[#1b1028] flex items-center justify-center p-1">
+          {/* PM Zaika Logo Emblem with warm gold ring */}
+          <div className="w-10 h-10 rounded-full border border-amber-400/50 shadow-lg shrink-0 bg-gradient-to-br from-[#241337] to-[#140a20] flex items-center justify-center p-1.5 ring-2 ring-amber-400/20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.svg"
@@ -705,78 +705,82 @@ export default function OrderMenuPage() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="font-heading font-black text-sm sm:text-base truncate flex items-center gap-1.5 leading-tight uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37]">
+            <h1
+              className="text-[15px] sm:text-[17px] font-bold truncate flex items-center gap-1.5 leading-tight tracking-[0.16em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#ffe49e] via-[#f7d77a] to-[#d4af37]"
+              style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+            >
               <span>{restaurantName || 'PM ZAIKA RESTAURANT'}</span>
             </h1>
-            <span className="font-script text-[11px] text-amber-200/90 font-normal leading-none block -mt-0.5">
-              Indian ‖ Chinese ‖ Tandoor ‖ Rolls
-            </span>
+            <p className="text-[10px] tracking-[0.22em] uppercase text-amber-200/70 font-medium leading-none block mt-0.5">
+              Fine Dining • Awadhi • Tandoor
+            </p>
             {token ? (
-              <p className="text-[11px] font-semibold text-amber-300 flex items-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+              <p className="text-[11px] font-semibold text-amber-300 flex items-center gap-1.5 mt-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shadow-[0_0_6px_#4caf50]" />
                 {formatTableDisplay(tableLabel)} • Dine-in
               </p>
             ) : (
               <button
                 type="button"
                 onClick={() => setTableModalOpen(true)}
-                className="mt-0.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-[11px] font-bold text-amber-200 cursor-pointer transition-all shadow-xs active:scale-95"
+                className="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-[11px] font-semibold text-amber-200 cursor-pointer transition-all active:scale-95 shadow-sm"
               >
                 <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
-                <span>{tableLabel ? formatTableDisplay(tableLabel) : 'Choose Table'}</span>
-                <ChevronDown className="w-3 h-3 text-amber-400 shrink-0" />
+                <span>{tableLabel ? formatTableDisplay(tableLabel) : 'Select Table'}</span>
+                <ChevronDown className="w-3 h-3 text-amber-400/70 shrink-0" />
               </button>
             )}
           </div>
 
-          {contactPhone && (
-            <a
-              href={`tel:${contactPhone}`}
-              className="p-2 rounded-xl bg-white/5 text-amber-300 border border-amber-400/30 hover:bg-white/10 transition-colors"
-              aria-label="Call restaurant"
-            >
-              <Phone className="w-4 h-4" />
-            </a>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setLoyaltyModalOpen(true)}
-            className="px-2.5 py-1.5 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
-            aria-label="Loyalty and rewards"
-            title="VIP Club"
-          >
-            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30 shrink-0" />
-            {loyaltyPoints === null ? (
-              <span className="text-[11px] font-black tracking-tight">VIP</span>
-            ) : (
-              <span className="text-[11px] font-black flex items-center gap-0.5">
-                <span>{loyaltyPoints}</span>
-                <span className="text-[9px] uppercase">pts</span>
-              </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {contactPhone && (
+              <a
+                href={`tel:${contactPhone}`}
+                className="w-8 h-8 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center justify-center shadow-sm"
+                aria-label="Call restaurant"
+              >
+                <Phone className="w-3.5 h-3.5" />
+              </a>
             )}
-          </button>
 
-          <button
-            type="button"
-            onClick={() => setServiceModalOpen(true)}
-            className="p-2 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/30 hover:bg-amber-400/20 transition-colors flex items-center gap-1 cursor-pointer"
-            aria-label="Call staff"
-            title="Call staff"
-          >
-            <BellRing className="w-4 h-4" />
-            <span className="text-[11px] font-bold hidden sm:inline">Call Staff</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setLoyaltyModalOpen(true)}
+              className="h-8 px-2.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+              aria-label="Loyalty and rewards"
+              title="VIP Club"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30 shrink-0" />
+              {loyaltyPoints === null ? (
+                <span className="text-[11px] font-bold tracking-tight">VIP</span>
+              ) : (
+                <span className="text-[11px] font-bold flex items-center gap-0.5">
+                  <span>{loyaltyPoints}</span>
+                  <span className="text-[9px] uppercase font-normal text-amber-200/70">pts</span>
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setServiceModalOpen(true)}
+              className="w-8 h-8 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center justify-center shadow-sm cursor-pointer"
+              aria-label="Call staff"
+              title="Call staff"
+            >
+              <BellRing className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Search Bar */}
         <div className="relative max-w-2xl mx-auto">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-amber-300/60" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-300/60 pointer-events-none" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search soup, paneer, chicken, biryani, tandoori…"
-            className="w-full h-10 pl-9 pr-9 rounded-xl bg-[#140b1e]/90 border border-amber-500/30 text-xs focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all text-[#f7f2ea] placeholder:text-amber-200/40 shadow-inner"
+            placeholder="Search Awadhi dishes, biryani, kebabs, curries…"
+            className="w-full h-10 pl-9 pr-9 rounded-2xl bg-[#140a20]/90 border border-amber-500/20 text-xs focus:outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/15 transition-all text-[#fbf7f0] placeholder:text-amber-200/35 shadow-inner"
           />
           {search && (
             <button
@@ -789,15 +793,15 @@ export default function OrderMenuPage() {
           )}
         </div>
 
-        {/* Dietary Quick-Filter Pills (All, Veg, NonVeg, Specials) */}
+        {/* Dietary Quick-Filter Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto max-w-2xl mx-auto no-scrollbar scrollbar-hide py-0.5">
           <button
             type="button"
             onClick={() => setDietFilter('all')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 shadow-xs ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 shadow-sm ${
               dietFilter === 'all'
-                ? 'bg-gradient-to-r from-[#d4af37] to-[#f6d77a] text-[#120816] font-black shadow-md shadow-amber-500/20'
-                : 'bg-[#180e24]/80 text-amber-200/70 hover:text-amber-100 border border-amber-500/25'
+                ? 'bg-gradient-to-r from-[#d4af37] via-[#f7d77a] to-[#d4af37] text-stone-950 font-bold shadow-md shadow-amber-500/25 border border-amber-300/40'
+                : 'bg-[#180e26]/85 text-amber-200/70 hover:text-amber-100 border border-amber-500/20'
             }`}
           >
             <span>All Dishes</span>
@@ -805,10 +809,10 @@ export default function OrderMenuPage() {
           <button
             type="button"
             onClick={() => setDietFilter('veg')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shadow-xs ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shadow-sm ${
               dietFilter === 'veg'
-                ? 'bg-emerald-600 text-white font-black shadow-md shadow-emerald-600/30'
-                : 'bg-[#180e24]/80 text-emerald-400 border border-emerald-500/35 hover:bg-emerald-950/40'
+                ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold shadow-md shadow-emerald-700/30 border border-emerald-400/40'
+                : 'bg-[#180e26]/85 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-950/40'
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -817,10 +821,10 @@ export default function OrderMenuPage() {
           <button
             type="button"
             onClick={() => setDietFilter('nonveg')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shadow-xs ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shadow-sm ${
               dietFilter === 'nonveg'
-                ? 'bg-rose-700 text-white font-black shadow-md shadow-rose-700/30'
-                : 'bg-[#180e24]/80 text-rose-400 border border-rose-500/35 hover:bg-rose-950/40'
+                ? 'bg-gradient-to-r from-rose-700 to-rose-800 text-white font-bold shadow-md shadow-rose-800/30 border border-rose-400/40'
+                : 'bg-[#180e26]/85 text-rose-400 border border-rose-500/25 hover:bg-rose-950/40'
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
@@ -829,14 +833,14 @@ export default function OrderMenuPage() {
           <button
             type="button"
             onClick={() => setDietFilter('bestsellers')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 shadow-xs ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-all active:scale-95 flex items-center gap-1 shadow-sm ${
               dietFilter === 'bestsellers'
-                ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-[#120816] font-black shadow-md shadow-amber-400/25'
-                : 'bg-[#180e24]/80 text-amber-300 border border-amber-400/35 hover:bg-amber-950/40'
+                ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-stone-950 font-bold shadow-md shadow-amber-500/25 border border-amber-300/40'
+                : 'bg-[#180e26]/85 text-amber-300 border border-amber-400/25 hover:bg-amber-950/40'
             }`}
           >
             <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
-            <span>Specials</span>
+            <span>Chef Specials</span>
           </button>
         </div>
       </header>
