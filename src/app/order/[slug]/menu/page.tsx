@@ -4570,31 +4570,39 @@ function MainApp() {
                     <React.Fragment key={group}>
                       {groupIdx > 0 && <ArchitecturalMandalaDivider className="my-5" />}
                       <section className="scroll-mt-32" id={`section-${group.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
-                        {/* Regal Gold Foil Ribbon Section Header — Inspired by Awadhi Royal Menu */}
+                        {/* Regal High-Contrast Gold Foil Ribbon Section Header */}
                         <div className="flex items-center gap-2.5 mb-3.5 pt-1">
                           <div
-                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-r-full rounded-l-md shadow-md select-none relative overflow-hidden group border border-[#F3C669]/60 shrink-0"
+                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-r-full rounded-l-md shadow-md select-none relative overflow-hidden shrink-0 border border-[#C88B2B]/40"
                             style={{
-                              background: 'linear-gradient(90deg, #996d19 0%, #f6d47b 32%, #fbe6a2 55%, #dfb448 82%, #8c6014 100%)',
-                              boxShadow: '0 4px 16px rgba(212, 175, 55, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.65)'
+                              background: 'linear-gradient(90deg, #E89223 0%, #F3B046 38%, #F5C76D 75%, #E89223 100%)',
+                              boxShadow: '0 3px 12px rgba(232, 146, 35, 0.26)'
                             }}
                           >
-                            {/* Metallic shine sweep */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
-
                             {/* Royal micro-diamond */}
-                            <span className="text-[10px] text-[#2c1a00] font-bold">◈</span>
+                            <span className="text-[11px] font-black shrink-0" style={{ color: '#1B0A2B' }}>
+                              ◈
+                            </span>
 
-                            <h2 className="text-[12.5px] font-extrabold tracking-[0.16em] uppercase text-[#190d00] drop-shadow-[0_1px_0_rgba(255,255,255,0.4)]">
+                            {/* Ultra-Readable High-Contrast Category Title */}
+                            <span
+                              className="text-[13px] font-extrabold uppercase tracking-wider select-none"
+                              style={{
+                                color: '#1B0A2B',
+                                fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+                                letterSpacing: '0.12em',
+                                textShadow: 'none'
+                              }}
+                            >
                               {group}
-                            </h2>
+                            </span>
                           </div>
 
                           {/* Decorative gold hairline rule */}
-                          <div className="flex-1 h-[1px] bg-gradient-to-r from-amber-400/60 via-amber-500/25 to-transparent" />
+                          <div className="flex-1 h-[1px] bg-gradient-to-r from-[#E89223]/50 via-[#F3C669]/25 to-transparent" />
 
                           {/* Item count chip */}
-                          <span className="text-[11px] font-bold text-[#6E6578] px-2.5 py-0.5 rounded-full bg-white/90 border border-[#2D1148]/8 shadow-xs tnum shrink-0">
+                          <span className="text-[11px] font-bold text-[#4A3E57] px-2.5 py-0.5 rounded-full bg-white border border-[#2D1148]/10 shadow-xs tnum shrink-0">
                             {dishes.length} items
                           </span>
                         </div>
