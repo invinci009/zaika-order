@@ -2,7 +2,7 @@
 'use client'
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useRef, Suspense } from 'react';
 import {
   Menu as MenuIcon,
   Bell,
@@ -3591,6 +3591,12 @@ function MainApp() {
   const [under250, setUnder250] = useState(false);
   const [bestsellersOnly, setBestsellersOnly] = useState(false);
 
+  // Progressive Scroll Menu Rendering & Category Jump Drawer
+  const [visibleGroupCount, setVisibleGroupCount] = useState(2);
+  const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
+  const mainScrollRef = useRef(null);
+  const sentinelRef = useRef(null);
+
   // Favorites Set
   const [favorites, setFavorites] = useState({
     'mutton-handi-biryani': true,
@@ -3658,6 +3664,49 @@ function MainApp() {
     return () => clearInterval(timer);
   }, [activeTab]);
 
+  // Progressive scroll rendering: load subsequent sections as user scrolls down
+  const handleMainScroll = (e) => {
+    if (activeTab !== 'menu') return;
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 650) {
+      setVisibleGroupCount((prev) => {
+        if (prev < MENU_GROUPS.length) {
+          return Math.min(prev + 2, MENU_GROUPS.length);
+        }
+        return prev;
+      });
+    }
+  };
+
+  // IntersectionObserver for bottom sentinel in Menu tab
+  useEffect(() => {
+    if (activeTab !== 'menu') return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry && entry.isIntersecting) {
+          setVisibleGroupCount((prev) => {
+            if (prev < MENU_GROUPS.length) {
+              return Math.min(prev + 2, MENU_GROUPS.length);
+            }
+            return prev;
+          });
+        }
+      },
+      {
+        root: mainScrollRef.current || null,
+        rootMargin: '600px',
+        threshold: 0.05
+      }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [activeTab, visibleGroupCount]);
+
   // --- HELPER: FILTERING ---
   const activeFilterCount =
     (vegOnly ? 1 : 0) +
@@ -3707,6 +3756,14 @@ function MainApp() {
   const totalMenuResults = useMemo(
     () => Object.values(menuGroupedDishes).reduce((acc, arr) => acc + arr.length, 0),
     [menuGroupedDishes]
+  );
+
+  // Progressive Scroll rendering bounds: expand all during search or dietary filtering
+  const isFilteredOrSearching = Boolean(searchQuery.trim()) || activeFilterCount > 0;
+  const effectiveVisibleCount = isFilteredOrSearching ? MENU_GROUPS.length : visibleGroupCount;
+  const displayedMenuGroups = useMemo(
+    () => MENU_GROUPS.slice(0, effectiveVisibleCount),
+    [effectiveVisibleCount]
   );
 
   // --- HELPER: CART OPERATIONS ---
@@ -3954,7 +4011,11 @@ function MainApp() {
         {/* =================================================================
             MAIN SCROLLABLE CONTENT AREA
            ================================================================= */}
-        <main className="flex-1 overflow-y-auto no-scrollbar pb-28">
+        <main
+          ref={mainScrollRef}
+          onScroll={handleMainScroll}
+          className="flex-1 overflow-y-auto no-scrollbar pb-28"
+        >
           {/* ---------------------------------------------------------------
               TAB 1: HOME (TACO BELL CLEAN D2C RHYTHM — PM ZAIKA IDENTITY)
              --------------------------------------------------------------- */}
@@ -4562,7 +4623,7 @@ function MainApp() {
               </div>
 
               <div className="px-4 pt-4 space-y-5">
-                {MENU_GROUPS.map((group, groupIdx) => {
+                {displayedMenuGroups.map((group, groupIdx) => {
                   const dishes = menuGroupedDishes[group] || [];
                   if (dishes.length === 0) return null;
 
@@ -4714,6 +4775,39 @@ function MainApp() {
                     </React.Fragment>
                   );
                 })}
+
+                {/* Progressive Scroll Loading Sentinel & Royal Luxury Status Indicator */}
+                {effectiveVisibleCount < MENU_GROUPS.length && !isFilteredOrSearching && (
+                  <div
+                    ref={sentinelRef}
+                    className="pt-4 pb-8 flex flex-col items-center justify-center gap-2.5"
+                  >
+                    <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-[#2D1148]/10 shadow-sm">
+                      <div className="w-3.5 h-3.5 border-2 border-[#E89223] border-t-transparent rounded-full animate-spin shrink-0" />
+                      <span className="text-[11.5px] font-bold text-[#4A3E57] tracking-wide">
+                        Scroll to reveal more specialties ({effectiveVisibleCount} of {MENU_GROUPS.length} sections)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setVisibleGroupCount(MENU_GROUPS.length)}
+                      className="text-[11px] font-bold text-[#E89223] hover:text-[#D48016] underline cursor-pointer"
+                    >
+                      Load all sections now
+                    </button>
+                  </div>
+                )}
+
+                {effectiveVisibleCount >= MENU_GROUPS.length && totalMenuResults > 0 && !isFilteredOrSearching && (
+                  <div className="pt-6 pb-8 text-center space-y-1 opacity-75">
+                    <p className="text-[11.5px] font-extrabold uppercase tracking-[0.16em] text-[#C88B2B]">
+                      ◈ End of PM Zaika Royal Menu ◈
+                    </p>
+                    <p className="text-[11px] font-medium text-[#8C8396]">
+                      {totalMenuResults} authentic Awadhi delicacies freshly prepared to order
+                    </p>
+                  </div>
+                )}
 
                 {totalMenuResults === 0 && (
                   <div className="p-8 rounded-[22px] bg-white text-center shadow-[0_6px_24px_rgba(45,17,72,0.06)]">
@@ -5088,6 +5182,22 @@ function MainApp() {
             </span>
           </button>
         </nav>
+
+        {/* Floating Category Quick-Jump Button on Menu tab */}
+        {activeTab === 'menu' && (
+          <button
+            type="button"
+            onClick={() => setCategoryDrawerOpen(true)}
+            className="absolute bottom-[86px] right-4 z-20 h-10 px-3.5 rounded-full bg-gradient-to-r from-[#E89223] to-[#F3B046] text-[#1B0A2B] font-extrabold text-[12px] shadow-[0_6px_20px_rgba(232,146,35,0.4)] flex items-center gap-2 cursor-pointer border border-white/40 active:scale-95 transition-all select-none hover:brightness-105"
+            aria-label="Browse Menu Categories"
+          >
+            <UtensilsCrossed className="w-3.5 h-3.5 stroke-[2.6]" />
+            <span>Categories</span>
+            <span className="w-4 h-4 rounded-full bg-[#1B0A2B] text-white text-[9.5px] flex items-center justify-center font-black">
+              {MENU_GROUPS.length}
+            </span>
+          </button>
+        )}
 
         {/* MODAL 1: TABLE SELECTOR */}
         {tableModalOpen && (
@@ -5958,6 +6068,72 @@ function MainApp() {
                     Register Complaint
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 7: CATEGORY QUICK JUMP DRAWER */}
+        {categoryDrawerOpen && (
+          <div
+            onClick={() => setCategoryDrawerOpen(false)}
+            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#FAF5F0] p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[80vh] flex flex-col"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#2D1148]/10 shrink-0">
+                <div>
+                  <h3 className="text-[16px] font-extrabold text-[#1B1026]">
+                    Menu Categories
+                  </h3>
+                  <p className="text-xs text-[#6E6578]">
+                    Jump directly to any royal section
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCategoryDrawerOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-[#2D1148] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto no-scrollbar py-3 space-y-2 mt-2">
+                {MENU_GROUPS.map((grp) => {
+                  const count = (menuGroupedDishes[grp] || []).length;
+                  return (
+                    <button
+                      key={grp}
+                      type="button"
+                      onClick={() => {
+                        setVisibleGroupCount(MENU_GROUPS.length);
+                        setCategoryDrawerOpen(false);
+                        setTimeout(() => {
+                          const el = document.getElementById(
+                            `section-${grp.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+                          );
+                          if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }, 80);
+                      }}
+                      className="w-full px-4 py-3 rounded-2xl bg-white hover:bg-[#F2EAF8] border border-[#2D1148]/10 flex items-center justify-between text-left transition-colors cursor-pointer shadow-xs active:scale-[0.99]"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[#E89223] font-black text-xs">◈</span>
+                        <span className="text-[13px] font-extrabold text-[#1B1026]">
+                          {grp}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-bold text-[#4A3E57] px-2.5 py-0.5 rounded-full bg-[#FAF5F0] border border-[#2D1148]/10 tnum">
+                        {count} items
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

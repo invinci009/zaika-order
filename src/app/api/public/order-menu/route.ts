@@ -11,6 +11,7 @@ import {
 import { hashToken } from '@/lib/ordering/tokens'
 import { getRestaurantConfig } from '@/config/loader'
 import { normalizeImageUrl } from '@/lib/ordering/validation'
+import { getCached } from '@/lib/cache'
 
 // GET /api/public/order-menu?slug=...&token=...
 // Public menu: only visible items (availability flagged for sold-out labels).
@@ -34,13 +35,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Ordering is not available for this link' }, { status: 404 })
     }
 
-    const [categories, items, ordering, settings, diningTables] = await Promise.all([
-      getOrderMenuCategories().catch(() => []),
-      getOrderMenuItems().catch(() => []),
-      getOrderingConfig().catch(() => ({ taxRateBps: 500, serviceChargePaise: 0, currency: 'INR' as const, generalOrderingEnabled: true, updatedAt: '' })),
-      getRestaurantSettings().catch(() => null),
-      getTables(true).catch(() => []),
-    ])
+    const { categories, items, ordering, settings, diningTables } = await getCached(
+      'public:order_menu:catalog',
+      10 * 60 * 1000,
+      async () => {
+        const [categories, items, ordering, settings, diningTables] = await Promise.all([
+          getOrderMenuCategories().catch(() => []),
+          getOrderMenuItems().catch(() => []),
+          getOrderingConfig().catch(() => ({
+            taxRateBps: 500,
+            serviceChargePaise: 0,
+            currency: 'INR' as const,
+            generalOrderingEnabled: true,
+            updatedAt: '',
+          })),
+          getRestaurantSettings().catch(() => null),
+          getTables(true).catch(() => []),
+        ])
+        return { categories, items, ordering, settings, diningTables }
+      }
+    )
 
     const tableParam = searchParams.get('table')
     let table: { id: string; label: string; state?: string } | null = null
@@ -74,7 +88,7 @@ export async function GET(request: NextRequest) {
         status: 304,
         headers: {
           ETag: etag,
-          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=86400',
         },
       })
     }
@@ -117,7 +131,7 @@ export async function GET(request: NextRequest) {
         status: 200,
         headers: {
           ETag: etag,
-          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=86400',
         },
       }
     )
