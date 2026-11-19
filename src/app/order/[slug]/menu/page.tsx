@@ -3681,15 +3681,30 @@ function MainApp() {
     }
   }, [favorites]);
 
-  // Cart State (persisted)
+  // Cart State (persisted & safely sanitized)
   const [cart, setCart] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = window.localStorage.getItem('pm_zaika_cart');
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-            return parsed;
+          if (parsed && typeof parsed === 'object') {
+            const cleanCart = {};
+            for (const [key, val] of Object.entries(parsed)) {
+              if (
+                val &&
+                typeof val === 'object' &&
+                val.dish &&
+                val.dish.id &&
+                typeof val.qty === 'number' &&
+                val.qty > 0
+              ) {
+                cleanCart[key] = val;
+              }
+            }
+            if (Object.keys(cleanCart).length > 0) {
+              return cleanCart;
+            }
           }
         }
       } catch {}
@@ -3754,7 +3769,17 @@ function MainApp() {
     if (typeof window !== 'undefined') {
       try {
         const saved = window.localStorage.getItem('pm_zaika_live_order');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (
+            parsed &&
+            typeof parsed === 'object' &&
+            parsed.id &&
+            typeof parsed.stage === 'number'
+          ) {
+            return parsed;
+          }
+        }
       } catch {}
     }
     return null;
@@ -3931,10 +3956,12 @@ function MainApp() {
   );
 
   // --- HELPER: CART OPERATIONS ---
-  const getDishQty = (dishId) =>
-    Object.values(cart)
-      .filter((entry) => entry.dish.id === dishId)
-      .reduce((sum, entry) => sum + entry.qty, 0);
+  const getDishQty = (dishId) => {
+    if (!dishId || !cart) return 0;
+    return Object.values(cart)
+      .filter((entry) => entry && entry.dish && entry.dish.id === dishId)
+      .reduce((sum, entry) => sum + (entry.qty || 0), 0);
+  };
 
   const quickAddDish = (dish) => {
     const key = `${dish.id}__Full__Medium__`;
@@ -3958,7 +3985,7 @@ function MainApp() {
 
   const quickDecrementDish = (dishId) => {
     setCart((prev) => {
-      const matchingKeys = Object.keys(prev).filter((k) => prev[k].dish.id === dishId);
+      const matchingKeys = Object.keys(prev).filter((k) => prev[k] && prev[k].dish && prev[k].dish.id === dishId);
       if (matchingKeys.length === 0) return prev;
       const target = matchingKeys[matchingKeys.length - 1];
       const next = { ...prev };
@@ -4037,9 +4064,14 @@ function MainApp() {
 
   // --- BILLING & COUPON CALCULATION ---
   const cartSummary = useMemo(() => {
-    const entries = Object.values(cart);
-    const itemCount = entries.reduce((sum, e) => sum + e.qty, 0);
-    const subtotal = entries.reduce((sum, e) => sum + e.unitPrice * e.qty, 0);
+    const entries = Object.values(cart || {}).filter(
+      (e) => e && e.dish && e.dish.id && typeof e.qty === 'number'
+    );
+    const itemCount = entries.reduce((sum, e) => sum + (e.qty || 0), 0);
+    const subtotal = entries.reduce(
+      (sum, e) => sum + (e.unitPrice || 0) * (e.qty || 0),
+      0
+    );
 
     let couponDiscount = 0;
     let activeCouponObj = null;

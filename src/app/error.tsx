@@ -50,7 +50,15 @@ export default function GlobalError({ error, reset }: ErrorProps) {
           <div className="pt-2 flex flex-col sm:flex-row gap-3">
             <button
               type="button"
-              onClick={() => reset()}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  try {
+                    window.localStorage.removeItem('pm_zaika_cart')
+                    window.localStorage.removeItem('pm_zaika_live_order')
+                  } catch {}
+                }
+                reset()
+              }}
               className="flex-1 h-11 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/20 active:scale-[0.98] transition cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />
