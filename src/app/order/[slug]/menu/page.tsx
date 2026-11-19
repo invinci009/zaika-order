@@ -3940,7 +3940,7 @@ function MainApp() {
       `}</style>
 
       {/* Mobile Viewport Container (430px centered on desktop, full-bleed on mobile) */}
-      <div className="w-full max-w-[430px] min-h-screen sm:min-h-[852px] sm:h-[852px] bg-[#FAF5F0] relative sm:rounded-[34px] shadow-[0_0_60px_rgba(45,17,72,0.12)] overflow-hidden flex flex-col">
+      <div className="w-full max-w-[430px] h-[100dvh] sm:h-[852px] bg-[#FAF5F0] relative sm:rounded-[34px] shadow-[0_0_60px_rgba(45,17,72,0.12)] overflow-hidden flex flex-col">
         {/* Floating Toast */}
         {toast && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-[88%] max-w-[340px] pointer-events-none">
@@ -4462,7 +4462,7 @@ function MainApp() {
              --------------------------------------------------------------- */}
           {activeTab === 'menu' && (
             <div className="pb-4">
-              <div className="sticky top-0 z-20 bg-[#FAF5F0]/95 backdrop-blur-md px-4 pt-4 pb-3 border-b border-[#2D1148]/[0.06]">
+              <div className="sticky top-0 z-20 bg-[#FAF5F0] px-4 pt-4 pb-3 border-b border-[#2D1148]/[0.08] shadow-xs">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h1 className="text-[20px] font-extrabold text-[#1B1026] leading-tight">
@@ -5085,11 +5085,11 @@ function MainApp() {
         {tableModalOpen && (
           <div
             onClick={() => setTableModalOpen(false)}
-            className="absolute inset-0 z-50 bg-[#1B1026]/50 backdrop-blur-[2px] flex items-end"
+            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full rounded-t-[28px] bg-white p-5 shadow-2xl"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
                 <div>
@@ -5137,11 +5137,11 @@ function MainApp() {
         {filterSheetOpen && (
           <div
             onClick={() => setFilterSheetOpen(false)}
-            className="absolute inset-0 z-50 bg-[#1B1026]/50 backdrop-blur-[2px] flex items-end"
+            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full rounded-t-[28px] bg-white p-5 shadow-2xl"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
                 <h3 className="text-[16px] font-extrabold text-[#1B1026]">
@@ -5236,11 +5236,11 @@ function MainApp() {
         {customDish && (
           <div
             onClick={() => setCustomDish(null)}
-            className="absolute inset-0 z-50 bg-[#1B1026]/55 backdrop-blur-[2px] flex items-end"
+            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full rounded-t-[28px] bg-white max-h-[88%] flex flex-col overflow-hidden shadow-2xl"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-white max-h-[88%] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200"
             >
               <div className="relative h-[168px] shrink-0">
                 <img
@@ -5407,11 +5407,11 @@ function MainApp() {
         {cartOpen && (
           <div
             onClick={() => setCartOpen(false)}
-            className="absolute inset-0 z-50 bg-[#1B1026]/55 backdrop-blur-[2px] flex items-end"
+            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full rounded-t-[28px] bg-[#FAF5F0] max-h-[90%] flex flex-col overflow-hidden shadow-2xl"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#FAF5F0] max-h-[90%] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200"
             >
               <div className="px-5 py-4 bg-white border-b border-[#EFE8DF] flex items-center justify-between">
                 <div>
@@ -5765,11 +5765,11 @@ function MainApp() {
         {feedbackOpen && (
           <div
             onClick={() => setFeedbackOpen(false)}
-            className="absolute inset-0 z-50 bg-[#1B1026]/55 backdrop-blur-[2px] flex items-end"
+            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full rounded-t-[28px] bg-white p-5 max-h-[88%] overflow-y-auto no-scrollbar shadow-2xl"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 max-h-[88%] overflow-y-auto no-scrollbar shadow-2xl animate-in slide-in-from-bottom duration-200"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
                 <div>
@@ -5875,11 +5875,11 @@ function MainApp() {
         {complaintOpen && (
           <div
             onClick={() => setComplaintOpen(false)}
-            className="absolute inset-0 z-50 bg-[#1B1026]/55 backdrop-blur-[2px] flex items-end"
+            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full rounded-t-[28px] bg-white p-5 shadow-2xl"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
                 <div className="flex items-center gap-2">
