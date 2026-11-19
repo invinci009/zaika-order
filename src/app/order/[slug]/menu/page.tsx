@@ -1,8 +1,8 @@
+// @ts-nocheck
 'use client'
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import {
   Menu as MenuIcon,
   Bell,
@@ -33,54 +33,165 @@ import {
   Clock,
   Award,
   Flame,
-  UtensilsCrossed,
-  Sparkles,
-} from 'lucide-react'
-import { FOOD_IMAGE_MAP } from '@/lib/ordering/foodImages'
+  UtensilsCrossed
+} from 'lucide-react';
 
-// --- TYPES ---
-interface MenuItem {
-  id: string
-  name: string
-  category: string
-  menuGroup: string
-  veg: boolean
-  price: number
-  halfPrice?: number
-  rating: number
-  ratingCount: string
-  badge?: string | null
-  badgeType?: 'plum' | 'saffron' | 'emerald' | string
-  popular: boolean
-  customizable: boolean
-  description: string
-  image: string
-}
+// --- FALLBACK FOOD IMAGE ---
+const FALLBACK_FOOD_IMG =
+  'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80';
 
-interface CartEntry {
-  key: string
-  dish: MenuItem
-  portion: string
-  spice: string
-  addons: string[]
-  notes: string
-  unitPrice: number
-  qty: number
-}
+// --- AUTHENTIC PM ZAIKA MENU DATA ---
+const MENU_ITEMS = [
+  // BIRYANI
+  {
+    id: 'mutton-handi-biryani',
+    name: 'Mutton Handi Biryani',
+    category: 'Biryani',
+    menuGroup: 'Biryani & Mains',
+    veg: false,
+    price: 380,
+    halfPrice: 220,
+    rating: 4.9,
+    ratingCount: '1.2K+',
+    badge: 'BESTSELLER',
+    badgeType: 'plum',
+    popular: true,
+    customizable: true,
+    description: 'Slow-cooked Awadhi mutton layered with saffron basmati in a sealed clay handi.',
+    image:
+      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'chicken-dum-biryani',
+    name: 'Chicken Dum Biryani',
+    category: 'Biryani',
+    menuGroup: 'Biryani & Mains',
+    veg: false,
+    price: 290,
+    halfPrice: 170,
+    rating: 4.8,
+    ratingCount: '980+',
+    badge: 'POPULAR',
+    badgeType: 'saffron',
+    popular: true,
+    customizable: true,
+    description: 'Fragrant long-grain basmati slow-steamed with spiced chicken, mint, and fried onions.',
+    image:
+      'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80'
+  },
 
-interface LiveOrder {
-  id: string
-  table: string
-  total: number
-  itemsCount: number
-  stage: number
-}
+  // TANDOOR & KEBABS
+  {
+    id: 'paneer-tikka-shashlik',
+    name: 'Paneer Tikka Shashlik',
+    category: 'Tandoor',
+    menuGroup: 'Tandoor & Kebabs',
+    veg: true,
+    price: 260,
+    halfPrice: 150,
+    rating: 4.8,
+    ratingCount: '710+',
+    badge: 'BESTSELLER',
+    badgeType: 'plum',
+    popular: true,
+    customizable: true,
+    description: 'Char-grilled malai paneer skewers with bell peppers, served with pudina chutney.',
+    image:
+      'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'chicken-malai-tikka',
+    name: 'Chicken Malai Tikka',
+    category: 'Tandoor',
+    menuGroup: 'Tandoor & Kebabs',
+    veg: false,
+    price: 310,
+    halfPrice: 180,
+    rating: 4.8,
+    ratingCount: '620+',
+    badge: "CHEF'S PICK",
+    badgeType: 'emerald',
+    popular: true,
+    customizable: true,
+    description: 'Velvety cashew, cream, and cardamom-marinated boneless chicken charred in clay tandoor.',
+    image:
+      'https://images.unsplash.com/photo-1610057099443-fde8c8d50f2c?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'mutton-seekh-kebab',
+    name: 'Mutton Seekh Kebab',
+    category: 'Tandoor',
+    menuGroup: 'Tandoor & Kebabs',
+    veg: false,
+    price: 340,
+    halfPrice: 195,
+    rating: 4.9,
+    ratingCount: '510+',
+    badge: "CHEF'S PICK",
+    badgeType: 'emerald',
+    popular: false,
+    customizable: true,
+    description: 'Skewered minced mutton blended with royal spices, fresh coriander, and smoky ghee.',
+    image:
+      'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=500&q=80'
+  },
 
-// --- AUTHENTIC PM ZAIKA MENU DATA (Matches Physical Menu & User Images 1-7) ---
-const MENU_ITEMS: MenuItem[] = [
-  // ==========================================
-  // SOUPS (Matches user screenshots 5, 6, 7 1:1)
-  // ==========================================
+  // MAINS
+  {
+    id: 'murg-mussallam',
+    name: 'Murg Mussallam',
+    category: 'Mains',
+    menuGroup: 'Biryani & Mains',
+    veg: false,
+    price: 420,
+    halfPrice: 240,
+    rating: 4.9,
+    ratingCount: '640+',
+    badge: "CHEF'S PICK",
+    badgeType: 'emerald',
+    popular: true,
+    customizable: true,
+    description: 'Signature roasted chicken braised in rich almond, cashew, and saffron Mughlai gravy.',
+    image:
+      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'butter-chicken',
+    name: 'Butter Chicken',
+    category: 'Mains',
+    menuGroup: 'Biryani & Mains',
+    veg: false,
+    price: 320,
+    halfPrice: 185,
+    rating: 4.8,
+    ratingCount: '1.1K+',
+    badge: 'BESTSELLER',
+    badgeType: 'plum',
+    popular: false,
+    customizable: true,
+    description: 'Tandoor-pulled chicken tikka simmered in silky tomato, kasuri methi, and butter gravy.',
+    image:
+      'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=500&q=80'
+  },
+  {
+    id: 'dal-makhani',
+    name: 'Dal Makhani',
+    category: 'Mains',
+    menuGroup: 'Biryani & Mains',
+    veg: true,
+    price: 220,
+    halfPrice: 130,
+    rating: 4.7,
+    ratingCount: '740+',
+    badge: null,
+    popular: false,
+    customizable: true,
+    description: 'Overnight slow-simmered black urad lentils finished with churned white butter and cream.',
+    image:
+      'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=500&q=80'
+  },
+
+  // SOUPS
   {
     id: 'veg-sweet-corn',
     name: 'Veg Sweet Corn Soup',
@@ -88,1021 +199,224 @@ const MENU_ITEMS: MenuItem[] = [
     menuGroup: 'Soups',
     veg: true,
     price: 110,
-    rating: 4.7,
-    ratingCount: '320+',
+    rating: 4.6,
+    ratingCount: '310+',
     badge: null,
     popular: false,
     customizable: false,
     description: 'Velvety golden sweet corn broth with finely diced garden vegetables and white pepper.',
     image:
-      FOOD_IMAGE_MAP['veg sweet corn'] ||
-      'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=500&q=80'
   },
   {
-    id: 'sweet-corn-non-veg',
-    name: 'Sweet Corn (Non Veg)',
+    id: 'chicken-sweet-corn',
+    name: 'Chicken Sweet Corn Soup',
     category: 'Soups',
     menuGroup: 'Soups',
     veg: false,
     price: 140,
-    rating: 4.8,
-    ratingCount: '410+',
+    rating: 4.7,
+    ratingCount: '390+',
     badge: null,
     popular: false,
     customizable: false,
     description: 'Warming golden corn soup enriched with tender shredded chicken and egg ribbons.',
     image:
-      FOOD_IMAGE_MAP['sweet corn (non veg)'] ||
-      'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1604152135912-04a022e23696?auto=format&fit=crop&w=500&q=80'
   },
   {
     id: 'hot-n-sour-veg',
-    name: 'Hot N Sour (Veg)',
+    name: 'Veg Hot & Sour Soup',
     category: 'Soups',
     menuGroup: 'Soups',
     veg: true,
     price: 110,
     rating: 4.6,
-    ratingCount: '290+',
+    ratingCount: '280+',
     badge: null,
     popular: false,
     customizable: false,
     description: 'Zesty dark soy and chilli broth loaded with julienned veggies and crisp noodles.',
     image:
-      FOOD_IMAGE_MAP['hot n sour (veg)'] ||
-      'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=500&q=80'
   },
+
+  // CHINESE & ROLLS
   {
-    id: 'hot-n-sour-non-veg',
-    name: 'Hot N Sour (Non Veg)',
-    category: 'Soups',
-    menuGroup: 'Soups',
+    id: 'chicken-hakka-noodles',
+    name: 'Chicken Hakka Noodles',
+    category: 'Chinese',
+    menuGroup: 'Chinese & Rolls',
     veg: false,
-    price: 140,
-    rating: 4.8,
-    ratingCount: '450+',
-    badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: false,
-    description: 'Classic peppery Indo-Chinese soup with poached chicken, wild mushrooms, and egg drop.',
-    image:
-      FOOD_IMAGE_MAP['hot n sour (non veg)'] ||
-      'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'veg-manchow',
-    name: 'Veg Manchow Soup',
-    category: 'Soups',
-    menuGroup: 'Soups',
-    veg: true,
-    price: 110,
+    price: 210,
     rating: 4.7,
-    ratingCount: '380+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Garlicky dark broth loaded with minced ginger, scallions, cilantro, and crispy noodles.',
-    image:
-      FOOD_IMAGE_MAP['veg manchow'] ||
-      'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-manchow',
-    name: 'Chicken Manchow Soup',
-    category: 'Soups',
-    menuGroup: 'Soups',
-    veg: false,
-    price: 140,
-    rating: 4.9,
     ratingCount: '520+',
-    badge: 'BESTSELLER',
-    badgeType: 'plum',
-    popular: true,
-    customizable: false,
-    description: 'Hearty ginger-garlic chicken soup served piping hot with crunchy fried wonton crisps.',
-    image:
-      FOOD_IMAGE_MAP['chicken manchow soup'] ||
-      'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'mushroom-soup',
-    name: 'Mushroom Soup',
-    category: 'Soups',
-    menuGroup: 'Soups',
-    veg: true,
-    price: 110,
-    rating: 4.6,
-    ratingCount: '210+',
     badge: null,
     popular: false,
-    customizable: false,
-    description: 'Earthy wild button mushroom puree with fresh thyme and cracked black pepper.',
-    image:
-      FOOD_IMAGE_MAP['mushroom soup'] ||
-      'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-mushroom-soup',
-    name: 'Chicken Mushroom Soup',
-    category: 'Soups',
-    menuGroup: 'Soups',
-    veg: false,
-    price: 160,
-    rating: 4.8,
-    ratingCount: '270+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Rich velvety broth combining tender chicken morsels and sliced button mushrooms.',
-    image:
-      FOOD_IMAGE_MAP['chicken mushroom soup'] ||
-      'https://images.unsplash.com/photo-1588566565463-180a5b2090f2?auto=format&fit=crop&w=400&q=80',
-  },
-
-  // ==========================================
-  // CHEF SIGNATURES (Awadhi & Mughlai Masterpieces)
-  // ==========================================
-  {
-    id: 'mutton-handi-biryani',
-    name: 'Mutton Handi Biryani',
-    category: 'Biryani & Rice',
-    menuGroup: 'Biryani & Rice',
-    veg: false,
-    price: 380,
-    halfPrice: 220,
-    rating: 4.9,
-    ratingCount: '1.4K+',
-    badge: 'ROYAL SPECIAL',
-    badgeType: 'plum',
-    popular: true,
     customizable: true,
-    description: 'Slow-cooked in a sealed clay handi with long-grain basmati, saffron, and Awadhi spices.',
+    description: 'High-flame wok-tossed noodles with tender chicken strips, crisp peppers, garlic, and soy.',
     image:
-      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80',
+      'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80'
   },
   {
-    id: 'murg-mussallam',
-    name: 'Murg Mussallam',
-    category: 'Curries & Mains',
-    menuGroup: 'Curries & Mains',
+    id: 'double-egg-chicken-roll',
+    name: 'Double Egg Chicken Roll',
+    category: 'Rolls',
+    menuGroup: 'Chinese & Rolls',
     veg: false,
-    price: 420,
-    halfPrice: 240,
-    rating: 4.9,
-    ratingCount: '680+',
-    badge: 'CHEF SIGNATURE',
-    badgeType: 'emerald',
-    popular: true,
-    customizable: true,
-    description: 'Whole roasted chicken braised in a decadent almond, cashew, and saffron Mughlai gravy.',
-    image:
-      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=500&q=80',
-  },
-  {
-    id: 'chicken-dum-biryani',
-    name: 'Chicken Dum Biryani',
-    category: 'Biryani & Rice',
-    menuGroup: 'Biryani & Rice',
-    veg: false,
-    price: 290,
-    halfPrice: 170,
-    rating: 4.8,
-    ratingCount: '1.1K+',
-    badge: 'BESTSELLER',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: true,
-    description: 'Fragrant long-grain basmati slow-steamed with spiced chicken, mint, and fried onions.',
-    image:
-      'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80',
-  },
-  {
-    id: 'paneer-tikka-shashlik',
-    name: 'Paneer Tikka Shashlik',
-    category: 'Tandoori & Kebabs',
-    menuGroup: 'Tandoori & Kebabs',
-    veg: true,
-    price: 260,
-    halfPrice: 150,
-    rating: 4.8,
-    ratingCount: '740+',
-    badge: "CHEF'S PICK",
-    badgeType: 'emerald',
-    popular: true,
-    customizable: true,
-    description: 'Char-grilled malai paneer skewers with bell peppers, served with pudina chutney.',
-    image:
-      'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80',
-  },
-  {
-    id: 'chicken-malai-tikka',
-    name: 'Chicken Malai Tikka',
-    category: 'Tandoori & Kebabs',
-    menuGroup: 'Tandoori & Kebabs',
-    veg: false,
-    price: 310,
-    halfPrice: 180,
-    rating: 4.8,
-    ratingCount: '660+',
-    badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: true,
-    description: 'Velvety cashew, cream, and cardamom-marinated chicken charred in clay tandoor.',
-    image:
-      'https://images.unsplash.com/photo-1610057099443-fde8c8d50f2c?auto=format&fit=crop&w=500&q=80',
-  },
-  {
-    id: 'mutton-seekh-kebab',
-    name: 'Mutton Seekh Kebab',
-    category: 'Tandoori & Kebabs',
-    menuGroup: 'Tandoori & Kebabs',
-    veg: false,
-    price: 340,
-    halfPrice: 195,
-    rating: 4.9,
-    ratingCount: '540+',
-    badge: "CHEF'S PICK",
-    badgeType: 'emerald',
-    popular: false,
-    customizable: true,
-    description: 'Skewered minced mutton blended with royal spices, fresh coriander, and smoky ghee.',
-    image:
-      'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=500&q=80',
-  },
-
-  // ==========================================
-  // STARTERS (VEG)
-  // ==========================================
-  {
-    id: 'paneer-chili-dry',
-    name: 'Paneer Chili Dry',
-    category: 'Starters (Veg)',
-    menuGroup: 'Starters',
-    veg: true,
-    price: 220,
-    halfPrice: 130,
-    rating: 4.7,
-    ratingCount: '430+',
-    badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: false,
-    description: 'Wok-tossed cottage cheese cubes with crisp capsicum, onions, and dark green chili glaze.',
-    image:
-      FOOD_IMAGE_MAP['paneer chili dry'] ||
-      'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'gobi-manchurian',
-    name: 'Gobi Manchurian Dry',
-    category: 'Starters (Veg)',
-    menuGroup: 'Starters',
-    veg: true,
-    price: 180,
-    halfPrice: 110,
-    rating: 4.6,
-    ratingCount: '350+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Crispy battered cauliflower florets glazed in spicy garlic soy and scallions.',
-    image:
-      FOOD_IMAGE_MAP['gobi manchurian'] ||
-      'https://images.unsplash.com/photo-1625398407796-82650a8c135f?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'crispy-chili-potato',
-    name: 'Crispy Chili Potatoes',
-    category: 'Starters (Veg)',
-    menuGroup: 'Starters',
-    veg: true,
-    price: 170,
-    halfPrice: 100,
-    rating: 4.6,
-    ratingCount: '290+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Golden fried potato batons coated with sweet spicy schezwan sauce and sesame seeds.',
-    image:
-      FOOD_IMAGE_MAP['crispy chili potatos'] ||
-      'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'paneer-65',
-    name: 'Paneer 65',
-    category: 'Starters (Veg)',
-    menuGroup: 'Starters',
-    veg: true,
-    price: 230,
-    halfPrice: 135,
-    rating: 4.8,
-    ratingCount: '410+',
-    badge: 'BESTSELLER',
-    badgeType: 'plum',
-    popular: true,
-    customizable: false,
-    description: 'Hyderabadi spiced crispy paneer tossed with curry leaves, mustard seeds, and curd.',
-    image:
-      FOOD_IMAGE_MAP['paneer 65'] ||
-      'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'paneer-pakora',
-    name: 'Paneer Pakora',
-    category: 'Starters (Veg)',
-    menuGroup: 'Starters',
-    veg: true,
-    price: 190,
-    halfPrice: 110,
-    rating: 4.7,
-    ratingCount: '310+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Spiced besan batter coated tender paneer fritters dusted with chaat masala.',
-    image:
-      FOOD_IMAGE_MAP['paneer pakora'] ||
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80',
-  },
-
-  // ==========================================
-  // STARTERS (NON-VEG) (Matches user screenshot 1)
-  // ==========================================
-  {
-    id: 'chicken-lollypop',
-    name: 'Chicken Lollipop (6 Pcs)',
-    category: 'Starters (Non-Veg)',
-    menuGroup: 'Starters',
-    veg: false,
-    price: 260,
-    halfPrice: 150,
-    rating: 4.9,
-    ratingCount: '1.2K+',
-    badge: 'BESTSELLER',
-    badgeType: 'plum',
-    popular: true,
-    customizable: false,
-    description: 'Frenched chicken winglets marinated in fiery red spices, deep fried and served with hot garlic dip.',
-    image:
-      FOOD_IMAGE_MAP['chicken lollypop'] ||
-      'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-chili-boneless-dry',
-    name: 'Chicken Chilli Boneless Dry',
-    category: 'Starters (Non-Veg)',
-    menuGroup: 'Starters',
-    veg: false,
-    price: 270,
-    halfPrice: 160,
-    rating: 4.8,
-    ratingCount: '820+',
-    badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: false,
-    description: 'Juicy boneless chicken chunks tossed with diced capsicum, onions, and spicy dark soya sauce.',
-    image:
-      FOOD_IMAGE_MAP['chicken chili bonless dry'] ||
-      'https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'butter-chicken-chilli-dry',
-    name: 'Butter Chicken Chilli Dry',
-    category: 'Starters (Non-Veg)',
-    menuGroup: 'Starters',
-    veg: false,
-    price: 290,
-    halfPrice: 175,
-    rating: 4.8,
-    ratingCount: '480+',
-    badge: 'CHEF SPECIAL',
-    badgeType: 'emerald',
-    popular: true,
-    customizable: false,
-    description: 'PM Zaika fusion creation — tandoori chicken tossed in buttery chili glaze with green herbs.',
-    image:
-      FOOD_IMAGE_MAP['butter chicken chilli dry'] ||
-      'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'egg-chili-dry',
-    name: 'Egg Chilli Dry',
-    category: 'Starters (Non-Veg)',
-    menuGroup: 'Starters',
-    veg: false,
-    price: 180,
-    halfPrice: 110,
-    rating: 4.6,
-    ratingCount: '340+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Crispy fried boiled egg quarters tossed with sliced bell peppers, chillies, and savory sauce.',
-    image:
-      FOOD_IMAGE_MAP['egg chili dry'] ||
-      'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-65',
-    name: 'Chicken 65',
-    category: 'Starters (Non-Veg)',
-    menuGroup: 'Starters',
-    veg: false,
-    price: 260,
-    halfPrice: 155,
-    rating: 4.8,
-    ratingCount: '670+',
-    badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: false,
-    description: 'Bite-sized chicken chunks marinated with crushed peppercorns, curry leaves, and South Indian spices.',
-    image:
-      FOOD_IMAGE_MAP['chicken 65'] ||
-      'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-pakora',
-    name: 'Chicken Pakora',
-    category: 'Starters (Non-Veg)',
-    menuGroup: 'Starters',
-    veg: false,
-    price: 240,
-    halfPrice: 140,
-    rating: 4.7,
-    ratingCount: '430+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Traditional gram flour and carom seed battered boneless chicken fritters fried to crisp perfection.',
-    image:
-      FOOD_IMAGE_MAP['chicken pakora'] ||
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80',
-  },
-
-  // ==========================================
-  // TANDOORI & KEBABS
-  // ==========================================
-  {
-    id: 'chicken-tandoori',
-    name: 'Chicken Tandoori (Full / Half)',
-    category: 'Tandoori & Kebabs',
-    menuGroup: 'Tandoori & Kebabs',
-    veg: false,
-    price: 440,
-    halfPrice: 250,
-    rating: 4.9,
-    ratingCount: '1.3K+',
-    badge: 'BESTSELLER',
-    badgeType: 'plum',
-    popular: true,
-    customizable: true,
-    description: 'Traditional whole chicken marinated in yogurt, Kashmiri deghi mirch, and roasted in clay tandoor.',
-    image:
-      FOOD_IMAGE_MAP['chicken tandoori'] ||
-      'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-tikka',
-    name: 'Chicken Tikka (8 Pcs)',
-    category: 'Tandoori & Kebabs',
-    menuGroup: 'Tandoori & Kebabs',
-    veg: false,
-    price: 300,
-    halfPrice: 175,
+    price: 150,
     rating: 4.8,
     ratingCount: '890+',
     badge: 'POPULAR',
     badgeType: 'saffron',
     popular: true,
     customizable: true,
-    description: 'Boneless chicken thighs marinated with mustard oil, hung curd, and crushed spices, flame-roasted.',
+    description: 'Smoky tandoor chicken tikka, double egg layer, pickled onions, and mint chutney in paratha.',
     image:
-      FOOD_IMAGE_MAP['chicken tikka'] ||
-      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=500&q=80'
   },
   {
-    id: 'chicken-reshmi-kabab',
-    name: 'Chicken Reshmi Kabab',
-    category: 'Tandoori & Kebabs',
-    menuGroup: 'Tandoori & Kebabs',
-    veg: false,
-    price: 320,
-    halfPrice: 185,
-    rating: 4.8,
-    ratingCount: '580+',
-    badge: "CHEF'S PICK",
-    badgeType: 'emerald',
-    popular: false,
-    customizable: true,
-    description: 'Silky boneless chicken tenders steeped in egg white, cashew paste, and light mace seasoning.',
-    image:
-      FOOD_IMAGE_MAP['chicken reshmi kabab'] ||
-      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-seekh-kabab',
-    name: 'Chicken Seekh Kabab',
-    category: 'Tandoori & Kebabs',
-    menuGroup: 'Tandoori & Kebabs',
-    veg: false,
-    price: 290,
-    halfPrice: 170,
+    id: 'paneer-kathi-roll',
+    name: 'Paneer Kathi Roll',
+    category: 'Rolls',
+    menuGroup: 'Chinese & Rolls',
+    veg: true,
+    price: 130,
     rating: 4.7,
-    ratingCount: '620+',
+    ratingCount: '460+',
     badge: null,
     popular: false,
     customizable: true,
-    description: 'Minced chicken seasoned with fresh mint, coriander, and royal garam masala, roasted on iron skewers.',
+    description: 'Spiced tandoori paneer cubes, crisp onions, and zesty pudina mayo rolled in flaky paratha.',
     image:
-      FOOD_IMAGE_MAP['chicken seekh kabab'] ||
-      'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80',
-  },
+      'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=500&q=80'
+  }
+];
 
-  // ==========================================
-  // BIRYANI & RICE
-  // ==========================================
+// --- HERO CAROUSEL SLIDES ---
+const HERO_SLIDES = [
   {
-    id: 'zaika-spl-biryani',
-    name: 'PM Zaika Special Biryani',
-    category: 'Biryani & Rice',
-    menuGroup: 'Biryani & Rice',
-    veg: false,
-    price: 390,
-    halfPrice: 230,
-    rating: 4.9,
-    ratingCount: '1.6K+',
-    badge: "CHEF'S ROYAL",
-    badgeType: 'plum',
-    popular: true,
-    customizable: true,
-    description: 'Grand combination of tender mutton, chicken tikka, and spiced boiled egg atop saffron basmati.',
+    id: 'slide-1',
+    headlineTop: 'MUTTON HANDI',
+    headlineBottom: 'ROYAL BIRYANI.',
+    accent: 'Zaika-e-Shahi',
+    subtext: 'Sealed clay-pot Awadhi biryani infused with saffron.',
+    cta: 'Order Now',
+    targetDishId: 'mutton-handi-biryani',
     image:
-      FOOD_IMAGE_MAP['zaika spl. biryani'] ||
-      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80'
   },
   {
-    id: 'veg-dum-biryani',
-    name: 'Veg Dum Biryani',
-    category: 'Biryani & Rice',
-    menuGroup: 'Biryani & Rice',
-    veg: true,
-    price: 220,
-    halfPrice: 130,
-    rating: 4.7,
-    ratingCount: '540+',
-    badge: null,
-    popular: false,
-    customizable: true,
-    description: 'Seasonal garden veggies, baby potatoes, and paneer cubes slow-dum with aromatic rose water and mint.',
+    id: 'slide-2',
+    headlineTop: 'ROYAL TANDOOR',
+    headlineBottom: 'SMOKY PLATTER.',
+    accent: 'Live Charcoal',
+    subtext: 'Malai tikka & paneer shashlik straight from clay ovens.',
+    cta: 'Try Tandoor',
+    targetDishId: 'paneer-tikka-shashlik',
     image:
-      FOOD_IMAGE_MAP['veg biryani'] ||
-      'https://images.unsplash.com/photo-1642821373181-696a54913e93?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80'
   },
   {
-    id: 'paneer-biryani',
-    name: 'Paneer Dum Biryani',
-    category: 'Biryani & Rice',
-    menuGroup: 'Biryani & Rice',
-    veg: true,
-    price: 250,
-    halfPrice: 145,
-    rating: 4.8,
-    ratingCount: '610+',
+    id: 'slide-3',
+    headlineTop: "CHEF'S KEBABS",
+    headlineBottom: '& FLAKY ROLLS.',
+    accent: 'Patna Favorite',
+    subtext: 'Juicy seekh kebabs & double-egg rolls served hot.',
+    cta: 'Explore Rolls',
+    targetDishId: 'double-egg-chicken-roll',
+    image:
+      'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=500&q=80'
+  }
+];
+
+// --- 7 CIRCULAR CATEGORIES ---
+const CATEGORIES = [
+  {
+    id: 'All',
+    label: 'All',
+    image:
+      'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=240&q=80'
+  },
+  {
+    id: 'Biryani',
+    label: 'Biryani',
+    image:
+      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=240&q=80'
+  },
+  {
+    id: 'Tandoor',
+    label: 'Tandoor',
+    image:
+      'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=240&q=80'
+  },
+  {
+    id: 'Soups',
+    label: 'Soups',
+    image:
+      'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=240&q=80'
+  },
+  {
+    id: 'Mains',
+    label: 'Mains',
+    image:
+      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=240&q=80'
+  },
+  {
+    id: 'Chinese',
+    label: 'Chinese',
+    image:
+      'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=240&q=80'
+  },
+  {
+    id: 'Rolls',
+    label: 'Rolls',
+    image:
+      'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=240&q=80'
+  }
+];
+
+const MENU_GROUPS = ['Biryani & Mains', 'Tandoor & Kebabs', 'Soups', 'Chinese & Rolls'];
+
+const ADDONS = [
+  { id: 'raita', name: 'Burhani Raita', price: 40, veg: true },
+  { id: 'butter-naan', name: 'Butter Naan', price: 55, veg: true },
+  { id: 'mint-chutney', name: 'Mint Chutney', price: 30, veg: true }
+];
+
+const COUPONS = [
+  {
+    code: 'ZAIKA25',
     badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: true,
-    description: 'Layers of tandoori paneer tikka and aromatic basmati rice infused with saffron and desi ghee.',
-    image:
-      FOOD_IMAGE_MAP['paneer biryani'] ||
-      'https://images.unsplash.com/photo-1642821373181-696a54913e93?auto=format&fit=crop&w=400&q=80',
+    title: '25% OFF up to ₹150',
+    subtitle: 'Valid on orders above ₹499 • Royal Combos & Biryani',
+    type: 'percent',
+    value: 25,
+    maxDiscount: 150,
+    minOrder: 499
   },
   {
-    id: 'egg-biryani',
-    name: 'Egg Dum Biryani',
-    category: 'Biryani & Rice',
-    menuGroup: 'Biryani & Rice',
-    veg: false,
-    price: 230,
-    halfPrice: 135,
-    rating: 4.7,
-    ratingCount: '480+',
-    badge: null,
-    popular: false,
-    customizable: true,
-    description: 'Golden fried farm eggs slow cooked with caramelized onions, kewra, and aged basmati rice.',
-    image:
-      FOOD_IMAGE_MAP['egg biryani'] ||
-      'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=400&q=80',
+    code: 'TABLE10',
+    badge: 'DINE-IN',
+    title: 'Flat ₹60 OFF on Table Orders',
+    subtitle: 'Valid on dine-in orders above ₹349',
+    type: 'flat',
+    value: 60,
+    maxDiscount: 60,
+    minOrder: 349
   },
+  {
+    code: 'ROYALRAITA',
+    badge: 'COMBO PERK',
+    title: 'Flat ₹40 OFF (Free Burhani Raita)',
+    subtitle: 'Valid on orders above ₹249',
+    type: 'flat',
+    value: 40,
+    maxDiscount: 40,
+    minOrder: 249
+  }
+];
 
-  // ==========================================
-  // CURRIES & MUGHLAI MAINS
-  // ==========================================
-  {
-    id: 'butter-chicken',
-    name: 'Butter Chicken (Murgh Makhani)',
-    category: 'Curries & Mains',
-    menuGroup: 'Curries & Mains',
-    veg: false,
-    price: 320,
-    halfPrice: 185,
-    rating: 4.9,
-    ratingCount: '1.5K+',
-    badge: 'BESTSELLER',
-    badgeType: 'plum',
-    popular: true,
-    customizable: true,
-    description: 'Tandoor-pulled chicken tikka simmered in silky tomato, kasuri methi, and churned white butter gravy.',
-    image:
-      'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=500&q=80',
-  },
-  {
-    id: 'chicken-tikka-masala',
-    name: 'Chicken Tikka Masala',
-    category: 'Curries & Mains',
-    menuGroup: 'Curries & Mains',
-    veg: false,
-    price: 330,
-    halfPrice: 190,
-    rating: 4.8,
-    ratingCount: '920+',
-    badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: true,
-    description: 'Smoky tandoori chicken tikka cooked in a robust onion-tomato gravy with bell peppers.',
-    image:
-      FOOD_IMAGE_MAP['chicken tikka masala'] ||
-      'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-korma',
-    name: 'Chicken Korma (Awadhi Shahi)',
-    category: 'Curries & Mains',
-    menuGroup: 'Curries & Mains',
-    veg: false,
-    price: 310,
-    halfPrice: 180,
-    rating: 4.8,
-    ratingCount: '740+',
-    badge: null,
-    popular: false,
-    customizable: true,
-    description: 'Royal slow-cooked chicken in an aromatic brown onion, cashew, and saffron gravy.',
-    image:
-      FOOD_IMAGE_MAP['chicken korma'] ||
-      'https://images.unsplash.com/photo-1628294895950-9805252327bc?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'mutton-curry',
-    name: 'Mutton Rogan Josh',
-    category: 'Curries & Mains',
-    menuGroup: 'Curries & Mains',
-    veg: false,
-    price: 390,
-    halfPrice: 225,
-    rating: 4.9,
-    ratingCount: '810+',
-    badge: "CHEF'S PICK",
-    badgeType: 'emerald',
-    popular: true,
-    customizable: true,
-    description: 'Tender goat meat slow-braised with Kashmiri chillies, ratan jot, and whole royal spices.',
-    image:
-      FOOD_IMAGE_MAP['mutton curry'] ||
-      'https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'paneer-butter-masala',
-    name: 'Paneer Butter Masala',
-    category: 'Curries & Mains',
-    menuGroup: 'Curries & Mains',
-    veg: true,
-    price: 240,
-    halfPrice: 140,
-    rating: 4.8,
-    ratingCount: '990+',
-    badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: true,
-    description: 'Fresh malai cottage cheese cubes cooked in rich satin tomato and cashew butter gravy.',
-    image:
-      FOOD_IMAGE_MAP['paneer butter masala'] ||
-      'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'dal-makhani',
-    name: 'Dal Makhani (Overnight Dum)',
-    category: 'Curries & Mains',
-    menuGroup: 'Curries & Mains',
-    veg: true,
-    price: 220,
-    halfPrice: 130,
-    rating: 4.8,
-    ratingCount: '860+',
-    badge: null,
-    popular: false,
-    customizable: true,
-    description: 'Overnight slow-simmered black urad lentils finished with churned white butter and cream.',
-    image:
-      'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=500&q=80',
-  },
-
-  // ==========================================
-  // BREADS & NAANS
-  // ==========================================
-  {
-    id: 'butter-naan',
-    name: 'Butter Naan',
-    category: 'Breads & Naans',
-    menuGroup: 'Breads',
-    veg: true,
-    price: 50,
-    rating: 4.9,
-    ratingCount: '2.1K+',
-    badge: null,
-    popular: true,
-    customizable: false,
-    description: 'Fluffy leavened tandoor bread brushed generously with pure butter.',
-    image:
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'garlic-naan',
-    name: 'Garlic Butter Naan',
-    category: 'Breads & Naans',
-    menuGroup: 'Breads',
-    veg: true,
-    price: 65,
-    rating: 4.9,
-    ratingCount: '1.4K+',
-    badge: 'POPULAR',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: false,
-    description: 'Crispy tandoori naan studded with roasted garlic cloves and fresh coriander.',
-    image:
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'tandoori-roti',
-    name: 'Tandoori Roti (Butter)',
-    category: 'Breads & Naans',
-    menuGroup: 'Breads',
-    veg: true,
-    price: 20,
-    rating: 4.8,
-    ratingCount: '1.8K+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Whole wheat bread baked crisp on the clay tandoor wall with butter glaze.',
-    image:
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'rumali-roti',
-    name: 'Rumali Roti',
-    category: 'Breads & Naans',
-    menuGroup: 'Breads',
-    veg: true,
-    price: 25,
-    rating: 4.8,
-    ratingCount: '940+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Paper-thin handkerchief bread tossed on an inverted hot iron griddle.',
-    image:
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80',
-  },
-
-  // ==========================================
-  // MEHMAN NAWAZI (PARTY PACKS) (Matches user screenshot 3 1:1)
-  // ==========================================
-  {
-    id: 'motter-pulao-1kg',
-    name: 'Motter Pulao (1 Kg)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: true,
-    price: 500,
-    rating: 4.8,
-    ratingCount: '180+',
-    badge: 'PARTY PACK',
-    badgeType: 'emerald',
-    popular: false,
-    customizable: false,
-    description: 'Mehman Nawazi Party Pack — 1 kg aromatic basmati peas pulao prepared with whole spices.',
-    image:
-      FOOD_IMAGE_MAP['motter pulao'] ||
-      'https://images.unsplash.com/photo-1642821373181-696a54913e93?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'meetha-zarda-1kg',
-    name: 'Meetha Zarda (1 Kg)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: true,
-    price: 800,
-    rating: 4.9,
-    ratingCount: '220+',
-    badge: 'ROYAL SWEET',
-    badgeType: 'saffron',
-    popular: true,
-    customizable: false,
-    description: 'Mehman Nawazi Party Pack — 1 kg royal sweet saffron rice with rich dry fruits and mawa.',
-    image:
-      FOOD_IMAGE_MAP['meetha zarda'] ||
-      'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-korma-1kg',
-    name: 'Chicken Korma (1 Kg)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 600,
-    rating: 4.9,
-    ratingCount: '310+',
-    badge: 'PARTY PACK',
-    badgeType: 'plum',
-    popular: true,
-    customizable: false,
-    description: 'Mehman Nawazi Party Pack — 1 kg rich traditional Mughlai chicken korma feast.',
-    image:
-      FOOD_IMAGE_MAP['chicken korma'] ||
-      'https://images.unsplash.com/photo-1628294895950-9805252327bc?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'mutton-korma-1kg',
-    name: 'Mutton Korma (1 Kg)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 1200,
-    rating: 4.9,
-    ratingCount: '280+',
-    badge: 'GRAND SPECIAL',
-    badgeType: 'plum',
-    popular: true,
-    customizable: false,
-    description: 'Mehman Nawazi Party Pack — 1 kg royal slow-cooked tender mutton in Nawabi brown onion gravy.',
-    image:
-      FOOD_IMAGE_MAP['mutton korma'] ||
-      'https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-stick-kabab-1kg',
-    name: 'Chicken Stick Kabab (Boneless 1 Kg)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 1200,
-    rating: 4.9,
-    ratingCount: '190+',
-    badge: "CHEF'S PICK",
-    badgeType: 'emerald',
-    popular: false,
-    customizable: false,
-    description: 'Mehman Nawazi Party Pack — 1 kg skewered boneless chicken sticks with chutney.',
-    image:
-      FOOD_IMAGE_MAP['chicken seekh kabab'] ||
-      'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'murg-mussallam-party',
-    name: 'Murg Mussallam (Party Pack)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 650,
-    rating: 4.9,
-    ratingCount: '340+',
-    badge: 'SIGNATURE',
-    badgeType: 'plum',
-    popular: true,
-    customizable: false,
-    description: 'Mehman Nawazi Special — Whole chicken prepared in royal Mughlai rich gravy with boiled eggs.',
-    image:
-      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=500&q=80',
-  },
-  {
-    id: 'mutton-rane-e-arabia',
-    name: 'Mutton Rane-E-Arabia (Party Pack)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 2500,
-    rating: 5.0,
-    ratingCount: '150+',
-    badge: 'ROYAL FEAST',
-    badgeType: 'plum',
-    popular: true,
-    customizable: false,
-    description: 'Mehman Nawazi Grand Special — Whole slow-roasted Arabian spiced mutton leg on basmati bed.',
-    image:
-      FOOD_IMAGE_MAP['mutton rane-e-arabia'] ||
-      'https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'baby-naan-1kg',
-    name: 'Baby Naan (1 Kg)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: true,
-    price: 450,
-    rating: 4.8,
-    ratingCount: '260+',
-    badge: null,
-    popular: false,
-    customizable: false,
-    description: 'Mehman Nawazi Party Pack — 1 kg freshly baked tandoori baby naans brushed with butter.',
-    image:
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-biryani-handi-40-45',
-    name: 'Chicken Biryani Handi (40-45 Pax)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 7500,
-    rating: 5.0,
-    ratingCount: '95+',
-    badge: 'MEGA HANDI',
-    badgeType: 'saffron',
-    popular: false,
-    customizable: false,
-    description: 'Shan-E-Biryani — Grand Chicken Handi serving 40 to 45 guests, sealed with wheat dough.',
-    image:
-      FOOD_IMAGE_MAP['chicken biryani handi'] ||
-      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'chicken-biryani-handi-75-80',
-    name: 'Chicken Biryani Handi (75-80 Pax)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 14000,
-    rating: 5.0,
-    ratingCount: '60+',
-    badge: 'MEGA HANDI',
-    badgeType: 'saffron',
-    popular: false,
-    customizable: false,
-    description: 'Shan-E-Biryani — Mega Chicken Handi serving 75 to 80 guests, slow dum cooked.',
-    image:
-      FOOD_IMAGE_MAP['chicken biryani handi'] ||
-      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'mutton-biryani-handi-40-45',
-    name: 'Mutton Biryani Handi (40-45 Pax)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 12500,
-    rating: 5.0,
-    ratingCount: '85+',
-    badge: 'ROYAL HANDI',
-    badgeType: 'plum',
-    popular: true,
-    customizable: false,
-    description: 'Shan-E-Biryani — Grand Mutton Handi serving 40 to 45 guests with Awadhi saffron dum.',
-    image:
-      FOOD_IMAGE_MAP['mutton biryani handi'] ||
-      'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 'mutton-biryani-handi-75-80',
-    name: 'Mutton Biryani Handi (75-80 Pax)',
-    category: 'Party Packs (Mehman Nawazi)',
-    menuGroup: 'Party Packs',
-    veg: false,
-    price: 21500,
-    rating: 5.0,
-    ratingCount: '45+',
-    badge: 'ROYAL HANDI',
-    badgeType: 'plum',
-    popular: false,
-    customizable: false,
-    description: 'Shan-E-Biryani — Mega Mutton Handi serving 75 to 80 guests with saffron and Awadhi spices.',
-    image:
-      FOOD_IMAGE_MAP['mutton biryani handi'] ||
-      'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=400&q=80',
-  },
-]
-
-// --- AVAILABLE TABLES ---
 const TABLES = [
   'Table 01',
   'Table 02',
@@ -1116,261 +430,428 @@ const TABLES = [
   'Table 10',
   'Table 11',
   'Table 12',
-  'Family Lounge 1',
-  'Family Lounge 2',
-  'VIP Cabin',
-  'Takeaway / Packing',
-]
+  'Takeaway'
+];
 
-// --- CATEGORIES ORDER ---
-const CATEGORIES = [
-  'All',
-  'Soups',
-  'Starters (Veg)',
-  'Starters (Non-Veg)',
-  'Tandoori & Kebabs',
-  'Biryani & Rice',
-  'Curries & Mains',
-  'Breads & Naans',
-  'Party Packs (Mehman Nawazi)',
-]
+const FEEDBACK_QUESTIONS = [
+  { id: 'taste', label: 'Food Taste & Quality' },
+  { id: 'service', label: 'Staff & Table Service' },
+  { id: 'ambience', label: 'Dining Ambience' },
+  { id: 'value', label: 'Value for Money' },
+  { id: 'overall', label: 'Overall Experience' }
+];
 
-// --- EXACT GEOMETRIC ARCHITECTURAL MANDALA WATERMARK SVG (Matches user screenshot 2 1:1) ---
+// --- EXACT GEOMETRIC MANDALA WIREFRAME (FOREGROUND ARCHITECTURAL MOTIF) ---
 const ArchitecturalMandalaSvg = ({
   className = '',
-  strokeColor = '#F3C669',
-  accentColor = '#E89223',
-  strokeWidth = 0.9,
-}: {
-  className?: string
-  strokeColor?: string
-  accentColor?: string
-  strokeWidth?: number
+  strokeColor = '#D9B9E8',
+  accentColor = '#F3C669',
+  strokeWidth = 0.85
 }) => {
-  const petals = Array.from({ length: 16 }, (_, i) => i * 22.5)
-  const pearls = Array.from({ length: 24 }, (_, i) => i * 15)
-  const latticeAngles = Array.from({ length: 8 }, (_, i) => i * 45)
+  const petals = Array.from({ length: 16 }, (_, i) => i * 22.5);
+  const pearls = Array.from({ length: 24 }, (_, i) => i * 15);
+  const latticeAngles = Array.from({ length: 8 }, (_, i) => i * 45);
 
   return (
     <svg
       viewBox="0 0 360 360"
       className={`pointer-events-none select-none ${className}`}
       fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
-      <g stroke={strokeColor} strokeWidth={strokeWidth} opacity="0.95">
-        {/* Core Concentric Circles */}
-        <circle cx="180" cy="180" r="14" strokeWidth={strokeWidth * 1.3} />
-        <circle cx="180" cy="180" r="26" strokeDasharray="2 3" />
-        <circle cx="180" cy="180" r="42" strokeWidth={strokeWidth * 1.1} />
-        <circle cx="180" cy="180" r="62" />
-        <circle cx="180" cy="180" r="84" strokeWidth={strokeWidth * 1.25} />
-        <circle cx="180" cy="180" r="118" strokeDasharray="3 3" />
-        <circle cx="180" cy="180" r="148" strokeWidth={strokeWidth * 1.4} />
+      <g transform="translate(180 180)">
+        {/* Inner & Mid Concentric Ring Tracks */}
+        <circle r="36" stroke={strokeColor} strokeWidth={strokeWidth} />
+        <circle r="54" stroke={strokeColor} strokeWidth={strokeWidth} />
+        <circle r="76" stroke={strokeColor} strokeWidth={strokeWidth} />
+        <circle r="118" stroke={strokeColor} strokeWidth={strokeWidth * 0.8} strokeOpacity="0.65" />
+        <circle r="164" stroke={strokeColor} strokeWidth={strokeWidth * 0.7} strokeOpacity="0.5" />
 
-        {/* 8-Axis Star Poly-Lattice */}
-        {latticeAngles.map((deg) => (
-          <g key={`lat-${deg}`} transform={`rotate(${deg} 180 180)`}>
-            <line x1="180" y1="36" x2="180" y2="324" strokeOpacity="0.45" />
-            <polygon
-              points="180,68 188,96 172,96"
-              fill={accentColor}
-              fillOpacity="0.18"
-              stroke={strokeColor}
-              strokeWidth={strokeWidth * 0.9}
-            />
-          </g>
-        ))}
-
-        {/* Inner 16 Scalloped Lotus Petals */}
-        {petals.map((deg) => (
-          <g key={`petal-${deg}`} transform={`rotate(${deg} 180 180)`}>
-            <path
-              d="M 172 138 C 174 122, 186 122, 188 138"
-              strokeWidth={strokeWidth * 1.1}
-            />
-            <circle cx="180" cy="128" r="2.2" fill={accentColor} stroke="none" />
-          </g>
-        ))}
-
-        {/* 24 Pearl Beads Ring */}
+        {/* Hollow Pearl-Ring Track (between r=54 and r=76) */}
         {pearls.map((deg) => (
           <circle
-            key={`pearl-${deg}`}
-            cx={180 + 73 * Math.cos((deg * Math.PI) / 180)}
-            cy={180 + 73 * Math.sin((deg * Math.PI) / 180)}
-            r="2.6"
-            strokeWidth={strokeWidth * 0.8}
-            fill={strokeColor}
-            fillOpacity="0.25"
+            key={`p-in-${deg}`}
+            cx="0"
+            cy="-65"
+            r="2.4"
+            transform={`rotate(${deg})`}
+            stroke={strokeColor}
+            strokeWidth={strokeWidth * 0.9}
           />
         ))}
 
-        {/* Intermediate Pointed Arch Petals */}
+        {/* 16-Fold Overlapping Pointed Lotus Petals + Hollow Petal Pearls */}
         {petals.map((deg) => (
-          <g key={`arch-${deg}`} transform={`rotate(${deg} 180 180)`}>
+          <g key={`petal-${deg}`} transform={`rotate(${deg})`}>
+            {/* Primary pointed lotus petal */}
             <path
-              d="M 166 96 C 172 74, 180 62, 180 62 C 180 62, 188 74, 194 96"
-              strokeWidth={strokeWidth * 1.15}
+              d="M -14 -76 L 0 -114 L 14 -76"
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+              strokeLinejoin="miter"
             />
-            <line
-              x1="180"
-              y1="96"
-              x2="180"
-              y2="66"
-              strokeWidth={strokeWidth * 0.7}
-              strokeDasharray="2 2"
+            {/* Inner nested double-line petal */}
+            <path
+              d="M -9.5 -76 L 0 -104 L 9.5 -76"
+              stroke={strokeColor}
+              strokeWidth={strokeWidth * 0.75}
+              strokeOpacity="0.7"
+            />
+            {/* Hollow pearl inside lotus arch */}
+            <circle
+              cx="0"
+              cy="-89"
+              r="2.6"
+              stroke={strokeColor}
+              strokeWidth={strokeWidth * 0.85}
+            />
+            {/* Outer pointed crown petal */}
+            <path
+              d="M -22 -114 L 0 -160 L 22 -114"
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+              strokeLinejoin="miter"
+            />
+            {/* Outer jewel node */}
+            <circle
+              cx="0"
+              cy="-160"
+              r="2.1"
+              fill={accentColor}
+              fillOpacity="0.85"
             />
           </g>
         ))}
 
-        {/* Outermost Awadhi Flourish Crowns */}
-        {petals.map((deg) => (
-          <g key={`crown-${deg + 11.25}`} transform={`rotate(${deg + 11.25} 180 180)`}>
-            <path
-              d="M 154 36 C 166 14, 180 4, 180 4 C 180 4, 194 14, 206 36"
-              strokeWidth={strokeWidth * 1.25}
-            />
-            <circle cx="180" cy="14" r="3" fill={accentColor} stroke="none" />
-          </g>
+        {/* Intersecting Diamond Lattice Chords */}
+        {latticeAngles.map((deg) => (
+          <polygon
+            key={`lat-${deg}`}
+            points="0,-164 116,-116 164,0 116,116 0,164 -116,116 -164,0 -116,-116"
+            transform={`rotate(${deg})`}
+            stroke={strokeColor}
+            strokeWidth={strokeWidth * 0.6}
+            strokeOpacity="0.45"
+          />
         ))}
       </g>
     </svg>
-  )
-}
+  );
+};
 
-// --- GOLD FOIL RIBBON CATEGORY HEADER (Matches user screenshot 5, 6, 7 1:1) ---
-const ZaikaCategoryRibbon = ({ name }: { name: string }) => (
+// --- HORIZONTAL BRUSHED-GOLD HAIRLINE ---
+const GoldHairline = ({ className = '' }) => (
   <div
-    className="flex items-center gap-2.5 pt-4 pb-2 mb-2 select-none"
-    id={`cat-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
-  >
+    className={`w-full h-[1px] ${className}`}
+    style={{
+      background:
+        'linear-gradient(90deg, rgba(232,146,35,0) 0%, rgba(212,155,62,0.55) 18%, rgba(246,204,116,0.95) 50%, rgba(212,155,62,0.55) 82%, rgba(232,146,35,0) 100%)'
+    }}
+  />
+);
+
+// --- ARCHITECTURAL MANDALA HAIRLINE DIVIDER ---
+const ArchitecturalMandalaDivider = ({ className = '' }) => (
+  <div className={`flex items-center justify-center gap-2.5 py-1 ${className}`} aria-hidden="true">
     <div
-      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-r-full rounded-l-md shadow-md relative overflow-hidden border border-[#F3C669]/40"
+      className="h-[1px] flex-1"
       style={{
         background:
-          'linear-gradient(90deg, #996D19 0%, #F6D47B 32%, #FBE6A2 55%, #DFB448 82%, #8C6014 100%)',
-        boxShadow:
-          '0 3px 14px rgba(212, 175, 55, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+          'linear-gradient(90deg, rgba(212,155,62,0) 0%, rgba(212,155,62,0.55) 65%, rgba(232,146,35,0.9) 100%)'
       }}
-    >
-      <span className="text-[9px] text-[#2C1A00] font-bold">◈</span>
-      <h2
-        className="text-[11px] sm:text-[12px] font-extrabold tracking-[0.16em] uppercase text-[#190D00] drop-shadow-[0_1px_0_rgba(255,255,255,0.4)]"
-        style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
-      >
-        {name}
-      </h2>
-    </div>
-    <div className="flex-1 h-[1px] bg-gradient-to-r from-[#F3C669]/60 via-[#F3C669]/20 to-transparent" />
+    />
+    <svg viewBox="0 0 64 24" className="w-[54px] h-[20px] shrink-0" fill="none">
+      <path d="M 8 20 A 24 24 0 0 1 56 20" stroke="#C88B2B" strokeWidth="1" strokeOpacity="0.65" />
+      <path d="M 16 20 A 16 16 0 0 1 48 20" stroke="#C88B2B" strokeWidth="0.9" strokeOpacity="0.8" />
+      <path d="M 24 20 L 32 4 L 40 20" stroke="#2D1148" strokeWidth="1" strokeOpacity="0.55" />
+      <path d="M 15 20 L 21 9 L 28 20" stroke="#C88B2B" strokeWidth="0.9" />
+      <path d="M 36 20 L 43 9 L 49 20" stroke="#C88B2B" strokeWidth="0.9" />
+      <circle cx="32" cy="14" r="2" stroke="#C88B2B" strokeWidth="1" />
+      <circle cx="32" cy="4" r="1.6" fill="#E89223" />
+      <circle cx="21" cy="9" r="1.2" fill="#E89223" />
+      <circle cx="43" cy="9" r="1.2" fill="#E89223" />
+      <line x1="2" y1="20" x2="62" y2="20" stroke="#D8A042" strokeWidth="0.9" strokeOpacity="0.7" />
+    </svg>
+    <div
+      className="h-[1px] flex-1"
+      style={{
+        background:
+          'linear-gradient(90deg, rgba(232,146,35,0.9) 0%, rgba(212,155,62,0.55) 35%, rgba(212,155,62,0) 100%)'
+      }}
+    />
   </div>
-)
+);
 
-// --- VEG / NON-VEG FSSAI INDICATOR ---
-const VegNonVegDot = ({
-  veg,
-  size = 'md',
-}: {
-  veg: boolean
-  size?: 'sm' | 'md'
-}) => {
-  const box = size === 'sm' ? 'w-3 h-3' : 'w-3.5 h-3.5'
-  const dot = size === 'sm' ? 'w-1.5 h-1.5' : 'w-1.5 h-1.5'
+// --- PM ZAIKA METALLIC ROYAL PASS CARD ---
+const RoyalPassCard = ({
+  royalPoints,
+  selectedTable,
+  onRedeem,
+  compact = false
+}) => (
+  <section
+    className={`rounded-[24px] bg-gradient-to-br from-[#1B0A2B] via-[#281040] to-[#2D1148] text-white relative overflow-hidden border border-[#F3C669]/30 shadow-[0_16px_34px_rgba(27,10,43,0.28)] ${
+      compact ? 'p-4' : 'p-5'
+    }`}
+  >
+    <ArchitecturalMandalaSvg
+      className={`absolute -right-14 top-1/2 -translate-y-1/2 opacity-[0.26] ${
+        compact ? 'w-[190px] h-[190px]' : 'w-[240px] h-[240px]'
+      }`}
+      strokeColor="#E8D2F5"
+      accentColor="#F3C669"
+      strokeWidth={1.05}
+    />
+
+    <div className="relative z-10 flex items-center justify-between gap-2 pb-3">
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-full bg-[#E89223]/20 border border-[#F3C669]/50 flex items-center justify-center">
+          <Award className="w-3.5 h-3.5 text-[#F3C669]" />
+        </div>
+        <span className="text-[10.5px] font-extrabold tracking-[0.16em] uppercase text-[#F7DC9C]">
+          ROYAL CLUB PASS • TIER I
+        </span>
+      </div>
+      <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[10px] font-bold text-[#FDEBD3] tnum">
+        {selectedTable}
+      </span>
+    </div>
+
+    <div className="relative z-10 -mx-5 my-0.5">
+      <GoldHairline />
+    </div>
+
+    <div className="relative z-10 pt-3.5 flex items-end justify-between gap-3">
+      <div>
+        <span className="block text-[10px] font-semibold uppercase tracking-wider text-white/60">
+          Available Balance
+        </span>
+        <div className="mt-1 flex items-baseline gap-1.5 tnum">
+          <span className={`${compact ? 'text-[26px]' : 'text-[32px]'} font-extrabold leading-none text-white`}>
+            {royalPoints}
+          </span>
+          <span className="text-xs font-extrabold text-[#F3C669] tracking-wider">PTS</span>
+        </div>
+        {!compact && (
+          <p className="text-[11px] text-white/75 mt-1.5">
+            Redeem 50 pts for instant ₹50 off your dine-in bill.
+          </p>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={onRedeem}
+        className="h-9 px-4 rounded-full bg-gradient-to-r from-[#E89223] to-[#F3B046] hover:from-[#D48016] hover:to-[#E89223] text-[#1B0A2B] text-xs font-extrabold shadow-[0_6px_16px_rgba(232,146,35,0.35)] cursor-pointer transition-all shrink-0"
+      >
+        Redeem ₹50
+      </button>
+    </div>
+  </section>
+);
+
+// --- AUTHENTIC INDIAN FSSAI VEG / NON-VEG SQUARE INDICATOR ---
+const FssaiDot = ({ veg, size = 'sm' }) => {
+  const box = size === 'sm' ? 'w-[14px] h-[14px]' : 'w-[16px] h-[16px]';
+  const dot = size === 'sm' ? 'w-[6px] h-[6px]' : 'w-[7px] h-[7px]';
   return (
     <span
-      className={`inline-flex items-center justify-center ${box} rounded-[3px] border bg-[#140A20]/90 shrink-0 ${
-        veg ? 'border-[#22C55E]/90' : 'border-[#EF4444]/90'
+      className={`inline-flex items-center justify-center ${box} rounded-[3px] border bg-white shrink-0 ${
+        veg ? 'border-[#15803D]' : 'border-[#DC2626]'
       }`}
+      title={veg ? 'Vegetarian' : 'Non-Vegetarian'}
+      aria-label={veg ? 'Vegetarian' : 'Non-Vegetarian'}
     >
-      <span
-        className={`${dot} rounded-full ${veg ? 'bg-[#22C55E]' : 'bg-[#EF4444]'}`}
-      />
+      {veg ? (
+        <span className={`${dot} rounded-full bg-[#15803D]`} />
+      ) : (
+        <svg viewBox="0 0 10 10" className="w-[7px] h-[7px] fill-[#DC2626]">
+          <polygon points="5,1.5 9,8.5 1,8.5" />
+        </svg>
+      )}
     </span>
-  )
-}
+  );
+};
 
-// --- MAIN ORDER MENU CONTENT ---
-function OrderMenuContent() {
-  const params = useParams()
-  const searchParams = useSearchParams()
-  const slug = (params?.slug as string) || 'pm-zaika'
-  const tableQuery = searchParams.get('table')
+// --- PM ZAIKA ROYAL CREST FRAMED BY FINE-LINE LOTUS PETAL RING ---
+const PmZaikaCrest = () => (
+  <div className="relative w-[72px] h-[72px] flex items-center justify-center shrink-0">
+    <ArchitecturalMandalaSvg
+      className="absolute inset-0 w-full h-full opacity-90"
+      strokeColor="#C88B2B"
+      accentColor="#E89223"
+      strokeWidth={1.6}
+    />
+    <div className="w-[46px] h-[46px] rounded-full bg-gradient-to-br from-[#2D1148] to-[#461B6E] border border-[#F3C669]/70 flex flex-col items-center justify-center leading-none relative z-10 shadow-[0_6px_16px_rgba(45,17,72,0.28)]">
+      <svg viewBox="0 0 24 14" className="w-3.5 h-2 fill-[#F3C669] mb-0.5">
+        <path d="M2 12L4 3L9 8L12 1L15 8L20 3L22 12H2Z" />
+      </svg>
+      <span className="text-[13px] font-extrabold tracking-wider text-white">PM</span>
+      <span className="text-[5.5px] font-bold tracking-[0.24em] text-[#FDEBD3] mt-0.5">
+        ZAIKA
+      </span>
+    </div>
+  </div>
+);
 
-  // State
-  const initialTable = useMemo(() => {
-    if (tableQuery) {
-      const clean = tableQuery.trim()
-      const match = TABLES.find((t) => t.toLowerCase() === clean.toLowerCase())
-      if (match) return match
-    }
-    return 'Table 04'
-  }, [tableQuery])
+function MainApp() {
+  // Navigation Tab: 'home' | 'menu' | 'offers' | 'hub'
+  const [activeTab, setActiveTab] = useState('home');
 
-  const [selectedTable, setSelectedTable] = useState<string>(initialTable)
-  const [tableModalOpen, setTableModalOpen] = useState(false)
-  const [stewardAlerted, setStewardAlerted] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  // Toast Notification
+  const [toast, setToast] = useState(null);
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => {
+      setToast((curr) => (curr === msg ? null : curr));
+    }, 2600);
+  };
 
-  const showToast = (msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 2500)
-  }
+  // Table & Steward State
+  const [selectedTable, setSelectedTable] = useState('Table 04');
+  const [tableModalOpen, setTableModalOpen] = useState(false);
+  const [stewardAlerted, setStewardAlerted] = useState(false);
 
-  // Filters & Search
-  const [searchQuery, setSearchQuery] = useState('')
-  const [dietFilter, setDietFilter] = useState<'all' | 'veg' | 'non-veg' | 'specials'>('all')
-  const [activeCategory, setActiveCategory] = useState('All')
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false)
+  // Hero Carousel State
+  const [heroIndex, setHeroIndex] = useState(0);
 
-  // Favorites
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({
+  // Search, Category & Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [vegOnly, setVegOnly] = useState(false);
+  const [nonVegOnly, setNonVegOnly] = useState(false);
+  const [under250, setUnder250] = useState(false);
+  const [bestsellersOnly, setBestsellersOnly] = useState(false);
+
+  // Favorites Set
+  const [favorites, setFavorites] = useState({
     'mutton-handi-biryani': true,
-    'chicken-lollypop': true,
-  })
+    'paneer-tikka-shashlik': true
+  });
 
-  const toggleFavorite = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setFavorites((prev) => {
-      const next = !prev[id]
-      showToast(next ? 'Added to your favorites ❤️' : 'Removed from favorites')
-      return { ...prev, [id]: next }
-    })
-  }
+  // Cart State: { [key]: { key, dish, portion, spice, addons, notes, unitPrice, qty } }
+  const [cart, setCart] = useState({
+    'mutton-handi-biryani__Full__Medium__': {
+      key: 'mutton-handi-biryani__Full__Medium__',
+      dish: MENU_ITEMS[0],
+      portion: 'Full',
+      spice: 'Medium',
+      addons: [],
+      notes: '',
+      unitPrice: 380,
+      qty: 1
+    }
+  });
 
-  // Cart
-  const [cart, setCart] = useState<Record<string, CartEntry>>({})
-  const [cartOpen, setCartOpen] = useState(false)
-  const [cookingNotes, setCookingNotes] = useState('')
-  const [couponCode, setCouponCode] = useState<string | null>('ZAIKA25')
-  const [liveOrder, setLiveOrder] = useState<LiveOrder | null>(null)
+  // Rewards & Coupons
+  const [royalPoints, setRoyalPoints] = useState(120);
+  const [redeemPoints, setRedeemPoints] = useState(false);
+  const [appliedCouponCode, setAppliedCouponCode] = useState(null);
+  const [couponInput, setCouponInput] = useState('');
 
-  // Modals
-  const [serviceModalOpen, setServiceModalOpen] = useState(false)
-  const [serviceRequestType, setServiceRequestType] = useState<string>('Water')
-  const [serviceSending, setServiceSending] = useState(false)
-  const [customDish, setCustomDish] = useState<MenuItem | null>(null)
-  const [customPortion, setCustomPortion] = useState('Full')
-  const [customSpice, setCustomSpice] = useState('Medium')
-  const [customAddons, setCustomAddons] = useState<string[]>([])
-  const [feedbackOpen, setFeedbackOpen] = useState(false)
-  const [feedbackRatings, setFeedbackRatings] = useState<Record<string, number>>({
+  // Customization Sheet
+  const [customDish, setCustomDish] = useState(null);
+  const [customPortion, setCustomPortion] = useState('Full');
+  const [customSpice, setCustomSpice] = useState('Medium');
+  const [customAddons, setCustomAddons] = useState([]);
+  const [customNotes, setCustomNotes] = useState('');
+
+  // Cart & Order Tracker Drawer
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cookingNotes, setCookingNotes] = useState('');
+  const [liveOrder, setLiveOrder] = useState(null);
+
+  // Guest Feedback Sheet
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackRatings, setFeedbackRatings] = useState({
     taste: 5,
     service: 5,
     ambience: 5,
-    hygiene: 5,
     value: 5,
-  })
-  const [feedbackComment, setFeedbackComment] = useState('')
+    overall: 5
+  });
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [feedbackDone, setFeedbackDone] = useState(false);
 
-  // Quick Cart Helpers
-  const addToCartDirect = (dish: MenuItem, e?: React.MouseEvent) => {
-    e?.stopPropagation()
-    const key = `${dish.id}_Full`
+  // Admin Direct Complaint Modal
+  const [complaintOpen, setComplaintOpen] = useState(false);
+  const [complaintCategory, setComplaintCategory] = useState('Food Quality');
+  const [complaintNote, setComplaintNote] = useState('');
+
+  // Copy Phone Feedback
+  const [phoneCopied, setPhoneCopied] = useState(false);
+
+  // Auto-advance hero carousel gently every 5.5s when on Home
+  useEffect(() => {
+    if (activeTab !== 'home') return;
+    const timer = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, [activeTab]);
+
+  // --- HELPER: FILTERING ---
+  const activeFilterCount =
+    (vegOnly ? 1 : 0) +
+    (nonVegOnly ? 1 : 0) +
+    (under250 ? 1 : 0) +
+    (bestsellersOnly ? 1 : 0);
+
+  const matchesFilters = (dish, applyCategory = true) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (
+      q &&
+      !dish.name.toLowerCase().includes(q) &&
+      !dish.description.toLowerCase().includes(q) &&
+      !dish.category.toLowerCase().includes(q) &&
+      !dish.menuGroup.toLowerCase().includes(q)
+    ) {
+      return false;
+    }
+    if (applyCategory && selectedCategory !== 'All' && dish.category !== selectedCategory) {
+      return false;
+    }
+    if (vegOnly && !dish.veg) return false;
+    if (nonVegOnly && dish.veg) return false;
+    if (under250 && dish.price > 250) return false;
+    if (bestsellersOnly && !dish.badge) return false;
+    return true;
+  };
+
+  const homeDishes = useMemo(() => {
+    const filtered = MENU_ITEMS.filter((d) => matchesFilters(d, true));
+    if (selectedCategory === 'All' && !searchQuery.trim() && activeFilterCount === 0) {
+      return filtered.filter((d) => d.popular);
+    }
+    return filtered;
+  }, [searchQuery, selectedCategory, vegOnly, nonVegOnly, under250, bestsellersOnly]);
+
+  const menuGroupedDishes = useMemo(() => {
+    const groups = {};
+    MENU_GROUPS.forEach((grp) => {
+      groups[grp] = MENU_ITEMS.filter(
+        (d) => d.menuGroup === grp && matchesFilters(d, false)
+      );
+    });
+    return groups;
+  }, [searchQuery, vegOnly, nonVegOnly, under250, bestsellersOnly]);
+
+  const totalMenuResults = useMemo(
+    () => Object.values(menuGroupedDishes).reduce((acc, arr) => acc + arr.length, 0),
+    [menuGroupedDishes]
+  );
+
+  // --- HELPER: CART OPERATIONS ---
+  const getDishQty = (dishId) =>
+    Object.values(cart)
+      .filter((entry) => entry.dish.id === dishId)
+      .reduce((sum, entry) => sum + entry.qty, 0);
+
+  const quickAddDish = (dish) => {
+    const key = `${dish.id}__Full__Medium__`;
     setCart((prev) => {
-      const existing = prev[key]
-      if (existing) {
-        return { ...prev, [key]: { ...existing, qty: existing.qty + 1 } }
-      }
+      const existing = prev[key];
       return {
         ...prev,
         [key]: {
@@ -1379,1471 +860,2222 @@ function OrderMenuContent() {
           portion: 'Full',
           spice: 'Medium',
           addons: [],
-          notes: '',
           unitPrice: dish.price,
-          qty: 1,
-        },
-      }
-    })
-    showToast(`Added ${dish.name} to order`)
-  }
+          qty: (existing?.qty || 0) + 1
+        }
+      };
+    });
+    showToast(`Added ${dish.name} to your bag`);
+  };
 
-  const updateCartQty = (key: string, delta: number, e?: React.MouseEvent) => {
-    e?.stopPropagation()
+  const quickDecrementDish = (dishId) => {
     setCart((prev) => {
-      const item = prev[key]
-      if (!item) return prev
-      const newQty = item.qty + delta
-      if (newQty <= 0) {
-        const next = { ...prev }
-        delete next[key]
-        return next
+      const matchingKeys = Object.keys(prev).filter((k) => prev[k].dish.id === dishId);
+      if (matchingKeys.length === 0) return prev;
+      const target = matchingKeys[matchingKeys.length - 1];
+      const next = { ...prev };
+      if (next[target].qty <= 1) {
+        delete next[target];
+      } else {
+        next[target] = { ...next[target], qty: next[target].qty - 1 };
       }
-      return { ...prev, [key]: { ...item, qty: newQty } }
-    })
-  }
+      return next;
+    });
+  };
 
-  const getDishCartQty = (dishId: string) => {
-    let total = 0
-    Object.values(cart).forEach((entry) => {
-      if (entry.dish.id === dishId) total += entry.qty
-    })
-    return total
-  }
+  const updateCartQty = (key, delta) => {
+    setCart((prev) => {
+      const entry = prev[key];
+      if (!entry) return prev;
+      const nextQty = entry.qty + delta;
+      const next = { ...prev };
+      if (nextQty <= 0) {
+        delete next[key];
+      } else {
+        next[key] = { ...entry, qty: nextQty };
+      }
+      return next;
+    });
+  };
 
-  // Cart Calculations
+  // --- CUSTOMIZATION SHEET ---
+  const openCustomization = (dish) => {
+    setCustomDish(dish);
+    setCustomPortion('Full');
+    setCustomSpice('Medium');
+    setCustomAddons([]);
+    setCustomNotes('');
+  };
+
+  const customTotalUnit = useMemo(() => {
+    if (!customDish) return 0;
+    const base =
+      customPortion === 'Half' && customDish.halfPrice
+        ? customDish.halfPrice
+        : customDish.price;
+    const addonSum = customAddons.reduce((sum, id) => {
+      const found = ADDONS.find((a) => a.id === id);
+      return sum + (found ? found.price : 0);
+    }, 0);
+    return base + addonSum;
+  }, [customDish, customPortion, customAddons]);
+
+  const confirmCustomizationAdd = () => {
+    if (!customDish) return;
+    const addonLabels = customAddons
+      .map((id) => ADDONS.find((a) => a.id === id)?.name)
+      .filter(Boolean);
+    const trimmedNote = customNotes.trim();
+    const key = `${customDish.id}__${customPortion}__${customSpice}__${addonLabels.join(',')}__${trimmedNote}`;
+    setCart((prev) => {
+      const existing = prev[key];
+      return {
+        ...prev,
+        [key]: {
+          key,
+          dish: customDish,
+          portion: customPortion,
+          spice: customSpice,
+          addons: addonLabels,
+          notes: trimmedNote,
+          unitPrice: customTotalUnit,
+          qty: (existing?.qty || 0) + 1
+        }
+      };
+    });
+    showToast(`Added ${customDish.name} (${customPortion})`);
+    setCustomDish(null);
+  };
+
+  // --- BILLING & COUPON CALCULATION ---
   const cartSummary = useMemo(() => {
-    const entries = Object.values(cart)
-    const itemCount = entries.reduce((acc, it) => acc + it.qty, 0)
-    const subtotal = entries.reduce((acc, it) => acc + it.unitPrice * it.qty, 0)
+    const entries = Object.values(cart);
+    const itemCount = entries.reduce((sum, e) => sum + e.qty, 0);
+    const subtotal = entries.reduce((sum, e) => sum + e.unitPrice * e.qty, 0);
 
-    let discount = 0
-    if (couponCode === 'ZAIKA25') {
-      discount = Math.round(subtotal * 0.25)
-    } else if (couponCode === 'TABLE10') {
-      discount = Math.round(subtotal * 0.1)
+    let couponDiscount = 0;
+    let activeCouponObj = null;
+    if (appliedCouponCode) {
+      const c = COUPONS.find((cp) => cp.code === appliedCouponCode);
+      if (c && subtotal >= c.minOrder) {
+        activeCouponObj = c;
+        if (c.type === 'percent') {
+          couponDiscount = Math.min(Math.round((subtotal * c.value) / 100), c.maxDiscount);
+        } else {
+          couponDiscount = c.value;
+        }
+      }
     }
 
-    const discountedSubtotal = Math.max(0, subtotal - discount)
-    const gst = Math.round(discountedSubtotal * 0.05)
-    const finalTotal = discountedSubtotal + gst
+    const pointsDiscount = redeemPoints && royalPoints >= 50 && subtotal > 0 ? 50 : 0;
+    const totalDiscount = Math.min(subtotal, couponDiscount + pointsDiscount);
+    const taxable = Math.max(0, subtotal - totalDiscount);
+    const gst = Math.round(taxable * 0.05);
+    const grandTotal = taxable + gst;
 
-    return { entries, itemCount, subtotal, discount, gst, finalTotal }
-  }, [cart, couponCode])
+    return {
+      entries,
+      itemCount,
+      subtotal,
+      couponDiscount,
+      pointsDiscount,
+      activeCouponObj,
+      gst,
+      grandTotal
+    };
+  }, [cart, appliedCouponCode, redeemPoints, royalPoints]);
 
-  // Filtered Menu Items
-  const filteredDishes = useMemo(() => {
-    return MENU_ITEMS.filter((dish) => {
-      // Search
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim()
-        const matchesName = dish.name.toLowerCase().includes(q)
-        const matchesDesc = dish.description.toLowerCase().includes(q)
-        const matchesCat = dish.category.toLowerCase().includes(q)
-        if (!matchesName && !matchesDesc && !matchesCat) return false
-      }
+  const handleApplyCouponCode = (codeRaw) => {
+    const code = codeRaw.trim().toUpperCase();
+    const found = COUPONS.find((c) => c.code === code);
+    if (!found) {
+      showToast('Invalid coupon code. Try ZAIKA25 or TABLE10.');
+      return;
+    }
+    setAppliedCouponCode(found.code);
+    setCouponInput(found.code);
+    if (cartSummary.subtotal >= found.minOrder) {
+      showToast(`${found.code} applied to your order!`);
+    } else {
+      const diff = found.minOrder - cartSummary.subtotal;
+      showToast(`${found.code} saved! Add ₹${diff} more to unlock.`);
+    }
+  };
 
-      // Dietary
-      if (dietFilter === 'veg' && !dish.veg) return false
-      if (dietFilter === 'non-veg' && dish.veg) return false
-      if (dietFilter === 'specials' && !dish.popular && !dish.badge) return false
-
-      // Category
-      if (activeCategory !== 'All' && dish.category !== activeCategory) {
-        return false
-      }
-
-      return true
-    })
-  }, [searchQuery, dietFilter, activeCategory])
-
-  // Grouped by Category for display
-  const categorizedSections = useMemo(() => {
-    const map = new Map<string, MenuItem[]>()
-    filteredDishes.forEach((dish) => {
-      const list = map.get(dish.category) || []
-      list.push(dish)
-      map.set(dish.category, list)
-    })
-    return Array.from(map.entries())
-  }, [filteredDishes])
-
-  // Chef Royal Signatures (For Top Carousel)
-  const chefSignatures = useMemo(() => {
-    return MENU_ITEMS.filter(
-      (d) =>
-        d.popular ||
-        d.badge?.includes('SPECIAL') ||
-        d.badge?.includes('SIGNATURE') ||
-        d.badge?.includes('PICK')
-    ).slice(0, 5)
-  }, [])
-
-  // Call Steward Submit
-  const submitServiceRequest = () => {
-    setServiceSending(true)
-    setTimeout(() => {
-      setServiceSending(false)
-      setServiceModalOpen(false)
-      setStewardAlerted(true)
-      showToast(`Steward alerted for ${serviceRequestType} at ${selectedTable}`)
-    }, 700)
-  }
-
-  // Live Order Simulator
   const handlePlaceOrder = () => {
-    if (cartSummary.itemCount === 0) return
-    const orderId = `PM-${Math.floor(1000 + Math.random() * 9000)}`
+    const orderId = `PMZ-${Math.floor(400 + Math.random() * 580)}`;
+    const usedPoints = cartSummary.pointsDiscount > 0;
+    if (usedPoints) {
+      setRoyalPoints((p) => Math.max(0, p - 50));
+      setRedeemPoints(false);
+    }
     setLiveOrder({
       id: orderId,
       table: selectedTable,
-      total: cartSummary.finalTotal,
+      total: cartSummary.grandTotal,
       itemsCount: cartSummary.itemCount,
-      stage: 0,
-    })
-    setCart({})
-    showToast(`Order ${orderId} dispatched to Kitchen!`)
-  }
+      stage: 0
+    });
+    setCart({});
+    setCookingNotes('');
+    showToast(`Order #${orderId} placed for ${selectedTable}!`);
+  };
 
-  // Advance simulation stage
-  useEffect(() => {
-    if (!liveOrder) return
-    if (liveOrder.stage < 3) {
-      const timer = setTimeout(() => {
-        setLiveOrder((prev) => (prev ? { ...prev, stage: prev.stage + 1 } : null))
-      }, 7000)
-      return () => clearTimeout(timer)
+  const handleRedeemRoyalPoints = () => {
+    if (royalPoints >= 50) {
+      setRedeemPoints(true);
+      setCartOpen(true);
+      showToast('₹50 Royal Pass credit activated in cart!');
+    } else {
+      showToast('Earn 50 pts to redeem ₹50 off');
     }
-  }, [liveOrder])
+  };
+
+  const handleRingSteward = () => {
+    setStewardAlerted(true);
+    showToast(`Steward notified for ${selectedTable}`);
+    setTimeout(() => setStewardAlerted(false), 9000);
+  };
+
+  const handleCopyPhone = () => {
+    navigator.clipboard?.writeText('+917488260572');
+    setPhoneCopied(true);
+    showToast('Copied +91 74882 60572');
+    setTimeout(() => setPhoneCopied(false), 2200);
+  };
+
+  const toggleFavorite = (id, e) => {
+    e.stopPropagation();
+    setFavorites((prev) => {
+      const next = !prev[id];
+      showToast(next ? 'Saved to favorites' : 'Removed from favorites');
+      return { ...prev, [id]: next };
+    });
+  };
+
+  const badgeStyle = (type) => {
+    if (type === 'saffron') return 'bg-[#E89223] text-white';
+    if (type === 'emerald') return 'bg-[#1A7F5A] text-white';
+    return 'bg-[#3B155E] text-white';
+  };
+
+  const activeSlide = HERO_SLIDES[heroIndex];
 
   return (
-    <div className="min-h-screen w-full bg-[#0E0617] text-[#FFF8F0] flex justify-center font-jakarta antialiased selection:bg-[#E89223]/30 selection:text-[#F3C669] relative overflow-x-hidden">
-      {/* -------------------------------------------------------------
-          BACKGROUND: EXACT ARCHITECTURAL MANDALA CANVAS (Image 2)
-         ------------------------------------------------------------- */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse at 50% 0%, #2A123D 0%, #170A24 45%, #0E0517 100%)',
-          }}
-        />
-        {/* Prominent upper-left Architectural Mandala */}
-        <div className="absolute -left-[140px] sm:-left-[180px] top-[20px] w-[620px] h-[620px] opacity-[0.14] pointer-events-none">
-          <ArchitecturalMandalaSvg
-            strokeColor="#F3C669"
-            accentColor="#E89223"
-            strokeWidth={0.85}
-          />
-        </div>
-        {/* Subtle lower-right repeating Mandala */}
-        <div className="absolute -right-[160px] top-[50%] w-[680px] h-[680px] opacity-[0.09] pointer-events-none">
-          <ArchitecturalMandalaSvg
-            strokeColor="#F3C669"
-            accentColor="#E89223"
-            strokeWidth={0.75}
-          />
-        </div>
-      </div>
+    <div className="min-h-screen w-full bg-[#EFE8DF] text-[#1B1026] flex justify-center sm:py-5 font-jakarta antialiased selection:bg-[#E89223]/20 selection:text-[#2D1148]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600;1,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        .font-jakarta { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .font-editorial { font-family: 'Playfair Display', Georgia, serif; }
+        .tnum { font-variant-numeric: tabular-nums; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-      {/* Main Viewport Container (Centered mobile frame on desktop, full bleed on mobile) */}
-      <div className="w-full max-w-[440px] min-h-screen bg-[#140A20]/95 relative sm:rounded-[36px] shadow-[0_0_80px_rgba(0,0,0,0.85)] border-x sm:border sm:border-[#F3C669]/20 overflow-hidden flex flex-col z-10">
-        {/* TOAST POPUP */}
+      {/* Mobile Viewport Container (430px centered on desktop, full-bleed on mobile) */}
+      <div className="w-full max-w-[430px] min-h-screen sm:min-h-[852px] sm:h-[852px] bg-[#FAF5F0] relative sm:rounded-[34px] shadow-[0_0_60px_rgba(45,17,72,0.12)] overflow-hidden flex flex-col">
+        {/* Floating Toast */}
         {toast && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-[380px] pointer-events-none animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="px-4 py-2.5 rounded-2xl bg-[#26103A] text-white text-xs font-semibold shadow-[0_14px_32px_rgba(0,0,0,0.7)] border border-[#F3C669]/50 flex items-center gap-2.5 backdrop-blur-md">
-              <CheckCircle2 className="w-4 h-4 text-[#F3C669] shrink-0" />
-              <span className="truncate text-[#FFF8F0]">{toast}</span>
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-[88%] max-w-[340px] pointer-events-none">
+            <div className="px-4 py-2.5 rounded-2xl bg-[#2D1148] text-white text-xs font-semibold shadow-[0_12px_28px_rgba(45,17,72,0.28)] flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#E89223] shrink-0" />
+              <span className="truncate">{toast}</span>
             </div>
           </div>
         )}
 
-        {/* =============================================================
-            TOP APP HEADER (Matches user screenshot 5, 7 1:1)
-           ============================================================= */}
-        <header className="px-4 pt-4 pb-3 sticky top-0 z-30 bg-[#140A20]/90 backdrop-blur-md border-b border-[#F3C669]/15">
-          <div className="flex items-center justify-between gap-2">
-            {/* Left: PM Crest + Title + Table Selector */}
-            <div className="flex items-center gap-2.5 min-w-0">
-              {/* Crest Badge */}
-              <div className="relative w-11 h-11 flex items-center justify-center shrink-0">
-                <ArchitecturalMandalaSvg className="absolute inset-0 w-full h-full opacity-70" />
-                <div className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-[#2D1148] to-[#140A20] border border-[#F3C669]/80 flex flex-col items-center justify-center leading-none relative z-10 shadow-[0_4px_14px_rgba(0,0,0,0.6)]">
-                  <span className="text-[10px] font-extrabold text-[#F3C669]">PM</span>
-                  <span className="text-[6px] tracking-widest text-[#E89223] font-bold">
-                    ZAIKA
-                  </span>
-                </div>
-              </div>
+        {/* =================================================================
+            MAIN SCROLLABLE CONTENT AREA
+           ================================================================= */}
+        <main className="flex-1 overflow-y-auto no-scrollbar pb-28">
+          {/* ---------------------------------------------------------------
+              TAB 1: HOME (TACO BELL CLEAN D2C RHYTHM — PM ZAIKA IDENTITY)
+             --------------------------------------------------------------- */}
+          {activeTab === 'home' && (
+            <div className="px-4 pt-4 space-y-5">
+              {/* 1. Top App Header */}
+              <header className="flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => setTableModalOpen(true)}
+                    className="w-11 h-11 rounded-2xl bg-white shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center text-[#2D1148] hover:bg-[#F7F1FA] transition-colors cursor-pointer shrink-0"
+                    aria-label="Switch dining table"
+                    title="Select Table"
+                  >
+                    <MenuIcon className="w-5 h-5" />
+                  </button>
 
-              {/* Text Info */}
-              <div className="min-w-0">
-                <h1
-                  className="text-[13px] font-extrabold tracking-wider uppercase text-[#FFF8F0] leading-tight truncate"
-                  style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
-                >
-                  PM Zaika Restaurant
-                </h1>
-                <p
-                  className="text-[11px] text-[#E89223] font-medium leading-none mt-0.5 truncate"
-                  style={{ fontFamily: 'var(--font-script), cursive' }}
-                >
-                  Indian • Chinese • Tandoor • Rolls
-                </p>
-
-                {/* Table Selector Pill */}
-                <button
-                  type="button"
-                  onClick={() => setTableModalOpen(true)}
-                  className="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#231238] border border-[#F3C669]/35 text-[#F3C669] text-[10px] font-bold hover:bg-[#32174F] transition-colors cursor-pointer shadow-sm"
-                >
-                  <MapPin className="w-2.5 h-2.5 text-[#E89223]" />
-                  <span>{selectedTable}</span>
-                  <ChevronDown className="w-2.5 h-2.5 text-[#F3C669]/70" />
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Phone Call + 240 PTS Royal Pass + Bell Steward */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* Phone Quick Call */}
-              <a
-                href="tel:+917488260572"
-                className="w-8 h-8 rounded-full bg-[#231238] border border-[#F3C669]/30 flex items-center justify-center text-[#F3C669] hover:bg-[#32174F] transition-colors shadow-sm"
-                title="Call Restaurant Directly"
-              >
-                <Phone className="w-3.5 h-3.5" />
-              </a>
-
-              {/* 240 PTS Royal Pass Badge */}
-              <button
-                type="button"
-                onClick={() =>
-                  showToast('Royal Dining Pass: 240 Pts Available! ₹50 Discount Unlocked.')
-                }
-                className="h-8 px-2.5 rounded-full bg-[#231238] border border-[#F3C669]/35 text-[#F3C669] text-[10px] font-extrabold flex items-center gap-1 shadow-sm hover:bg-[#32174F] cursor-pointer"
-              >
-                <Award className="w-3 h-3 text-[#E89223]" />
-                <span className="tnum">240 PTS</span>
-              </button>
-
-              {/* Bell Steward Call */}
-              <button
-                type="button"
-                onClick={() => setServiceModalOpen(true)}
-                className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors cursor-pointer shadow-sm ${
-                  stewardAlerted
-                    ? 'bg-[#E89223] border-[#F3C669] text-[#140A20]'
-                    : 'bg-[#231238] border-[#F3C669]/30 text-[#F3C669] hover:bg-[#32174F]'
-                }`}
-                title="Summon Table Steward"
-              >
-                <Bell className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Search Input Bar (Matches Image 5 & 7) */}
-          <div className="mt-3 relative">
-            <Search className="w-4 h-4 text-[#F3C669]/70 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search soup, paneer, chicken, biryani, tandoor..."
-              className="w-full h-10 pl-10 pr-9 rounded-2xl bg-[#1D0E2D] border border-[#F3C669]/25 text-xs text-[#FFF8F0] placeholder-[#8E7E98] focus:outline-none focus:ring-2 focus:ring-[#F3C669]/40 focus:border-[#F3C669]/60 transition-all shadow-inner"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E7E98] hover:text-[#FFF8F0] cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Quick Filter Pills (Matches Image 5 & 7 1:1) */}
-          <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-            <button
-              type="button"
-              onClick={() => setDietFilter('all')}
-              className={`h-7 px-3.5 rounded-full text-[11px] font-bold cursor-pointer whitespace-nowrap transition-all shadow-sm ${
-                dietFilter === 'all'
-                  ? 'bg-gradient-to-r from-[#F3C669] to-[#E89223] text-[#140822] shadow-[0_2px_8px_rgba(243,198,105,0.3)] font-black'
-                  : 'bg-[#1E0F30] border border-[#F3C669]/20 text-[#D2C3DD] hover:border-[#F3C669]/40'
-              }`}
-            >
-              All Dishes
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDietFilter(dietFilter === 'veg' ? 'all' : 'veg')}
-              className={`h-7 px-3 rounded-full text-[11px] font-bold cursor-pointer whitespace-nowrap transition-all flex items-center gap-1.5 border shadow-sm ${
-                dietFilter === 'veg'
-                  ? 'bg-[#163620] border-[#22C55E] text-[#22C55E] font-black'
-                  : 'bg-[#1E0F30] border-[#22C55E]/40 text-[#22C55E] hover:bg-[#163620]/50'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
-              <span>Pure Veg</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDietFilter(dietFilter === 'non-veg' ? 'all' : 'non-veg')}
-              className={`h-7 px-3 rounded-full text-[11px] font-bold cursor-pointer whitespace-nowrap transition-all flex items-center gap-1.5 border shadow-sm ${
-                dietFilter === 'non-veg'
-                  ? 'bg-[#3A141A] border-[#EF4444] text-[#EF4444] font-black'
-                  : 'bg-[#1E0F30] border-[#EF4444]/40 text-[#EF4444] hover:bg-[#3A141A]/50'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
-              <span>Non-Veg</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDietFilter(dietFilter === 'specials' ? 'all' : 'specials')}
-              className={`h-7 px-3 rounded-full text-[11px] font-bold cursor-pointer whitespace-nowrap transition-all flex items-center gap-1.5 border shadow-sm ${
-                dietFilter === 'specials'
-                  ? 'bg-[#352010] border-[#F3C669] text-[#F3C669] font-black'
-                  : 'bg-[#1E0F30] border-[#F3C669]/30 text-[#F3C669] hover:bg-[#352010]/50'
-              }`}
-            >
-              <Star className="w-2.5 h-2.5 fill-[#F3C669] text-[#F3C669]" />
-              <span>Specials</span>
-            </button>
-          </div>
-        </header>
-
-        {/* =============================================================
-            MAIN SCROLLABLE CONTENT
-           ============================================================= */}
-        <main className="flex-1 overflow-y-auto no-scrollbar px-3.5 pt-3 pb-32 space-y-4">
-          {/* -----------------------------------------------------------
-              CHEF'S ROYAL SIGNATURES CAROUSEL (Image 7)
-             ----------------------------------------------------------- */}
-          {!searchQuery && dietFilter === 'all' && activeCategory === 'All' && (
-            <section className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-[#E89223]/20 border border-[#F3C669]/50 flex items-center justify-center text-[#F3C669]">
-                    <Sparkles className="w-3 h-3 text-[#F3C669]" />
-                  </div>
-                  <div>
-                    <h3
-                      className="text-[12px] font-extrabold tracking-wider uppercase text-[#FFF8F0]"
-                      style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+                  <div className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => setTableModalOpen(true)}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#6E6578] hover:text-[#2D1148] cursor-pointer tnum"
                     >
-                      Chef&apos;s Royal Signatures
-                    </h3>
-                    <p className="text-[10px] text-[#A89CB2]">
-                      Handcrafted Awadhi & Tandoori masterpieces
+                      <span>
+                        {selectedTable} •{' '}
+                        {selectedTable === 'Takeaway' ? 'Pickup' : 'Dine-In'}
+                      </span>
+                      <ChevronDown className="w-3.5 h-3.5 text-[#E89223]" />
+                    </button>
+                    <h1 className="text-[21px] font-extrabold tracking-tight text-[#2D1148] leading-none mt-0.5">
+                      PM ZAIKA
+                    </h1>
+                    <p className="text-[11px] font-medium text-[#6E6578] mt-0.5 truncate">
+                      Indian • Chinese • Tandoor • Rolls
                     </p>
                   </div>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-[#E89223]/20 border border-[#F3C669]/40 text-[#F3C669] text-[9px] font-black tracking-wider uppercase">
-                  MUST TRY
-                </span>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Steward Bell */}
+                  <button
+                    type="button"
+                    onClick={handleRingSteward}
+                    className={`relative w-11 h-11 rounded-2xl shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center transition-colors cursor-pointer ${
+                      stewardAlerted
+                        ? 'bg-[#2D1148] text-[#E89223]'
+                        : 'bg-white text-[#2D1148] hover:bg-[#F7F1FA]'
+                    }`}
+                    aria-label="Notify Steward"
+                    title="Call Steward to Table"
+                  >
+                    <Bell className="w-[19px] h-[19px]" />
+                    <span className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full bg-[#3B155E] text-white text-[9px] font-bold flex items-center justify-center border-2 border-[#FAF5F0] tnum">
+                      {stewardAlerted ? '✓' : '1'}
+                    </span>
+                  </button>
+
+                  {/* Bag Button */}
+                  <button
+                    type="button"
+                    onClick={() => setCartOpen(true)}
+                    className="relative w-11 h-11 rounded-2xl bg-white shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center text-[#2D1148] hover:bg-[#F7F1FA] transition-colors cursor-pointer"
+                    aria-label="Open Order Bag"
+                  >
+                    <ShoppingBag className="w-[19px] h-[19px]" />
+                    {cartSummary.itemCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#3B155E] text-white text-[10px] font-bold flex items-center justify-center border-2 border-[#FAF5F0] tnum">
+                        {cartSummary.itemCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </header>
+
+              {/* Live Order Mini Banner (if an order is active) */}
+              {liveOrder && (
+                <button
+                  type="button"
+                  onClick={() => setCartOpen(true)}
+                  className="w-full p-3 rounded-[20px] bg-[#2D1148] text-white flex items-center justify-between shadow-[0_10px_24px_rgba(45,17,72,0.2)] cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-[#E89223]/20 flex items-center justify-center shrink-0">
+                      <ChefHat className="w-5 h-5 text-[#E89223]" />
+                    </div>
+                    <div className="text-left min-w-0">
+                      <p className="text-xs font-bold truncate tnum">
+                        Order #{liveOrder.id} • {liveOrder.table}
+                      </p>
+                      <p className="text-[11px] text-[#FDEBD3]">
+                        {liveOrder.stage === 0
+                          ? 'Preparing in Tandoor'
+                          : liveOrder.stage === 1
+                          ? 'Plating'
+                          : 'Serving to Table'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-[#E89223] inline-flex items-center gap-0.5 shrink-0">
+                    Track <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </button>
+              )}
+
+              {/* 2. Search Bar + Filter Squircle */}
+              <div className="flex items-center gap-2.5">
+                <div className="relative flex-1">
+                  <Search className="w-[18px] h-[18px] text-[#7D7388] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search biryani, tandoor, rolls..."
+                    className="w-full h-12 rounded-full bg-white shadow-[0_4px_16px_rgba(45,17,72,0.05)] pl-11 pr-9 text-[13.5px] font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C8396] hover:text-[#1B1026] cursor-pointer"
+                      aria-label="Clear search"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setFilterSheetOpen(true)}
+                  className={`relative w-12 h-12 rounded-2xl shadow-[0_4px_16px_rgba(45,17,72,0.05)] flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                    activeFilterCount > 0
+                      ? 'bg-[#2D1148] text-white'
+                      : 'bg-white text-[#2D1148] hover:bg-[#F7F1FA]'
+                  }`}
+                  aria-label="Open Dish Filters"
+                >
+                  <SlidersHorizontal className="w-[18px] h-[18px]" />
+                  {activeFilterCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full bg-[#E89223] text-white text-[10px] font-bold flex items-center justify-center tnum">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
               </div>
 
-              {/* Horizontal Scroll Cards */}
-              <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 pt-0.5">
-                {chefSignatures.map((dish) => {
-                  const inCartQty = getDishCartQty(dish.id)
-                  return (
-                    <div
-                      key={dish.id}
-                      className="w-[200px] sm:w-[210px] shrink-0 rounded-2xl bg-[#1A0C28] border border-[#F3C669]/25 overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.5)] flex flex-col justify-between"
+              {/* 3. Hero Promo Banner Carousel */}
+              <section className="rounded-[26px] bg-gradient-to-br from-[#220B38] via-[#341254] to-[#1B082D] overflow-hidden relative min-h-[206px] shadow-[0_14px_30px_rgba(45,17,72,0.22)]">
+                <div className="relative z-10 flex items-center min-h-[206px]">
+                  {/* Left Column (56%) */}
+                  <div className="w-[56%] pl-5 pr-2 pt-5 pb-9 flex flex-col justify-between z-10">
+                    <div>
+                      <h2 className="text-[18px] font-extrabold text-white leading-[1.1] tracking-tight uppercase">
+                        {activeSlide.headlineTop}
+                        <br />
+                        {activeSlide.headlineBottom}
+                      </h2>
+                      <p className="font-editorial italic font-bold text-[21px] text-[#F3B046] leading-tight mt-1">
+                        {activeSlide.accent}
+                      </p>
+                      <GoldHairline className="my-2 max-w-[136px]" />
+                      <p className="text-[11px] font-medium text-white/80 leading-snug">
+                        {activeSlide.subtext}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = MENU_ITEMS.find(
+                          (d) => d.id === activeSlide.targetDishId
+                        );
+                        if (target) openCustomization(target);
+                      }}
+                      className="mt-3.5 w-fit h-9 pl-4 pr-1.5 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[12px] font-bold inline-flex items-center gap-2 shadow-[0_6px_16px_rgba(232,146,35,0.35)] transition-colors cursor-pointer"
                     >
-                      {/* Top Image + Badges */}
-                      <div className="relative h-28 w-full overflow-hidden bg-[#241038]">
+                      <span>{activeSlide.cta}</span>
+                      <span className="w-6 h-6 rounded-full bg-white text-[#2D1148] flex items-center justify-center">
+                        <ArrowRight className="w-3.5 h-3.5 stroke-[2.6]" />
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Right Column (44%) */}
+                  <div className="w-[44%] pr-3.5 py-4 flex items-center justify-center relative">
+                    <div className="relative w-[144px] h-[144px] flex items-center justify-center">
+                      <ArchitecturalMandalaSvg
+                        className="absolute inset-0 w-full h-full opacity-55"
+                        strokeColor="#E8D2F5"
+                        accentColor="#F3C669"
+                        strokeWidth={1.25}
+                      />
+                      <div className="w-[100px] h-[100px] rounded-full p-[3px] bg-gradient-to-tr from-[#E89223] via-[#F7D794] to-[#6E3B9E] shadow-[0_10px_24px_rgba(12,4,22,0.55)] relative z-10">
                         <img
-                          src={dish.image}
-                          alt={dish.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
+                          src={activeSlide.image}
+                          alt={activeSlide.accent}
+                          onError={(e) => {
+                            e.currentTarget.src = FALLBACK_FOOD_IMG;
+                          }}
+                          className="w-full h-full rounded-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#1A0C28] via-transparent to-transparent" />
-
-                        {/* Badge Tag */}
-                        {dish.badge && (
-                          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-[#140A20]/90 backdrop-blur-sm border border-[#F3C669]/50 text-[9px] font-black text-[#F3C669] tracking-wider uppercase shadow-sm">
-                            {dish.badge}
-                          </div>
-                        )}
-
-                        {/* Veg / Non-Veg Indicator */}
-                        <div className="absolute top-2 right-2">
-                          <VegNonVegDot veg={dish.veg} size="sm" />
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-2.5 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h4 className="text-xs font-bold text-[#FFF8F0] line-clamp-1">
-                            {dish.name}
-                          </h4>
-                          <p className="text-[10px] text-[#A89CB2] line-clamp-2 mt-1 leading-snug">
-                            {dish.description}
-                          </p>
-                        </div>
-
-                        {/* Price & Add */}
-                        <div className="mt-2.5 pt-2 border-t border-[#F3C669]/15 flex items-center justify-between">
-                          <div className="leading-tight">
-                            <span className="text-[13px] font-extrabold text-[#F3C669] tnum">
-                              ₹{dish.price}
-                            </span>
-                            {dish.halfPrice && (
-                              <span className="text-[9px] text-[#8E7E98] block">
-                                Half: ₹{dish.halfPrice}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Stepper or Add button */}
-                          {inCartQty > 0 ? (
-                            <div className="h-7 px-2 rounded-full bg-[#2A123D] border border-[#F3C669]/60 flex items-center gap-2 shadow-sm">
-                              <button
-                                type="button"
-                                onClick={(e) => updateCartQty(`${dish.id}_Full`, -1, e)}
-                                className="text-[#F3C669] hover:text-white cursor-pointer"
-                              >
-                                <Minus className="w-3 h-3" />
-                              </button>
-                              <span className="text-xs font-extrabold text-[#FFF8F0] tnum">
-                                {inCartQty}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={(e) => addToCartDirect(dish, e)}
-                                className="text-[#F3C669] hover:text-white cursor-pointer"
-                              >
-                                <Plus className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={(e) => addToCartDirect(dish, e)}
-                              className="h-7 px-3 rounded-full bg-gradient-to-r from-[#F3C669] to-[#E89223] text-[#140822] text-[10px] font-black cursor-pointer shadow-md hover:brightness-110 flex items-center gap-1 active:scale-95 transition-all"
-                            >
-                              <Plus className="w-3 h-3 stroke-[3]" />
-                              <span>ADD</span>
-                            </button>
-                          )}
-                        </div>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            </section>
-          )}
+                  </div>
+                </div>
 
-          {/* -----------------------------------------------------------
-              CATEGORIZED MENU LISTING (Images 5, 6, 7 & 3)
-             ----------------------------------------------------------- */}
-          {categorizedSections.length === 0 ? (
-            <div className="py-16 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-[#231238] border border-[#F3C669]/30 flex items-center justify-center mx-auto text-[#F3C669]">
-                <Search className="w-5 h-5" />
-              </div>
-              <p className="text-xs font-bold text-[#FFF8F0]">No dishes match your search.</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('')
-                  setDietFilter('all')
-                  setActiveCategory('All')
-                }}
-                className="text-xs text-[#F3C669] underline cursor-pointer"
-              >
-                Clear all filters
-              </button>
-            </div>
-          ) : (
-            categorizedSections.map(([categoryName, dishes]) => (
-              <section key={categoryName} className="space-y-2">
-                {/* Gold Category Ribbon + Hairline Divider (Images 5 & 6) */}
-                <ZaikaCategoryRibbon name={categoryName} />
+                {/* Clickable Slide Dot Indicators */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+                  {HERO_SLIDES.map((s, idx) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setHeroIndex(idx)}
+                      aria-label={`Go to slide ${idx + 1}`}
+                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                        idx === heroIndex
+                          ? 'w-5 bg-[#E89223]'
+                          : 'w-1.5 bg-white/40 hover:bg-white/65'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </section>
 
-                {/* Dish Rows in Category */}
-                <div className="space-y-2.5">
-                  {dishes.map((dish) => {
-                    const inCartQty = getDishCartQty(dish.id)
-                    const isFav = !!favorites[dish.id]
-
+              {/* 4. Circular Category Strip (7 Items) */}
+              <section>
+                <div className="flex items-start gap-3.5 overflow-x-auto no-scrollbar -mx-4 px-4 py-1">
+                  {CATEGORIES.map((cat) => {
+                    const isActive = selectedCategory === cat.id;
                     return (
-                      <div
-                        key={dish.id}
-                        className="p-3 rounded-2xl bg-[#180C26]/90 backdrop-blur-sm border border-[#F3C669]/20 hover:border-[#F3C669]/40 transition-all flex items-center justify-between gap-3 shadow-[0_4px_16px_rgba(0,0,0,0.4)] relative group"
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group"
                       >
-                        {/* Left Column: Details */}
-                        <div className="flex-1 min-w-0 pr-1">
-                          {/* Top Row: Veg Indicator + Name */}
-                          <div className="flex items-center gap-2">
-                            <VegNonVegDot veg={dish.veg} size="sm" />
-                            <h4 className="text-[13px] font-bold text-[#FFF8F0] tracking-tight leading-snug truncate">
-                              {dish.name}
-                            </h4>
-                          </div>
-
-                          {/* Description */}
-                          <p className="text-[11px] text-[#A89CB2] line-clamp-2 mt-1 leading-relaxed">
-                            {dish.description}
-                          </p>
-
-                          {/* Price + Add Action Row */}
-                          <div className="mt-2.5 flex items-center gap-3">
-                            <div>
-                              <span className="text-[14px] font-extrabold text-[#F3C669] tnum">
-                                ₹{dish.price}
-                              </span>
-                              {dish.halfPrice && (
-                                <span className="text-[10px] text-[#8E7E98] ml-1.5">
-                                  Half: ₹{dish.halfPrice}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Stepper or Add button */}
-                            {inCartQty > 0 ? (
-                              <div className="h-7 px-2.5 rounded-full bg-[#2A123D] border border-[#F3C669]/60 flex items-center gap-2 shadow-sm">
-                                <button
-                                  type="button"
-                                  onClick={(e) => updateCartQty(`${dish.id}_Full`, -1, e)}
-                                  className="text-[#F3C669] hover:text-white cursor-pointer"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-                                <span className="text-xs font-extrabold text-[#FFF8F0] tnum">
-                                  {inCartQty}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => addToCartDirect(dish, e)}
-                                  className="text-[#F3C669] hover:text-white cursor-pointer"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={(e) => addToCartDirect(dish, e)}
-                                className="h-7 px-3.5 rounded-full bg-[#241038] hover:bg-gradient-to-r hover:from-[#F3C669] hover:to-[#E89223] border border-[#F3C669]/50 text-[#F3C669] hover:text-[#140822] text-[10px] font-black cursor-pointer shadow-sm flex items-center gap-1 active:scale-95 transition-all"
-                              >
-                                <Plus className="w-3 h-3 stroke-[3]" />
-                                <span>ADD</span>
-                              </button>
-                            )}
-
-                            {/* Customization link */}
-                            {dish.customizable && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setCustomDish(dish)
-                                  setCustomPortion('Full')
-                                  setCustomSpice('Medium')
-                                  setCustomAddons([])
-                                }}
-                                className="text-[10px] text-[#A89CB2] hover:text-[#F3C669] underline cursor-pointer"
-                              >
-                                Customize
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Right Column: Dish Photo */}
-                        <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-xl overflow-hidden shrink-0 border border-[#F3C669]/25 shadow-md bg-[#241038]">
+                        <div
+                          className={`w-[64px] h-[64px] rounded-full p-1 transition-all ${
+                            isActive
+                              ? 'bg-[#FDEBD3] ring-2 ring-[#E89223]'
+                              : 'bg-white shadow-[0_4px_14px_rgba(45,17,72,0.06)] group-hover:ring-1 group-hover:ring-[#2D1148]/20'
+                          }`}
+                        >
                           <img
-                            src={dish.image}
-                            alt={dish.name}
-                            className="w-full h-full object-cover"
+                            src={cat.image}
+                            alt={cat.label}
+                            onError={(e) => {
+                              e.currentTarget.src = FALLBACK_FOOD_IMG;
+                            }}
+                            className="w-full h-full rounded-full object-cover"
                             loading="lazy"
                           />
-
-                          {/* Heart favorite button */}
-                          <button
-                            type="button"
-                            onClick={(e) => toggleFavorite(dish.id, e)}
-                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-[#140A20]/80 backdrop-blur-sm border border-[#F3C669]/30 flex items-center justify-center text-[#F3C669] hover:scale-110 transition-transform cursor-pointer"
-                          >
-                            <Heart
-                              className={`w-3 h-3 ${
-                                isFav ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#FFF8F0]'
-                              }`}
-                            />
-                          </button>
                         </div>
-                      </div>
-                    )
+                        <span
+                          className={`text-[11.5px] leading-none ${
+                            isActive
+                              ? 'font-bold text-[#D48016]'
+                              : 'font-semibold text-[#5B5266]'
+                          }`}
+                        >
+                          {cat.label}
+                        </span>
+                      </button>
+                    );
                   })}
                 </div>
               </section>
-            ))
-          )}
 
-          {/* Quick Info & Feedback CTA footer */}
-          <div className="pt-6 pb-2 text-center space-y-2 border-t border-[#F3C669]/15">
-            <p
-              className="text-xs text-[#E89223] font-medium"
-              style={{ fontFamily: 'var(--font-script), cursive' }}
-            >
-              PM Zaika • Royal Dining in Awadhi & Mughlai Tradition
-            </p>
-            <p className="text-[10px] text-[#8E7E98]">
-              Phulwari Sharif, Patna • +91 74882 60572 / 77639 49496
-            </p>
-            <button
-              type="button"
-              onClick={() => setFeedbackOpen(true)}
-              className="h-8 px-4 rounded-full bg-[#231238] border border-[#F3C669]/35 text-[#F3C669] text-[10px] font-bold cursor-pointer hover:bg-[#32174F] shadow-sm inline-flex items-center gap-1.5"
-            >
-              <Star className="w-3 h-3 fill-[#F3C669]" />
-              <span>Share Guest Feedback</span>
-            </button>
-          </div>
-        </main>
+              {/* Architectural Mandala Hairline Divider */}
+              <ArchitecturalMandalaDivider className="-my-1" />
 
-        {/* =============================================================
-            FLOATING CATEGORY JUMP FAB (Bottom-Right Yellow Button from Image 5 & 7)
-           ============================================================= */}
-        <button
-          type="button"
-          onClick={() => setCategoryModalOpen(true)}
-          className="fixed bottom-20 right-4 sm:bottom-6 sm:right-auto sm:left-[calc(50%+160px)] z-40 w-12 h-12 rounded-full bg-gradient-to-br from-[#F6D47B] via-[#E89223] to-[#B37214] text-[#140822] shadow-[0_6px_22px_rgba(232,146,35,0.45)] border border-[#FFF8F0]/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform cursor-pointer"
-          title="Jump to Category"
-        >
-          <UtensilsCrossed className="w-5 h-5 stroke-[2.5]" />
-        </button>
-
-        {/* =============================================================
-            FLOATING CART BAR (Slides Up when Items in Cart)
-           ============================================================= */}
-        {cartSummary.itemCount > 0 && (
-          <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-[420px] animate-in slide-in-from-bottom-3 duration-250">
-            <div className="p-3 rounded-2xl bg-gradient-to-r from-[#2B1147] via-[#1D0C30] to-[#2B1147] border border-[#F3C669]/50 shadow-[0_12px_36px_rgba(0,0,0,0.85)] flex items-center justify-between gap-3 backdrop-blur-md">
-              <div className="leading-tight">
-                <span className="text-[10px] uppercase tracking-wider text-[#A89CB2] font-bold block">
-                  {selectedTable} • {cartSummary.itemCount}{' '}
-                  {cartSummary.itemCount === 1 ? 'item' : 'items'}
-                </span>
-                <span className="text-[16px] font-extrabold text-[#F3C669] tnum">
-                  ₹{cartSummary.finalTotal}
-                </span>
-                {cartSummary.discount > 0 && (
-                  <span className="text-[10px] text-[#22C55E] ml-1.5 font-bold">
-                    (₹{cartSummary.discount} Saved)
-                  </span>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setCartOpen(true)}
-                className="h-10 px-5 rounded-full bg-gradient-to-r from-[#E89223] via-[#F3C669] to-[#D48016] text-[#140A20] text-xs font-black shadow-[0_4px_16px_rgba(243,198,105,0.35)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>View Order</span>
-                <ArrowRight className="w-4 h-4 stroke-[3]" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* =============================================================
-            MODAL 1: CATEGORY JUMP SHEET
-           ============================================================= */}
-        {categoryModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-[420px] bg-[#1A0C28] border-t sm:border border-[#F3C669]/30 rounded-t-[32px] sm:rounded-[28px] p-5 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#F3C669]/20">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-[#E89223]/20 border border-[#F3C669]/50 flex items-center justify-center text-[#F3C669]">
-                    <UtensilsCrossed className="w-3.5 h-3.5" />
-                  </div>
-                  <h3
-                    className="text-[14px] font-extrabold uppercase text-[#FFF8F0]"
-                    style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
+              {/* 5. Popular Picks Horizontal Scrollable Card Row */}
+              <section>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-[18px] font-extrabold text-[#1B1026] tracking-tight">
+                    {selectedCategory === 'All' && !searchQuery.trim()
+                      ? 'Popular Picks'
+                      : selectedCategory !== 'All'
+                      ? `${selectedCategory} Specials`
+                      : 'Search Results'}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('menu')}
+                    className="text-[13px] font-bold text-[#461B6E] hover:text-[#2D1148] inline-flex items-center gap-1 cursor-pointer"
                   >
-                    Menu Categories
-                  </h3>
+                    <span>View All</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setCategoryModalOpen(false)}
-                  className="w-7 h-7 rounded-full bg-[#241038] border border-[#F3C669]/30 flex items-center justify-center text-[#A89CB2] hover:text-white cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
 
-              {/* Category Grid */}
-              <div className="grid grid-cols-1 gap-2 max-h-[60vh] overflow-y-auto no-scrollbar pr-1">
-                {CATEGORIES.map((cat) => {
-                  const count =
-                    cat === 'All'
-                      ? MENU_ITEMS.length
-                      : MENU_ITEMS.filter((d) => d.category === cat).length
-                  const isActive = activeCategory === cat
-                  return (
+                {homeDishes.length === 0 ? (
+                  <div className="p-6 rounded-[22px] bg-white shadow-[0_6px_24px_rgba(45,17,72,0.06)] text-center">
+                    <p className="text-sm font-bold text-[#1B1026]">
+                      No matching dishes found
+                    </p>
+                    <p className="text-xs text-[#6E6578] mt-1">
+                      Try clearing your search or category filter.
+                    </p>
                     <button
-                      key={cat}
                       type="button"
                       onClick={() => {
-                        setActiveCategory(cat)
-                        setCategoryModalOpen(false)
-                        if (cat !== 'All') {
-                          const el = document.getElementById(
-                            `cat-${cat.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
-                          )
-                          el?.scrollIntoView({ behavior: 'smooth' })
-                        }
+                        setSearchQuery('');
+                        setSelectedCategory('All');
+                        setVegOnly(false);
+                        setNonVegOnly(false);
+                        setUnder250(false);
+                        setBestsellersOnly(false);
                       }}
-                      className={`w-full p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-gradient-to-r from-[#E89223]/25 to-[#F3C669]/15 border-[#F3C669] text-[#F3C669] font-bold'
-                          : 'bg-[#231238] border-[#F3C669]/15 text-[#FFF8F0] hover:border-[#F3C669]/40'
-                      }`}
+                      className="mt-3 h-8 px-4 rounded-full bg-[#2D1148] text-white text-xs font-bold cursor-pointer"
                     >
-                      <span className="text-xs font-semibold">{cat}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-[#F3C669] tnum font-bold">
-                        {count} items
-                      </span>
+                      Reset Filters
                     </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* =============================================================
-            MODAL 2: TABLE SELECTOR MODAL
-           ============================================================= */}
-        {tableModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-[420px] bg-[#1A0C28] border-t sm:border border-[#F3C669]/30 rounded-t-[32px] sm:rounded-[28px] p-5 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#F3C669]/20">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-[#E89223]/20 border border-[#F3C669]/50 flex items-center justify-center text-[#F3C669]">
-                    <MapPin className="w-3.5 h-3.5" />
                   </div>
-                  <div>
-                    <h3
-                      className="text-[14px] font-extrabold uppercase text-[#FFF8F0]"
-                      style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
-                    >
-                      Select Your Table
-                    </h3>
-                    <p className="text-[10px] text-[#A89CB2]">Phulwari Sharif Dine-In & Takeaway</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setTableModalOpen(false)}
-                  className="w-7 h-7 rounded-full bg-[#241038] border border-[#F3C669]/30 flex items-center justify-center text-[#A89CB2] hover:text-white cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+                ) : (
+                  <div className="flex gap-3.5 overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
+                    {homeDishes.map((dish) => {
+                      const qty = getDishQty(dish.id);
+                      const isFav = !!favorites[dish.id];
+                      return (
+                        <article
+                          key={dish.id}
+                          onClick={() => openCustomization(dish)}
+                          className="w-[168px] shrink-0 bg-white rounded-[22px] p-3 shadow-[0_6px_22px_rgba(45,17,72,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(45,17,72,0.1)] transition-shadow"
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-1 mb-2">
+                              {dish.badge ? (
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wide uppercase ${badgeStyle(
+                                    dish.badgeType
+                                  )}`}
+                                >
+                                  {dish.badge}
+                                </span>
+                              ) : (
+                                <FssaiDot veg={dish.veg} />
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => toggleFavorite(dish.id, e)}
+                                className="w-7 h-7 rounded-full hover:bg-[#FAF5F0] flex items-center justify-center cursor-pointer"
+                                aria-label="Favorite dish"
+                              >
+                                <Heart
+                                  className={`w-4 h-4 transition-colors ${
+                                    isFav
+                                      ? 'fill-[#E84C6F] text-[#E84C6F]'
+                                      : 'text-[#B2A9BC]'
+                                  }`}
+                                />
+                              </button>
+                            </div>
 
-              {/* Table Buttons Grid */}
-              <div className="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto no-scrollbar">
-                {TABLES.map((t) => (
+                            <div className="relative mb-2.5">
+                              <img
+                                src={dish.image}
+                                alt={dish.name}
+                                onError={(e) => {
+                                  e.currentTarget.src = FALLBACK_FOOD_IMG;
+                                }}
+                                className="h-[96px] w-full rounded-[14px] object-cover"
+                                loading="lazy"
+                              />
+                            </div>
+
+                            <h3 className="text-[14px] font-bold text-[#1B1026] truncate leading-snug">
+                              {dish.name}
+                            </h3>
+                            <p className="text-[11px] text-[#7A7184] line-clamp-1 mt-0.5">
+                              {dish.description}
+                            </p>
+
+                            <div className="flex items-center justify-between mt-1.5">
+                              <div className="flex items-center gap-1 text-[11px] font-bold text-[#1B1026] tnum">
+                                <Star className="w-3.5 h-3.5 fill-[#E89223] text-[#E89223]" />
+                                <span>{dish.rating}</span>
+                                <span className="text-[#8C8396] font-medium">
+                                  ({dish.ratingCount})
+                                </span>
+                              </div>
+                              <FssaiDot veg={dish.veg} />
+                            </div>
+                          </div>
+
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="mt-3 pt-1 flex items-center justify-between"
+                          >
+                            <span className="text-[15px] font-extrabold text-[#1B1026] tnum">
+                              ₹{dish.price}
+                            </span>
+
+                            {qty === 0 ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  dish.customizable
+                                    ? openCustomization(dish)
+                                    : quickAddDish(dish)
+                                }
+                                className="w-8 h-8 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white flex items-center justify-center shadow-[0_4px_12px_rgba(232,146,35,0.35)] cursor-pointer transition-colors"
+                                aria-label={`Add ${dish.name}`}
+                              >
+                                <Plus className="w-4 h-4 stroke-[2.8]" />
+                              </button>
+                            ) : (
+                              <div className="h-8 px-1.5 rounded-full bg-[#E89223] text-white inline-flex items-center gap-2 text-xs font-extrabold tnum shadow-[0_4px_12px_rgba(232,146,35,0.3)]">
+                                <button
+                                  type="button"
+                                  onClick={() => quickDecrementDish(dish.id)}
+                                  className="p-0.5 cursor-pointer"
+                                  aria-label="Decrease quantity"
+                                >
+                                  <Minus className="w-3.5 h-3.5 stroke-[2.8]" />
+                                </button>
+                                <span>{qty}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => quickAddDish(dish)}
+                                  className="p-0.5 cursor-pointer"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus className="w-3.5 h-3.5 stroke-[2.8]" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+
+              {/* 6. Exclusive Offer Banner */}
+              <section className="rounded-[22px] bg-gradient-to-r from-[#F2E9FA] to-[#EAE0F6] p-4 flex items-center justify-between gap-2 relative overflow-hidden">
+                <div className="z-10 max-w-[60%]">
+                  <span className="block text-[10px] font-bold tracking-wider text-[#5B2A86] uppercase">
+                    EXCLUSIVE OFFER
+                  </span>
+                  <h3 className="text-[20px] font-extrabold text-[#2D1148] leading-tight mt-0.5">
+                    UP TO 25% OFF
+                  </h3>
+                  <p className="text-[11px] font-medium text-[#5F546B] mb-3 mt-0.5">
+                    On Royal Combos &amp; Biryani
+                  </p>
                   <button
-                    key={t}
                     type="button"
                     onClick={() => {
-                      setSelectedTable(t)
-                      setTableModalOpen(false)
-                      showToast(`Switched to ${t}`)
+                      handleApplyCouponCode('ZAIKA25');
+                      setActiveTab('offers');
                     }}
-                    className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-center ${
-                      selectedTable === t
-                        ? 'bg-gradient-to-r from-[#E89223] to-[#F3C669] text-[#140822] border-[#F3C669] shadow-md font-black'
-                        : 'bg-[#231238] border-[#F3C669]/20 text-[#FFF8F0] hover:border-[#F3C669]/50'
-                    }`}
+                    className="h-8 pl-3.5 pr-1.5 rounded-full bg-[#2D1148] hover:bg-[#461B6E] text-white text-[11px] font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    {t}
+                    <span>Claim ZAIKA25</span>
+                    <span className="w-5 h-5 rounded-full bg-white text-[#2D1148] flex items-center justify-center">
+                      <ArrowRight className="w-3.5 h-3.5 stroke-[2.6]" />
+                    </span>
                   </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+                </div>
 
-        {/* =============================================================
-            MODAL 3: DISH CUSTOMIZATION MODAL
-           ============================================================= */}
-        {customDish && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-[420px] bg-[#1A0C28] border-t sm:border border-[#F3C669]/30 rounded-t-[32px] sm:rounded-[28px] p-5 shadow-2xl space-y-4">
-              <div className="flex items-start justify-between pb-2 border-b border-[#F3C669]/20">
-                <div className="flex items-start gap-2.5">
-                  <VegNonVegDot veg={customDish.veg} size="md" />
-                  <div>
-                    <h3
-                      className="text-[14px] font-extrabold text-[#FFF8F0]"
-                      style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
-                    >
-                      {customDish.name}
-                    </h3>
-                    <p className="text-[10px] text-[#A89CB2]">{customDish.category}</p>
+                <div className="relative z-10 flex items-center justify-center shrink-0">
+                  <div className="w-[82px] h-[82px] rounded-full bg-[#2D1148] text-white flex flex-col items-center justify-center shadow-[0_8px_20px_rgba(45,17,72,0.25)] border-4 border-white/70">
+                    <span className="text-[20px] font-extrabold leading-none tnum">25%</span>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-[#F3B046] mt-0.5">
+                      OFF
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              {/* 7. Quick Guest Feedback Nudge */}
+              <section className="rounded-[22px] bg-white p-3.5 shadow-[0_6px_22px_rgba(45,17,72,0.06)] flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#FDEBD3] flex items-center justify-center shrink-0">
+                    <Star className="w-4 h-4 fill-[#E89223] text-[#E89223]" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[12.5px] font-bold text-[#1B1026] leading-snug">
+                      Dining at PM Zaika?
+                    </p>
+                    <p className="text-[11px] text-[#6E6578] truncate">
+                      Share 30-sec feedback &amp; earn 50 pts
+                    </p>
                   </div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCustomDish(null)}
-                  className="w-7 h-7 rounded-full bg-[#241038] border border-[#F3C669]/30 flex items-center justify-center text-[#A89CB2] hover:text-white cursor-pointer"
+                  onClick={() => {
+                    setFeedbackDone(false);
+                    setFeedbackOpen(true);
+                  }}
+                  className="shrink-0 h-8 px-3.5 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[11.5px] font-bold cursor-pointer transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  Rate Now
                 </button>
+              </section>
+            </div>
+          )}
+
+          {/* ---------------------------------------------------------------
+              TAB 2: FULL CATEGORIZED MENU
+             --------------------------------------------------------------- */}
+          {activeTab === 'menu' && (
+            <div className="pb-4">
+              <div className="sticky top-0 z-20 bg-[#FAF5F0]/95 backdrop-blur-md px-4 pt-4 pb-3 border-b border-[#2D1148]/[0.06]">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h1 className="text-[20px] font-extrabold text-[#1B1026] leading-tight">
+                      Full Menu
+                    </h1>
+                    <p className="text-[11.5px] font-medium text-[#6E6578] tnum">
+                      {selectedTable} • {totalMenuResults} dishes available
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setTableModalOpen(true)}
+                    className="h-8 px-3 rounded-full bg-white shadow-sm border border-[#2D1148]/10 text-[11.5px] font-bold text-[#2D1148] inline-flex items-center gap-1 cursor-pointer tnum"
+                  >
+                    <span>{selectedTable}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-[#E89223]" />
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <Search className="w-4 h-4 text-[#8C8396] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search soups, biryani, kebabs, naan..."
+                    className="w-full h-11 rounded-full bg-white shadow-[0_4px_14px_rgba(45,17,72,0.05)] pl-10 pr-9 text-[13px] font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C8396] cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 mt-3 overflow-x-auto no-scrollbar">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVegOnly((v) => !v);
+                      if (!vegOnly) setNonVegOnly(false);
+                    }}
+                    className={`h-8 px-3 rounded-full text-[11.5px] font-bold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                      vegOnly
+                        ? 'bg-[#15803D] text-white'
+                        : 'bg-white text-[#1B1026] shadow-sm'
+                    }`}
+                  >
+                    <FssaiDot veg={true} />
+                    <span>Pure Veg</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNonVegOnly((v) => !v);
+                      if (!nonVegOnly) setVegOnly(false);
+                    }}
+                    className={`h-8 px-3 rounded-full text-[11.5px] font-bold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                      nonVegOnly
+                        ? 'bg-[#DC2626] text-white'
+                        : 'bg-white text-[#1B1026] shadow-sm'
+                    }`}
+                  >
+                    <FssaiDot veg={false} />
+                    <span>Non-Veg</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBestsellersOnly((v) => !v)}
+                    className={`h-8 px-3 rounded-full text-[11.5px] font-bold whitespace-nowrap cursor-pointer transition-colors ${
+                      bestsellersOnly
+                        ? 'bg-[#2D1148] text-white'
+                        : 'bg-white text-[#1B1026] shadow-sm'
+                    }`}
+                  >
+                    Bestsellers
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUnder250((v) => !v)}
+                    className={`h-8 px-3 rounded-full text-[11.5px] font-bold whitespace-nowrap cursor-pointer transition-colors tnum ${
+                      under250
+                        ? 'bg-[#E89223] text-white'
+                        : 'bg-white text-[#1B1026] shadow-sm'
+                    }`}
+                  >
+                    Under ₹250
+                  </button>
+                </div>
               </div>
 
-              {/* Portion Selector */}
-              {customDish.halfPrice && (
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[#F3C669] uppercase tracking-wider block">
-                    Choose Portion Size
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+              <div className="px-4 pt-4 space-y-5">
+                {MENU_GROUPS.map((group, groupIdx) => {
+                  const dishes = menuGroupedDishes[group] || [];
+                  if (dishes.length === 0) return null;
+
+                  return (
+                    <React.Fragment key={group}>
+                      {groupIdx > 0 && <ArchitecturalMandalaDivider />}
+                      <section>
+                        <div className="flex items-center justify-between mb-3">
+                          <h2 className="text-[16px] font-extrabold text-[#1B1026]">
+                            {group}
+                          </h2>
+                          <span className="text-[11px] font-bold text-[#6E6578] tnum">
+                            {dishes.length} items
+                          </span>
+                        </div>
+
+                        <div className="space-y-3">
+                          {dishes.map((dish) => {
+                            const qty = getDishQty(dish.id);
+                            return (
+                              <article
+                                key={dish.id}
+                                onClick={() => openCustomization(dish)}
+                                className="bg-white rounded-[22px] p-3.5 shadow-[0_6px_24px_rgba(45,17,72,0.06)] flex items-center justify-between gap-3 cursor-pointer"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5 mb-1">
+                                    <FssaiDot veg={dish.veg} />
+                                    {dish.badge && (
+                                      <span
+                                        className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${badgeStyle(
+                                          dish.badgeType
+                                        )}`}
+                                      >
+                                        {dish.badge}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <h3 className="text-[15px] font-bold text-[#1B1026] leading-snug">
+                                    {dish.name}
+                                  </h3>
+
+                                  <div className="flex items-center gap-2 mt-1 tnum">
+                                    <span className="text-[14.5px] font-extrabold text-[#2D1148]">
+                                      ₹{dish.price}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#6E6578]">
+                                      <Star className="w-3.5 h-3.5 fill-[#E89223] text-[#E89223]" />
+                                      {dish.rating} ({dish.ratingCount})
+                                    </span>
+                                  </div>
+
+                                  <p className="text-[11.5px] text-[#6E6578] line-clamp-2 mt-1 leading-relaxed">
+                                    {dish.description}
+                                  </p>
+                                </div>
+
+                                <div
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex flex-col items-center shrink-0"
+                                >
+                                  <div className="relative w-[96px] h-[96px]">
+                                    <img
+                                      src={dish.image}
+                                      alt={dish.name}
+                                      onClick={() => openCustomization(dish)}
+                                      onError={(e) => {
+                                        e.currentTarget.src = FALLBACK_FOOD_IMG;
+                                      }}
+                                      className="w-full h-full rounded-[16px] object-cover cursor-pointer"
+                                      loading="lazy"
+                                    />
+                                    <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2">
+                                      {qty === 0 ? (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            dish.customizable
+                                              ? openCustomization(dish)
+                                              : quickAddDish(dish)
+                                          }
+                                          className="h-7 px-4 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[11px] font-extrabold shadow-md cursor-pointer transition-colors whitespace-nowrap"
+                                        >
+                                          + Add
+                                        </button>
+                                      ) : (
+                                        <div className="h-7 px-2 rounded-full bg-[#2D1148] text-white inline-flex items-center gap-2 text-[11.5px] font-extrabold shadow-md tnum">
+                                          <button
+                                            type="button"
+                                            onClick={() => quickDecrementDish(dish.id)}
+                                            className="cursor-pointer"
+                                            aria-label="Decrease"
+                                          >
+                                            <Minus className="w-3.5 h-3.5 stroke-[2.8]" />
+                                          </button>
+                                          <span>{qty}</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => quickAddDish(dish)}
+                                            className="cursor-pointer"
+                                            aria-label="Increase"
+                                          >
+                                            <Plus className="w-3.5 h-3.5 stroke-[2.8]" />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {dish.customizable && (
+                                    <span className="text-[9.5px] font-semibold text-[#8C8396] mt-3.5">
+                                      Customisable
+                                    </span>
+                                  )}
+                                </div>
+                              </article>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    </React.Fragment>
+                  );
+                })}
+
+                {totalMenuResults === 0 && (
+                  <div className="p-8 rounded-[22px] bg-white text-center shadow-[0_6px_24px_rgba(45,17,72,0.06)]">
+                    <p className="text-sm font-bold text-[#1B1026]">
+                      No dishes match your filters
+                    </p>
                     <button
                       type="button"
-                      onClick={() => setCustomPortion('Full')}
-                      className={`p-3 rounded-xl border text-xs font-bold cursor-pointer transition-all flex items-center justify-between ${
-                        customPortion === 'Full'
-                          ? 'bg-[#2E1446] border-[#F3C669] text-[#F3C669]'
-                          : 'bg-[#231238] border-[#F3C669]/20 text-[#A89CB2]'
-                      }`}
+                      onClick={() => {
+                        setSearchQuery('');
+                        setVegOnly(false);
+                        setNonVegOnly(false);
+                        setBestsellersOnly(false);
+                        setUnder250(false);
+                      }}
+                      className="mt-3 h-9 px-5 rounded-full bg-[#2D1148] text-white text-xs font-bold cursor-pointer"
                     >
-                      <span>Full Plate</span>
-                      <span className="tnum font-extrabold">₹{customDish.price}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCustomPortion('Half')}
-                      className={`p-3 rounded-xl border text-xs font-bold cursor-pointer transition-all flex items-center justify-between ${
-                        customPortion === 'Half'
-                          ? 'bg-[#2E1446] border-[#F3C669] text-[#F3C669]'
-                          : 'bg-[#231238] border-[#F3C669]/20 text-[#A89CB2]'
-                      }`}
-                    >
-                      <span>Half Portion</span>
-                      <span className="tnum font-extrabold">₹{customDish.halfPrice}</span>
+                      Clear All Filters
                     </button>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            </div>
+          )}
 
-              {/* Spice Level */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#F3C669] uppercase tracking-wider block">
-                  Spice Profile
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['Mild Awadhi', 'Medium Zaika', 'Royal Spicy'].map((spice) => (
-                    <button
-                      key={spice}
-                      type="button"
-                      onClick={() => setCustomSpice(spice)}
-                      className={`p-2.5 rounded-xl border text-[11px] font-bold cursor-pointer transition-all text-center ${
-                        customSpice === spice
-                          ? 'bg-[#2E1446] border-[#F3C669] text-[#F3C669]'
-                          : 'bg-[#231238] border-[#F3C669]/20 text-[#A89CB2]'
-                      }`}
-                    >
-                      {spice}
-                    </button>
-                  ))}
-                </div>
+          {/* ---------------------------------------------------------------
+              TAB 3: OFFERS & ROYAL REWARDS
+             --------------------------------------------------------------- */}
+          {activeTab === 'offers' && (
+            <div className="px-4 pt-5 space-y-5">
+              <div>
+                <h1 className="text-[21px] font-extrabold text-[#1B1026]">
+                  Offers &amp; Rewards
+                </h1>
+                <p className="text-xs font-medium text-[#6E6578] mt-0.5">
+                  Exclusive PM Zaika dine-in privileges &amp; combos
+                </p>
               </div>
 
-              {/* Addons */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#F3C669] uppercase tracking-wider block">
-                  Royal Accompaniments
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { name: 'Extra Pudina Chutney', price: 20 },
-                    { name: 'Royal Shahi Raita', price: 40 },
-                    { name: 'Awadhi Salan Gravy', price: 50 },
-                    { name: 'Fresh Butter Cube', price: 15 },
-                  ].map((addon) => {
-                    const isSelected = customAddons.includes(addon.name)
-                    return (
+              <RoyalPassCard
+                royalPoints={royalPoints}
+                selectedTable={selectedTable}
+                onRedeem={handleRedeemRoyalPoints}
+              />
+
+              <section className="space-y-3">
+                <h2 className="text-[15px] font-extrabold text-[#1B1026]">
+                  Available Coupons
+                </h2>
+                {COUPONS.map((c) => {
+                  const isApplied = appliedCouponCode === c.code;
+                  return (
+                    <div
+                      key={c.code}
+                      className="rounded-[22px] bg-white p-4 shadow-[0_6px_22px_rgba(45,17,72,0.06)] flex items-center justify-between gap-3"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-md bg-[#F2EAF8] text-[#2D1148] text-[11px] font-extrabold tracking-wider tnum">
+                            {c.code}
+                          </span>
+                          <span className="text-[9.5px] font-bold uppercase text-[#E89223]">
+                            {c.badge}
+                          </span>
+                        </div>
+                        <h3 className="text-[14.5px] font-bold text-[#1B1026] mt-1.5">
+                          {c.title}
+                        </h3>
+                        <p className="text-[11.5px] text-[#6E6578] mt-0.5">
+                          {c.subtitle}
+                        </p>
+                      </div>
+
                       <button
-                        key={addon.name}
                         type="button"
-                        onClick={() => {
-                          setCustomAddons((prev) =>
-                            isSelected
-                              ? prev.filter((a) => a !== addon.name)
-                              : [...prev, addon.name]
-                          )
-                        }}
-                        className={`p-2.5 rounded-xl border text-[11px] font-semibold cursor-pointer transition-all flex items-center justify-between ${
-                          isSelected
-                            ? 'bg-[#2E1446] border-[#F3C669] text-[#F3C669]'
-                            : 'bg-[#231238] border-[#F3C669]/20 text-[#A89CB2]'
+                        onClick={() =>
+                          isApplied
+                            ? (setAppliedCouponCode(null), showToast(`Removed ${c.code}`))
+                            : handleApplyCouponCode(c.code)
+                        }
+                        className={`shrink-0 h-9 px-4 rounded-full text-xs font-bold cursor-pointer transition-colors ${
+                          isApplied
+                            ? 'bg-[#1A7F5A] text-white'
+                            : 'bg-[#2D1148] hover:bg-[#461B6E] text-white'
                         }`}
                       >
-                        <span className="truncate pr-1">{addon.name}</span>
-                        <span className="tnum font-bold text-[10px] shrink-0">+₹{addon.price}</span>
+                        {isApplied ? 'Applied' : 'Apply'}
                       </button>
-                    )
-                  })}
-                </div>
-              </div>
+                    </div>
+                  );
+                })}
+              </section>
+            </div>
+          )}
 
-              {/* Confirm Button */}
+          {/* ---------------------------------------------------------------
+              TAB 4: INFO / CONCIERGE HUB
+             --------------------------------------------------------------- */}
+          {activeTab === 'hub' && (
+            <div className="px-4 pt-5 space-y-4">
+              <section className="rounded-[24px] bg-white p-4 shadow-[0_6px_24px_rgba(45,17,72,0.06)] flex items-center gap-3.5">
+                <PmZaikaCrest />
+                <div className="min-w-0">
+                  <h1 className="text-[18px] font-extrabold text-[#2D1148] leading-tight">
+                    PM ZAIKA RESTAURANT
+                  </h1>
+                  <p className="text-[11.5px] font-medium text-[#6E6578] mt-0.5">
+                    Indian • Chinese • Tandoor • Rolls
+                  </p>
+                  <div className="mt-1.5 inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[#1B1026] tnum">
+                    <span className="inline-flex items-center gap-0.5 text-[#D48016]">
+                      4.8 <Star className="w-3.5 h-3.5 fill-[#E89223] text-[#E89223]" />
+                    </span>
+                    <span className="text-[#C7BFD0]">•</span>
+                    <span className="text-[#461B6E]">1.2K+ ratings</span>
+                  </div>
+                </div>
+              </section>
+
+              <RoyalPassCard
+                royalPoints={royalPoints}
+                selectedTable={selectedTable}
+                onRedeem={handleRedeemRoyalPoints}
+                compact
+              />
+
+              <section className="rounded-[22px] bg-white p-4 shadow-[0_6px_24px_rgba(45,17,72,0.06)] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#6E6578]">
+                    Restaurant Contact &amp; Orders
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-[#FDEBD3] text-[#D48016] text-[10px] font-bold">
+                    Main Helpline
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <a
+                      href="tel:+917488260572"
+                      className="text-[17px] font-extrabold text-[#1B1026] hover:text-[#2D1148] tnum"
+                    >
+                      +91 74882 60572
+                    </a>
+                    <p className="text-[11.5px] text-[#6E6578] mt-0.5 tnum">
+                      Secondary Helpline: 95257 48843
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleCopyPhone}
+                      className="h-9 px-3 rounded-xl bg-[#FAF5F0] hover:bg-[#F2EAF8] text-[#2D1148] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      {phoneCopied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-[#15803D]" />
+                          <span className="text-[#15803D]">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+
+                    <a
+                      href="tel:+917488260572"
+                      className="h-9 px-3.5 rounded-xl bg-[#2D1148] hover:bg-[#461B6E] text-white text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>Call</span>
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-[22px] bg-white p-4 shadow-[0_6px_24px_rgba(45,17,72,0.06)] flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#F2EAF8] flex items-center justify-center shrink-0 mt-0.5">
+                    <MapPin className="w-4 h-4 text-[#2D1148]" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-[13px] font-bold text-[#1B1026]">
+                      Phulwari Sharif, Patna
+                    </h2>
+                    <p className="text-[11.5px] text-[#6E6578] leading-relaxed mt-0.5">
+                      Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505
+                    </p>
+                  </div>
+                </div>
+
+                <a
+                  href="https://maps.google.com/?q=Phulwari+Rd+Near+Shaheed+Bhagat+Singh+Chowk+Birla+Colony+Phulwari+Sharif+Patna+Bihar+801505"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 h-8 px-3 rounded-full bg-[#F2EAF8] hover:bg-[#2D1148] text-[#2D1148] hover:text-white text-[11px] font-bold inline-flex items-center gap-1 transition-colors"
+                >
+                  <span>Directions</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </section>
+
               <button
                 type="button"
                 onClick={() => {
-                  const unitPrice =
-                    customPortion === 'Half' && customDish.halfPrice
-                      ? customDish.halfPrice
-                      : customDish.price
-                  const key = `${customDish.id}_${customPortion}_${customSpice}`
-                  setCart((prev) => {
-                    const existing = prev[key]
-                    if (existing) {
-                      return { ...prev, [key]: { ...existing, qty: existing.qty + 1 } }
-                    }
-                    return {
-                      ...prev,
-                      [key]: {
-                        key,
-                        dish: customDish,
-                        portion: customPortion,
-                        spice: customSpice,
-                        addons: customAddons,
-                        notes: '',
-                        unitPrice,
-                        qty: 1,
-                      },
-                    }
-                  })
-                  setCustomDish(null)
-                  showToast(`Added custom ${customDish.name} (${customPortion})`)
+                  setFeedbackDone(false);
+                  setFeedbackOpen(true);
                 }}
-                className="w-full h-11 rounded-full bg-gradient-to-r from-[#E89223] via-[#F3C669] to-[#D48016] text-[#140A20] text-xs font-black shadow-lg cursor-pointer hover:brightness-110"
+                className="w-full rounded-[22px] bg-gradient-to-r from-[#2D1148] to-[#461B6E] p-4 text-left text-white shadow-[0_12px_26px_rgba(45,17,72,0.2)] flex items-center justify-between gap-3 cursor-pointer"
               >
-                Add Customized Dish to Order
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#E89223] flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="block text-[14px] font-extrabold leading-tight">
+                      Review &amp; Share Feedback
+                    </span>
+                    <span className="block text-[11px] text-[#FDEBD3] mt-0.5">
+                      5 quick questions • Takes ~30 sec • +50 Royal Pts
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-[#E89223] shrink-0" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setComplaintOpen(true)}
+                className="w-full rounded-[22px] bg-[#FFF2F3] border border-[#F5D0D4] hover:bg-[#FFE8EA] p-4 text-left flex items-center justify-between gap-3 cursor-pointer transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#FDE2E4] flex items-center justify-center shrink-0">
+                    <AlertTriangle className="w-4 h-4 text-[#C81E3A]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[13px] font-bold text-[#7F1D2C]">
+                        Have a Complaint or Issue?
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded bg-[#C81E3A] text-white text-[9px] font-extrabold uppercase tracking-wider">
+                        Admin Direct
+                      </span>
+                    </div>
+                    <span className="block text-[11px] text-[#9F3A49] mt-0.5">
+                      Call manager directly or register a table complaint
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#C81E3A] shrink-0" />
+              </button>
+            </div>
+          )}
+        </main>
+
+        {/* =================================================================
+            DOCKED 5-SLOT BOTTOM NAVIGATION BAR
+           ================================================================= */}
+        <nav
+          aria-label="Primary Navigation"
+          className="absolute bottom-0 left-0 right-0 z-30 h-[74px] bg-white rounded-t-[26px] shadow-[0_-8px_30px_rgba(45,17,72,0.08)] px-3 grid grid-cols-5 items-center"
+        >
+          <button
+            type="button"
+            onClick={() => setActiveTab('home')}
+            className="flex flex-col items-center justify-center gap-1 cursor-pointer"
+          >
+            <Home
+              className={`w-[21px] h-[21px] transition-colors ${
+                activeTab === 'home' ? 'text-[#2D1148] stroke-[2.4]' : 'text-[#9B92A6]'
+              }`}
+            />
+            <span
+              className={`text-[10.5px] ${
+                activeTab === 'home'
+                  ? 'font-extrabold text-[#2D1148]'
+                  : 'font-semibold text-[#9B92A6]'
+              }`}
+            >
+              Home
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('menu')}
+            className="flex flex-col items-center justify-center gap-1 cursor-pointer"
+          >
+            <LayoutGrid
+              className={`w-[21px] h-[21px] transition-colors ${
+                activeTab === 'menu' ? 'text-[#2D1148] stroke-[2.4]' : 'text-[#9B92A6]'
+              }`}
+            />
+            <span
+              className={`text-[10.5px] ${
+                activeTab === 'menu'
+                  ? 'font-extrabold text-[#2D1148]'
+                  : 'font-semibold text-[#9B92A6]'
+              }`}
+            >
+              Menu
+            </span>
+          </button>
+
+          <div className="flex flex-col items-center justify-center relative">
+            <div className="relative -mt-7 w-[74px] h-[74px] flex items-center justify-center">
+              <ArchitecturalMandalaSvg
+                className="absolute inset-0 w-full h-full opacity-80"
+                strokeColor="#C88B2B"
+                accentColor="#E89223"
+                strokeWidth={1.7}
+              />
+              <button
+                type="button"
+                onClick={() => setCartOpen(true)}
+                className="w-[62px] h-[62px] rounded-full bg-[#3B155E] hover:bg-[#2D1148] text-white shadow-[0_10px_24px_rgba(59,21,94,0.38)] border-[3px] border-[#FAF5F0] flex flex-col items-center justify-center cursor-pointer transition-transform active:scale-95 relative z-10"
+                aria-label="Open Cart & Order"
+              >
+                <ShoppingBag className="w-[20px] h-[20px]" />
+                <span className="text-[9.5px] font-bold mt-0.5 leading-none">Order</span>
+                {cartSummary.itemCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-[20px] px-1 rounded-full bg-[#E89223] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white tnum">
+                    {cartSummary.itemCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>
-        )}
 
-        {/* =============================================================
-            MODAL 4: CALL STEWARD / SERVICE MODAL
-           ============================================================= */}
-        {serviceModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-[420px] bg-[#1A0C28] border-t sm:border border-[#F3C669]/30 rounded-t-[32px] sm:rounded-[28px] p-5 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#F3C669]/20">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-[#E89223]/20 border border-[#F3C669]/50 flex items-center justify-center text-[#F3C669]">
-                    <Bell className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3
-                      className="text-[14px] font-extrabold uppercase text-[#FFF8F0]"
-                      style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
-                    >
-                      Call Table Steward
-                    </h3>
-                    <p className="text-[10px] text-[#A89CB2]">Direct request for {selectedTable}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setServiceModalOpen(false)}
-                  className="w-7 h-7 rounded-full bg-[#241038] border border-[#F3C669]/30 flex items-center justify-center text-[#A89CB2] hover:text-white cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('offers')}
+            className="flex flex-col items-center justify-center gap-1 cursor-pointer"
+          >
+            <Tag
+              className={`w-[21px] h-[21px] transition-colors ${
+                activeTab === 'offers' ? 'text-[#2D1148] stroke-[2.4]' : 'text-[#9B92A6]'
+              }`}
+            />
+            <span
+              className={`text-[10.5px] ${
+                activeTab === 'offers'
+                  ? 'font-extrabold text-[#2D1148]'
+                  : 'font-semibold text-[#9B92A6]'
+              }`}
+            >
+              Offers
+            </span>
+          </button>
 
-              {/* Service Quick Options */}
-              <div className="space-y-2">
-                {[
-                  { label: '💧 Extra Water (Normal / Cold)', val: 'Water' },
-                  { label: '🍴 Extra Plates & Cutlery', val: 'Cutlery' },
-                  { label: '🧼 Clean Table / Tissues', val: 'Clean Table' },
-                  { label: '🧾 Bring Printed Bill', val: 'Bill' },
-                  { label: '👨‍🍳 Speak with Captain / Chef', val: 'Captain' },
-                ].map((opt) => (
-                  <button
-                    key={opt.val}
-                    type="button"
-                    onClick={() => setServiceRequestType(opt.val)}
-                    className={`w-full p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
-                      serviceRequestType === opt.val
-                        ? 'bg-[#2E1446] border-[#F3C669] text-[#F3C669]'
-                        : 'bg-[#231238] border-[#F3C669]/20 text-[#FFF8F0] hover:border-[#F3C669]/40'
-                    }`}
-                  >
-                    <span>{opt.label}</span>
-                    {serviceRequestType === opt.val && <Check className="w-4 h-4 text-[#F3C669]" />}
-                  </button>
-                ))}
-              </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('hub')}
+            className="flex flex-col items-center justify-center gap-1 cursor-pointer"
+          >
+            <User
+              className={`w-[21px] h-[21px] transition-colors ${
+                activeTab === 'hub' ? 'text-[#2D1148] stroke-[2.4]' : 'text-[#9B92A6]'
+              }`}
+            />
+            <span
+              className={`text-[10.5px] ${
+                activeTab === 'hub'
+                  ? 'font-extrabold text-[#2D1148]'
+                  : 'font-semibold text-[#9B92A6]'
+              }`}
+            >
+              Hub
+            </span>
+          </button>
+        </nav>
 
-              {/* Submit Button */}
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <a
-                  href="tel:+917488260572"
-                  className="h-11 rounded-full bg-[#241038] border border-[#F3C669]/35 text-[#FFF8F0] text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-[#32174F]"
-                >
-                  <Phone className="w-3.5 h-3.5 text-[#F3C669]" />
-                  <span>Call Captain</span>
-                </a>
-                <button
-                  type="button"
-                  disabled={serviceSending}
-                  onClick={submitServiceRequest}
-                  className="h-11 rounded-full bg-gradient-to-r from-[#E89223] via-[#F3C669] to-[#D48016] text-[#140A20] text-xs font-black shadow-lg cursor-pointer hover:brightness-110 disabled:opacity-50"
-                >
-                  {serviceSending ? 'Alerting...' : 'Send Request'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* =============================================================
-            MODAL 5: CART & ORDER DRAWER
-           ============================================================= */}
-        {cartOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-[430px] bg-[#1A0C28] border-t sm:border border-[#F3C669]/35 rounded-t-[32px] sm:rounded-[28px] max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-              {/* Header */}
-              <div className="p-4 border-b border-[#F3C669]/20 flex items-center justify-between">
+        {/* MODAL 1: TABLE SELECTOR */}
+        {tableModalOpen && (
+          <div
+            onClick={() => setTableModalOpen(false)}
+            className="absolute inset-0 z-50 bg-[#1B1026]/50 backdrop-blur-[2px] flex items-end"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-t-[28px] bg-white p-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
                 <div>
-                  <h3
-                    className="text-[14px] font-extrabold uppercase text-[#FFF8F0]"
-                    style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
-                  >
-                    Your Table Order
+                  <h3 className="text-[16px] font-extrabold text-[#1B1026]">
+                    Select Dining Table
                   </h3>
-                  <p className="text-[10px] text-[#F3C669] font-bold">
-                    {selectedTable} • {cartSummary.itemCount} Items
+                  <p className="text-xs text-[#6E6578]">
+                    Choose your table number or takeaway pickup
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCartOpen(false)}
-                  className="w-7 h-7 rounded-full bg-[#241038] border border-[#F3C669]/30 flex items-center justify-center text-[#A89CB2] hover:text-white cursor-pointer"
+                  onClick={() => setTableModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Items List */}
-              <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3">
-                {cartSummary.entries.map((entry) => (
-                  <div
-                    key={entry.key}
-                    className="p-3 rounded-2xl bg-[#231238] border border-[#F3C669]/20 flex items-center justify-between gap-3"
+              <div className="grid grid-cols-3 gap-2.5 mt-4 max-h-[270px] overflow-y-auto no-scrollbar">
+                {TABLES.map((tbl) => (
+                  <button
+                    key={tbl}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTable(tbl);
+                      setTableModalOpen(false);
+                      showToast(`Switched to ${tbl}`);
+                    }}
+                    className={`py-2.5 rounded-2xl text-xs font-bold tnum cursor-pointer transition-colors ${
+                      selectedTable === tbl
+                        ? 'bg-[#2D1148] text-white shadow-md'
+                        : 'bg-[#FAF5F0] text-[#1B1026] hover:bg-[#F2EAF8]'
+                    }`}
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <VegNonVegDot veg={entry.dish.veg} size="sm" />
-                        <h4 className="text-xs font-bold text-[#FFF8F0] truncate">
-                          {entry.dish.name}
-                        </h4>
-                      </div>
-                      <p className="text-[10px] text-[#A89CB2] mt-0.5">
-                        {entry.portion} {entry.spice ? `• ${entry.spice}` : ''}
-                      </p>
-                      <span className="text-xs font-extrabold text-[#F3C669] tnum block mt-1">
-                        ₹{entry.unitPrice * entry.qty}
-                      </span>
-                    </div>
-
-                    {/* Stepper */}
-                    <div className="h-7 px-2.5 rounded-full bg-[#180C26] border border-[#F3C669]/50 flex items-center gap-2.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => updateCartQty(entry.key, -1)}
-                        className="text-[#F3C669] hover:text-white cursor-pointer"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="text-xs font-extrabold text-[#FFF8F0] tnum">
-                        {entry.qty}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => updateCartQty(entry.key, 1)}
-                        className="text-[#F3C669] hover:text-white cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
+                    {tbl}
+                  </button>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
 
-                {/* Cooking Instructions Note */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-[#A89CB2] uppercase tracking-wider block">
-                    Special Cooking Instructions
-                  </label>
-                  <input
-                    type="text"
-                    value={cookingNotes}
-                    onChange={(e) => setCookingNotes(e.target.value)}
-                    placeholder="e.g. Less oil, extra spicy, serve starters first..."
-                    className="w-full h-9 px-3 rounded-xl bg-[#231238] border border-[#F3C669]/25 text-xs text-[#FFF8F0] placeholder-[#8E7E98] focus:outline-none focus:ring-1 focus:ring-[#F3C669]"
-                  />
-                </div>
-
-                {/* Promo Coupon Card */}
-                <div className="p-3 rounded-xl bg-[#231238] border border-[#F3C669]/25 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Tag className="w-4 h-4 text-[#F3C669] shrink-0" />
-                    <div>
-                      <span className="text-xs font-bold text-[#FFF8F0] block">
-                        {couponCode ? `Code: ${couponCode}` : 'Have a coupon?'}
-                      </span>
-                      <span className="text-[10px] text-[#22C55E]">
-                        {couponCode === 'ZAIKA25'
-                          ? '25% Royal Discount Applied!'
-                          : 'Use ZAIKA25 for 25% Off'}
-                      </span>
-                    </div>
-                  </div>
-                  {couponCode ? (
-                    <button
-                      type="button"
-                      onClick={() => setCouponCode(null)}
-                      className="text-[10px] text-[#EF4444] font-bold cursor-pointer"
-                    >
-                      Remove
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setCouponCode('ZAIKA25')}
-                      className="text-[10px] text-[#F3C669] font-bold cursor-pointer underline"
-                    >
-                      Apply ZAIKA25
-                    </button>
-                  )}
-                </div>
-
-                {/* Bill Breakdown */}
-                <div className="p-3.5 rounded-2xl bg-[#140A20] border border-[#F3C669]/20 space-y-1.5 text-xs">
-                  <div className="flex justify-between text-[#A89CB2]">
-                    <span>Item Total</span>
-                    <span className="tnum">₹{cartSummary.subtotal}</span>
-                  </div>
-                  {cartSummary.discount > 0 && (
-                    <div className="flex justify-between text-[#22C55E]">
-                      <span>Royal Privilege Discount (25%)</span>
-                      <span className="tnum">-₹{cartSummary.discount}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-[#A89CB2]">
-                    <span>GST & Service Charge (5%)</span>
-                    <span className="tnum">₹{cartSummary.gst}</span>
-                  </div>
-                  <div className="pt-2 border-t border-[#F3C669]/20 flex justify-between font-extrabold text-[#F3C669] text-sm">
-                    <span>Grand Total</span>
-                    <span className="tnum">₹{cartSummary.finalTotal}</span>
-                  </div>
-                </div>
+        {/* MODAL 2: FILTER BOTTOM SHEET */}
+        {filterSheetOpen && (
+          <div
+            onClick={() => setFilterSheetOpen(false)}
+            className="absolute inset-0 z-50 bg-[#1B1026]/50 backdrop-blur-[2px] flex items-end"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-t-[28px] bg-white p-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
+                <h3 className="text-[16px] font-extrabold text-[#1B1026]">
+                  Filter Menu
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setFilterSheetOpen(false)}
+                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              {/* Bottom Action */}
-              <div className="p-4 border-t border-[#F3C669]/20 bg-[#1A0C28]">
+              <div className="mt-4 space-y-2.5">
+                {[
+                  {
+                    label: 'Pure Veg Only',
+                    active: vegOnly,
+                    toggle: () => {
+                      setVegOnly((v) => !v);
+                      if (!vegOnly) setNonVegOnly(false);
+                    }
+                  },
+                  {
+                    label: 'Non-Veg Only',
+                    active: nonVegOnly,
+                    toggle: () => {
+                      setNonVegOnly((v) => !v);
+                      if (!nonVegOnly) setVegOnly(false);
+                    }
+                  },
+                  {
+                    label: 'Under ₹250',
+                    active: under250,
+                    toggle: () => setUnder250((v) => !v)
+                  },
+                  {
+                    label: 'Bestsellers & Chef Picks',
+                    active: bestsellersOnly,
+                    toggle: () => setBestsellersOnly((v) => !v)
+                  }
+                ].map((opt) => (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    onClick={opt.toggle}
+                    className={`w-full px-4 py-3 rounded-2xl flex items-center justify-between text-[13px] font-bold cursor-pointer transition-colors ${
+                      opt.active
+                        ? 'bg-[#F2EAF8] text-[#2D1148] ring-1 ring-[#2D1148]/30'
+                        : 'bg-[#FAF5F0] text-[#1B1026]'
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    <span
+                      className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                        opt.active ? 'bg-[#2D1148] text-white' : 'bg-white border border-[#D4CCD9]'
+                      }`}
+                    >
+                      {opt.active && <Check className="w-3 h-3 stroke-[3]" />}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mt-5">
                 <button
                   type="button"
                   onClick={() => {
-                    setCartOpen(false)
-                    handlePlaceOrder()
+                    setVegOnly(false);
+                    setNonVegOnly(false);
+                    setUnder250(false);
+                    setBestsellersOnly(false);
                   }}
-                  className="w-full h-12 rounded-full bg-gradient-to-r from-[#E89223] via-[#F3C669] to-[#D48016] text-[#140A20] text-sm font-black shadow-[0_6px_22px_rgba(243,198,105,0.4)] cursor-pointer hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="h-11 rounded-full bg-[#FAF5F0] text-[#2D1148] text-xs font-extrabold cursor-pointer"
                 >
-                  <ChefHat className="w-4 h-4 stroke-[2.5]" />
-                  <span>Send Order to Kitchen • ₹{cartSummary.finalTotal}</span>
+                  Clear All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterSheetOpen(false)}
+                  className="h-11 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-xs font-extrabold cursor-pointer"
+                >
+                  Apply Filters
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* =============================================================
-            MODAL 6: LIVE KITCHEN STATUS TRACKER
-           ============================================================= */}
-        {liveOrder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="w-full max-w-[390px] bg-[#1A0C28] border border-[#F3C669]/40 rounded-[28px] p-6 text-center space-y-4 shadow-2xl relative overflow-hidden">
-              {/* Rotating Mandala Halo */}
-              <div className="w-16 h-16 mx-auto relative flex items-center justify-center">
-                <ArchitecturalMandalaSvg
-                  className="w-full h-full text-[#F3C669] animate-spin"
-                  strokeWidth={1}
+        {/* MODAL 3: DISH DETAIL & CUSTOMIZATION SHEET */}
+        {customDish && (
+          <div
+            onClick={() => setCustomDish(null)}
+            className="absolute inset-0 z-50 bg-[#1B1026]/55 backdrop-blur-[2px] flex items-end"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-t-[28px] bg-white max-h-[88%] flex flex-col overflow-hidden shadow-2xl"
+            >
+              <div className="relative h-[168px] shrink-0">
+                <img
+                  src={customDish.image}
+                  alt={customDish.name}
+                  onError={(e) => {
+                    e.currentTarget.src = FALLBACK_FOOD_IMG;
+                  }}
+                  className="w-full h-full object-cover"
                 />
-                <div className="w-9 h-9 rounded-full bg-[#E89223] text-[#140822] flex items-center justify-center font-black relative z-10">
-                  <Flame className="w-5 h-5 fill-[#140822]" />
-                </div>
-              </div>
-
-              <div>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#E89223]/20 border border-[#F3C669]/40 text-[#F3C669] text-[10px] font-bold">
-                  Order {liveOrder.id} • {liveOrder.table}
-                </span>
-                <h3
-                  className="text-lg font-extrabold text-[#FFF8F0] mt-2"
-                  style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
-                >
-                  Cooking In Awadhi Kitchen
-                </h3>
-                <p className="text-xs text-[#A89CB2] mt-0.5">
-                  Our Bawarchis are slow-steaming your feast.
-                </p>
-              </div>
-
-              {/* Progress Steps */}
-              <div className="space-y-2.5 text-left py-2 border-y border-[#F3C669]/15">
-                {[
-                  {
-                    step: 0,
-                    title: 'Order Accepted by Captain',
-                    desc: 'Tickets printed at Tandoor & Biryani handi',
-                  },
-                  {
-                    step: 1,
-                    title: 'Simmering & Tandoori Charcoal Dum',
-                    desc: 'Freshly roasted and spiced',
-                  },
-                  {
-                    step: 2,
-                    title: 'Garnish & Royal Plating',
-                    desc: 'Finished with saffron, silver vark & pudina',
-                  },
-                  {
-                    step: 3,
-                    title: 'Served Hot to Table',
-                    desc: 'Enjoy your royal PM Zaika experience!',
-                  },
-                ].map((st) => {
-                  const isDone = liveOrder.stage >= st.step
-                  return (
-                    <div key={st.step} className="flex items-start gap-2.5">
-                      <div
-                        className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold ${
-                          isDone
-                            ? 'bg-[#F3C669] text-[#140822]'
-                            : 'bg-[#231238] text-[#8E7E98] border border-[#8E7E98]/30'
-                        }`}
-                      >
-                        {isDone ? '✓' : st.step + 1}
-                      </div>
-                      <div>
-                        <p
-                          className={`text-xs font-bold ${isDone ? 'text-[#FFF8F0]' : 'text-[#8E7E98]'}`}
-                        >
-                          {st.title}
-                        </p>
-                        <p className="text-[10px] text-[#A89CB2]">{st.desc}</p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Actions */}
-              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1B1026]/70 via-transparent to-transparent" />
                 <button
                   type="button"
-                  onClick={() => setServiceModalOpen(true)}
-                  className="h-10 rounded-full bg-[#241038] border border-[#F3C669]/30 text-[#F3C669] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Bell className="w-3.5 h-3.5" />
-                  <span>Call Steward</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLiveOrder(null)}
-                  className="h-10 rounded-full bg-gradient-to-r from-[#E89223] to-[#F3C669] text-[#140822] text-xs font-black cursor-pointer shadow-md"
-                >
-                  Order More
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* =============================================================
-            MODAL 7: GUEST FEEDBACK SHEET (Matches user screenshot 4 1:1)
-           ============================================================= */}
-        {feedbackOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-[420px] bg-[#1A0C28] border-t sm:border border-[#F3C669]/35 rounded-t-[32px] sm:rounded-[28px] max-h-[88vh] overflow-y-auto no-scrollbar p-5 shadow-2xl space-y-4">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-[#F3C669]/20">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-[#E89223]/20 border border-[#F3C669]/50 flex items-center justify-center text-[#F3C669]">
-                    <Star className="w-4 h-4 fill-[#F3C669]" />
-                  </div>
-                  <div>
-                    <h3
-                      className="text-[14px] font-extrabold uppercase text-[#FFF8F0]"
-                      style={{ fontFamily: 'var(--font-cinzel), Georgia, serif' }}
-                    >
-                      Guest Feedback & Review
-                    </h3>
-                    <p className="text-[10px] text-[#A89CB2]">Phulwari Sharif, Patna</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setFeedbackOpen(false)}
-                  className="w-7 h-7 rounded-full bg-[#241038] border border-[#F3C669]/30 flex items-center justify-center text-[#A89CB2] hover:text-white cursor-pointer"
+                  onClick={() => setCustomDish(null)}
+                  className="absolute top-3.5 right-3.5 w-9 h-9 rounded-full bg-white/95 text-[#1B1026] flex items-center justify-center shadow-md cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
-              </div>
-
-              {/* Restaurant Contact Banner (Image 4) */}
-              <div className="p-3.5 rounded-2xl bg-[#231238] border border-[#F3C669]/30 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-wider font-bold text-[#E89223]">
-                    Restaurant Contact & Orders
-                  </span>
-                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/40 font-bold">
-                    Main Helpline
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
+                <div className="absolute bottom-3 left-4 right-4 text-white">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-[#E89223] text-[#140822] flex items-center justify-center">
-                      <Phone className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-sm font-extrabold text-[#FFF8F0] block tnum">
-                        +91 77639 49496
-                      </span>
-                      <span className="text-[10px] text-[#A89CB2]">
-                        Tap to call restaurant directly
-                      </span>
-                    </div>
+                    <FssaiDot veg={customDish.veg} />
+                    <span className="text-xs font-bold inline-flex items-center gap-1 tnum">
+                      <Star className="w-3.5 h-3.5 fill-[#E89223] text-[#E89223]" />
+                      {customDish.rating} ({customDish.ratingCount})
+                    </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard?.writeText('+917763949496')
-                      showToast('Copied phone number!')
-                    }}
-                    className="h-7 px-2.5 rounded-lg bg-[#180C26] border border-[#F3C669]/30 text-[10px] text-[#F3C669] font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <Copy className="w-3 h-3" />
-                    <span>Copy</span>
-                  </button>
+                  <h3 className="text-[19px] font-extrabold mt-0.5 leading-tight">
+                    {customDish.name}
+                  </h3>
                 </div>
               </div>
 
-              {/* Address Card (Image 4) */}
-              <div className="p-3 rounded-xl bg-[#231238]/60 border border-[#F3C669]/15 text-xs text-[#A89CB2] flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-[#F3C669] shrink-0 mt-0.5" />
-                <p className="text-[11px] leading-relaxed">
-                  Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna,
-                  Bihar 801505
-                </p>
-              </div>
-
-              {/* 5 Quick Questions */}
-              <div className="space-y-3 pt-2">
-                <p className="text-xs font-bold text-[#F3C669]">
-                  Takes ~30 sec • 5 Quick Questions • Optional
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+                <p className="text-xs text-[#6E6578] leading-relaxed">
+                  {customDish.description}
                 </p>
 
-                {[
-                  { key: 'taste', label: '1. Food Quality & Authenticity' },
-                  { key: 'service', label: '2. Promptness & Table Service' },
-                  { key: 'ambience', label: '3. Dining Ambience & Comfort' },
-                  { key: 'hygiene', label: '4. Cleanliness & Hygiene' },
-                  { key: 'value', label: '5. Overall Royal Value' },
-                ].map((q) => (
-                  <div key={q.key} className="flex items-center justify-between py-1">
-                    <span className="text-xs text-[#FFF8F0] font-medium">{q.label}</span>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
+                {customDish.halfPrice && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[13px] font-extrabold text-[#1B1026]">
+                        Choose Portion
+                      </span>
+                      <span className="text-[10.5px] font-bold text-[#E89223]">
+                        Required
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[
+                        { label: 'Half', price: customDish.halfPrice },
+                        { label: 'Full', price: customDish.price }
+                      ].map((opt) => (
                         <button
-                          key={star}
+                          key={opt.label}
                           type="button"
-                          onClick={() => setFeedbackRatings((prev) => ({ ...prev, [q.key]: star }))}
-                          className="cursor-pointer hover:scale-110 transition-transform"
+                          onClick={() => setCustomPortion(opt.label)}
+                          className={`p-3 rounded-2xl border text-left flex items-center justify-between cursor-pointer transition-colors ${
+                            customPortion === opt.label
+                              ? 'bg-[#FDEBD3]/60 border-[#E89223] text-[#1B1026]'
+                              : 'bg-[#FAF5F0] border-transparent text-[#5B5266]'
+                          }`}
                         >
-                          <Star
-                            className={`w-4 h-4 ${
-                              star <= feedbackRatings[q.key]
-                                ? 'fill-[#F3C669] text-[#F3C669]'
-                                : 'text-[#8E7E98]/40'
-                            }`}
-                          />
+                          <span className="text-xs font-bold">{opt.label}</span>
+                          <span className="text-xs font-extrabold tnum">₹{opt.price}</span>
                         </button>
                       ))}
                     </div>
                   </div>
-                ))}
+                )}
 
-                {/* Comment Textarea */}
-                <textarea
-                  rows={2}
-                  value={feedbackComment}
-                  onChange={(e) => setFeedbackComment(e.target.value)}
-                  placeholder="Any special shoutout to our chef or suggestions for your next visit?..."
-                  className="w-full p-3 rounded-xl bg-[#231238] border border-[#F3C669]/25 text-xs text-[#FFF8F0] placeholder-[#8E7E98] focus:outline-none focus:ring-1 focus:ring-[#F3C669]"
-                />
+                <div>
+                  <span className="block text-[13px] font-extrabold text-[#1B1026] mb-2">
+                    Spice Preference
+                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['Mild', 'Medium', 'Royal Spicy'].map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setCustomSpice(level)}
+                        className={`py-2.5 px-2 rounded-2xl border text-[11.5px] font-bold inline-flex items-center justify-center gap-1 cursor-pointer transition-colors ${
+                          customSpice === level
+                            ? 'bg-[#F2EAF8] border-[#3B155E] text-[#2D1148]'
+                            : 'bg-[#FAF5F0] border-transparent text-[#6E6578]'
+                        }`}
+                      >
+                        {level === 'Royal Spicy' && (
+                          <Flame className="w-3 h-3 text-[#E89223]" />
+                        )}
+                        <span>{level}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                {/* Submit Feedback */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[13px] font-extrabold text-[#1B1026]">
+                      Recommended Add-ons
+                    </span>
+                    <span className="text-[10.5px] font-medium text-[#8C8396]">
+                      Optional
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {ADDONS.map((addon) => {
+                      const selected = customAddons.includes(addon.id);
+                      return (
+                        <button
+                          key={addon.id}
+                          type="button"
+                          onClick={() =>
+                            setCustomAddons((prev) =>
+                              prev.includes(addon.id)
+                                ? prev.filter((i) => i !== addon.id)
+                                : [...prev, addon.id]
+                            )
+                          }
+                          className={`w-full px-3.5 py-2.5 rounded-2xl border flex items-center justify-between text-xs font-bold cursor-pointer transition-colors ${
+                            selected
+                              ? 'bg-[#FDEBD3]/55 border-[#E89223] text-[#1B1026]'
+                              : 'bg-[#FAF5F0] border-transparent text-[#5B5266]'
+                          }`}
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            <FssaiDot veg={addon.veg} />
+                            <span>{addon.name}</span>
+                          </span>
+                          <span className="tnum text-[#2D1148]">+₹{addon.price}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="block text-[13px] font-extrabold text-[#1B1026] mb-1.5">
+                    Cooking Notes
+                  </span>
+                  <input
+                    type="text"
+                    value={customNotes}
+                    onChange={(e) => setCustomNotes(e.target.value)}
+                    placeholder="e.g. Less oil, extra mint chutney, no onions..."
+                    className="w-full h-10 px-3.5 rounded-2xl bg-[#FAF5F0] text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-[#EFE8DF] bg-white">
                 <button
                   type="button"
-                  onClick={() => {
-                    setFeedbackOpen(false)
-                    showToast('Thank you for dining with PM Zaika! 50 Bonus Points Added.')
-                  }}
-                  className="w-full h-11 rounded-full bg-gradient-to-r from-[#E89223] via-[#F3C669] to-[#D48016] text-[#140A20] text-xs font-black shadow-lg cursor-pointer hover:brightness-110"
+                  onClick={confirmCustomizationAdd}
+                  className="w-full h-12 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[14px] font-extrabold shadow-[0_8px_20px_rgba(232,146,35,0.32)] cursor-pointer transition-colors tnum"
                 >
-                  Submit Review & Claim Points
+                  Add to Order — ₹{customTotalUnit}
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 4: CART, CHECKOUT & LIVE KITCHEN ORDER TRACKER */}
+        {cartOpen && (
+          <div
+            onClick={() => setCartOpen(false)}
+            className="absolute inset-0 z-50 bg-[#1B1026]/55 backdrop-blur-[2px] flex items-end"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-t-[28px] bg-[#FAF5F0] max-h-[90%] flex flex-col overflow-hidden shadow-2xl"
+            >
+              <div className="px-5 py-4 bg-white border-b border-[#EFE8DF] flex items-center justify-between">
+                <div>
+                  <h3 className="text-[17px] font-extrabold text-[#1B1026]">
+                    {liveOrder && cartSummary.itemCount === 0
+                      ? 'Live Order Tracker'
+                      : 'Your Order Bag'}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setTableModalOpen(true)}
+                    className="text-[11.5px] font-bold text-[#461B6E] inline-flex items-center gap-1 mt-0.5 cursor-pointer tnum"
+                  >
+                    <span>
+                      {selectedTable} •{' '}
+                      {selectedTable === 'Takeaway' ? 'Pickup' : 'Dine-In'}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-[#E89223]" />
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCartOpen(false)}
+                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {liveOrder && cartSummary.itemCount === 0 ? (
+                <div className="p-5 space-y-5 overflow-y-auto no-scrollbar">
+                  <div className="rounded-[24px] bg-gradient-to-br from-[#1B0A2B] via-[#2D1148] to-[#3B155E] p-5 text-white text-center relative overflow-hidden border border-[#F3C669]/25">
+                    <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[10.5px] font-bold text-[#FDEBD3] tnum">
+                      Order #{liveOrder.id} • {liveOrder.table}
+                    </span>
+
+                    <div className="relative w-[134px] h-[134px] mx-auto my-4 flex items-center justify-center">
+                      <ArchitecturalMandalaSvg
+                        className="absolute inset-0 w-full h-full opacity-75 animate-[spin_28s_linear_infinite]"
+                        strokeColor="#E8D2F5"
+                        accentColor="#F3C669"
+                        strokeWidth={1.35}
+                      />
+                      <div className="w-[62px] h-[62px] rounded-full bg-gradient-to-br from-[#E89223] to-[#D48016] text-white flex items-center justify-center shadow-[0_0_24px_rgba(232,146,35,0.45)] relative z-10 border-2 border-[#FDEBD3]/70">
+                        {liveOrder.stage === 0 ? (
+                          <ChefHat className="w-7 h-7" />
+                        ) : liveOrder.stage === 1 ? (
+                          <UtensilsCrossed className="w-7 h-7" />
+                        ) : (
+                          <CheckCircle2 className="w-7 h-7" />
+                        )}
+                      </div>
+                    </div>
+
+                    <span className="block text-[9.5px] font-extrabold uppercase tracking-[0.2em] text-[#F3C669]">
+                      ROYAL KITCHEN SEAL
+                    </span>
+                    <h4 className="text-[20px] font-extrabold mt-1">
+                      {liveOrder.stage === 0
+                        ? 'Preparing in Tandoor'
+                        : liveOrder.stage === 1
+                        ? 'Plating'
+                        : 'Serving to Table'}
+                    </h4>
+                    <GoldHairline className="my-3 max-w-[180px] mx-auto" />
+                    <p className="text-xs text-white/80 tnum">
+                      {liveOrder.itemsCount}{' '}
+                      {liveOrder.itemsCount === 1 ? 'item' : 'items'} • Grand Total ₹
+                      {liveOrder.total}
+                    </p>
+                  </div>
+
+                  <div className="rounded-[22px] bg-white p-4 shadow-[0_6px_20px_rgba(45,17,72,0.05)] space-y-4">
+                    {[
+                      {
+                        step: 0,
+                        title: 'Preparing in Tandoor',
+                        desc: 'Chef is freshly preparing your royal dishes'
+                      },
+                      {
+                        step: 1,
+                        title: 'Plating',
+                        desc: 'Garnishing with saffron, herbs & hot chutneys'
+                      },
+                      {
+                        step: 2,
+                        title: 'Serving to Table',
+                        desc: `On its way hot to ${liveOrder.table}`
+                      }
+                    ].map((st) => {
+                      const done = liveOrder.stage >= st.step;
+                      const current = liveOrder.stage === st.step;
+                      return (
+                        <div key={st.step} className="flex items-start gap-3">
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                              done
+                                ? 'bg-[#E89223] text-white'
+                                : 'bg-[#FAF5F0] text-[#B2A9BC]'
+                            }`}
+                          >
+                            {done ? (
+                              <Check className="w-4 h-4 stroke-[2.8]" />
+                            ) : (
+                              <Clock className="w-3.5 h-3.5" />
+                            )}
+                          </div>
+                          <div>
+                            <p
+                              className={`text-[13.5px] font-bold ${
+                                current
+                                  ? 'text-[#2D1148]'
+                                  : done
+                                  ? 'text-[#1B1026]'
+                                  : 'text-[#9B92A6]'
+                              }`}
+                            >
+                              {st.title}
+                            </p>
+                            <p className="text-[11.5px] text-[#6E6578]">{st.desc}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLiveOrder((prev) =>
+                          prev ? { ...prev, stage: (prev.stage + 1) % 3 } : prev
+                        )
+                      }
+                      className="h-11 rounded-full bg-white border border-[#2D1148]/15 text-[#2D1148] text-xs font-extrabold cursor-pointer"
+                    >
+                      Simulate Status
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCartOpen(false);
+                        setActiveTab('menu');
+                      }}
+                      className="h-11 rounded-full bg-[#2D1148] text-white text-xs font-extrabold cursor-pointer"
+                    >
+                      Order More
+                    </button>
+                  </div>
+                </div>
+              ) : cartSummary.itemCount === 0 ? (
+                <div className="p-8 text-center space-y-3">
+                  <div className="w-14 h-14 rounded-2xl bg-[#F2EAF8] flex items-center justify-center mx-auto">
+                    <UtensilsCrossed className="w-6 h-6 text-[#2D1148]" />
+                  </div>
+                  <h4 className="text-[16px] font-extrabold text-[#1B1026]">
+                    Your order bag is empty
+                  </h4>
+                  <p className="text-xs text-[#6E6578] max-w-[240px] mx-auto">
+                    Explore our royal biryanis, smoky tandoor kebabs, and fresh rolls.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCartOpen(false);
+                      setActiveTab('menu');
+                    }}
+                    className="mt-2 h-10 px-6 rounded-full bg-[#E89223] text-white text-xs font-extrabold cursor-pointer"
+                  >
+                    Browse Menu
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar">
+                    <div className="rounded-[22px] bg-white shadow-[0_4px_16px_rgba(45,17,72,0.05)] divide-y divide-[#F4EFE9]">
+                      {cartSummary.entries.map((entry) => (
+                        <div
+                          key={entry.key}
+                          className="p-3.5 flex items-start justify-between gap-3"
+                        >
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <div className="mt-0.5">
+                              <FssaiDot veg={entry.dish.veg} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[13.5px] font-bold text-[#1B1026] leading-snug">
+                                {entry.dish.name}
+                              </p>
+                              <p className="text-[11px] text-[#6E6578] mt-0.5">
+                                {entry.portion} • {entry.spice}
+                                {entry.addons.length > 0
+                                  ? ` • + ${entry.addons.join(', ')}`
+                                  : ''}
+                                {entry.notes ? ` • "${entry.notes}"` : ''}
+                              </p>
+                              <p className="text-[13px] font-extrabold text-[#2D1148] mt-1 tnum">
+                                ₹{entry.unitPrice * entry.qty}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="h-8 px-2 rounded-full bg-[#FDEBD3] text-[#2D1148] inline-flex items-center gap-2 text-xs font-extrabold tnum shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => updateCartQty(entry.key, -1)}
+                              className="cursor-pointer"
+                              aria-label="Decrease"
+                            >
+                              <Minus className="w-3.5 h-3.5 stroke-[2.6]" />
+                            </button>
+                            <span>{entry.qty}</span>
+                            <button
+                              type="button"
+                              onClick={() => updateCartQty(entry.key, 1)}
+                              className="cursor-pointer"
+                              aria-label="Increase"
+                            >
+                              <Plus className="w-3.5 h-3.5 stroke-[2.6]" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <input
+                      type="text"
+                      value={cookingNotes}
+                      onChange={(e) => setCookingNotes(e.target.value)}
+                      placeholder="Add cooking instructions (less spicy, extra chutney)..."
+                      className="w-full h-11 px-4 rounded-2xl bg-white shadow-sm text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                    />
+
+                    <div className="rounded-[20px] bg-white p-3.5 shadow-sm space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-[#461B6E] shrink-0" />
+                        <input
+                          type="text"
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                          placeholder="Enter code (e.g. ZAIKA25)"
+                          className="flex-1 text-xs font-bold text-[#1B1026] placeholder-[#9B92A6] uppercase focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleApplyCouponCode(couponInput || 'ZAIKA25')
+                          }
+                          className="h-8 px-3.5 rounded-full bg-[#2D1148] text-white text-[11px] font-bold cursor-pointer"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                      {appliedCouponCode && (
+                        <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[#F4EFE9]">
+                          <span className="font-bold text-[#15803D]">
+                            {cartSummary.couponDiscount > 0
+                              ? `${appliedCouponCode} applied — Saving ₹${cartSummary.couponDiscount}`
+                              : `${appliedCouponCode} saved (add more to meet min order)`}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setAppliedCouponCode(null)}
+                            className="text-[#DC2626] font-bold cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {royalPoints >= 50 && (
+                      <button
+                        type="button"
+                        onClick={() => setRedeemPoints((r) => !r)}
+                        className={`w-full p-3.5 rounded-[20px] flex items-center justify-between text-left cursor-pointer transition-colors ${
+                          redeemPoints
+                            ? 'bg-[#F2EAF8] ring-1 ring-[#3B155E]'
+                            : 'bg-white shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Award className="w-4 h-4 text-[#E89223]" />
+                          <div>
+                            <p className="text-xs font-bold text-[#1B1026]">
+                              Redeem 50 Royal Points (₹50 OFF)
+                            </p>
+                            <p className="text-[10.5px] text-[#6E6578] tnum">
+                              Available balance: {royalPoints} PTS
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className={`text-[11px] font-extrabold ${
+                            redeemPoints ? 'text-[#2D1148]' : 'text-[#E89223]'
+                          }`}
+                        >
+                          {redeemPoints ? 'Applied ✓' : 'Use'}
+                        </span>
+                      </button>
+                    )}
+
+                    <div className="rounded-[22px] bg-white p-4 shadow-sm space-y-2 text-xs tnum">
+                      <div className="flex justify-between text-[#6E6578]">
+                        <span>Subtotal</span>
+                        <span className="font-semibold text-[#1B1026]">
+                          ₹{cartSummary.subtotal}
+                        </span>
+                      </div>
+                      {cartSummary.couponDiscount > 0 && (
+                        <div className="flex justify-between text-[#15803D] font-bold">
+                          <span>Coupon ({appliedCouponCode})</span>
+                          <span>-₹{cartSummary.couponDiscount}</span>
+                        </div>
+                      )}
+                      {cartSummary.pointsDiscount > 0 && (
+                        <div className="flex justify-between text-[#15803D] font-bold">
+                          <span>Royal Rewards Credit</span>
+                          <span>-₹{cartSummary.pointsDiscount}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-[#6E6578]">
+                        <span>GST (5%)</span>
+                        <span className="font-semibold text-[#1B1026]">
+                          ₹{cartSummary.gst}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[15px] font-extrabold text-[#1B1026] pt-2.5 border-t border-[#EFE8DF]">
+                        <span>Grand Total</span>
+                        <span className="text-[#2D1148]">₹{cartSummary.grandTotal}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white border-t border-[#EFE8DF]">
+                    <button
+                      type="button"
+                      onClick={handlePlaceOrder}
+                      className="w-full h-12 rounded-full bg-[#2D1148] hover:bg-[#461B6E] text-white text-[14px] font-extrabold shadow-[0_10px_24px_rgba(45,17,72,0.28)] cursor-pointer transition-colors tnum"
+                    >
+                      Place Table Order • ₹{cartSummary.grandTotal}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 5: 5-QUESTION GUEST FEEDBACK SHEET */}
+        {feedbackOpen && (
+          <div
+            onClick={() => setFeedbackOpen(false)}
+            className="absolute inset-0 z-50 bg-[#1B1026]/55 backdrop-blur-[2px] flex items-end"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-t-[28px] bg-white p-5 max-h-[88%] overflow-y-auto no-scrollbar shadow-2xl"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
+                <div>
+                  <h3 className="text-[17px] font-extrabold text-[#1B1026]">
+                    Guest Feedback
+                  </h3>
+                  <p className="text-xs text-[#6E6578]">
+                    5 quick questions • Earn +50 Royal Points
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackOpen(false)}
+                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {feedbackDone ? (
+                <div className="py-8 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-[#E8F7EE] flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-6 h-6 text-[#15803D]" />
+                  </div>
+                  <h4 className="text-[18px] font-extrabold text-[#1B1026]">
+                    Thank You for Dining With Us!
+                  </h4>
+                  <p className="text-xs text-[#6E6578] max-w-[260px] mx-auto">
+                    +50 Royal Points have been credited to your balance.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackOpen(false)}
+                    className="h-10 px-7 rounded-full bg-[#2D1148] text-white text-xs font-extrabold cursor-pointer"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {FEEDBACK_QUESTIONS.map((q) => (
+                    <div
+                      key={q.id}
+                      className="px-3.5 py-2.5 rounded-2xl bg-[#FAF5F0] flex items-center justify-between gap-2"
+                    >
+                      <span className="text-xs font-bold text-[#1B1026]">
+                        {q.label}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() =>
+                              setFeedbackRatings((prev) => ({
+                                ...prev,
+                                [q.id]: star
+                              }))
+                            }
+                            className="p-0.5 cursor-pointer"
+                            aria-label={`Rate ${q.label} ${star}`}
+                          >
+                            <Star
+                              className={`w-4 h-4 ${
+                                star <= feedbackRatings[q.id]
+                                  ? 'fill-[#E89223] text-[#E89223]'
+                                  : 'text-[#D6CEDE]'
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  <textarea
+                    rows={2}
+                    value={feedbackComment}
+                    onChange={(e) => setFeedbackComment(e.target.value)}
+                    placeholder="Any suggestions or dish shout-outs (optional)..."
+                    className="w-full p-3.5 rounded-2xl bg-[#FAF5F0] text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFeedbackDone(true);
+                      setRoyalPoints((p) => p + 50);
+                      setFeedbackComment('');
+                      showToast('Feedback submitted! +50 Royal Points earned');
+                    }}
+                    className="w-full h-12 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[13.5px] font-extrabold cursor-pointer transition-colors"
+                  >
+                    Submit Feedback (+50 Pts)
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 6: ADMIN DIRECT COMPLAINT ESCALATION */}
+        {complaintOpen && (
+          <div
+            onClick={() => setComplaintOpen(false)}
+            className="absolute inset-0 z-50 bg-[#1B1026]/55 backdrop-blur-[2px] flex items-end"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-t-[28px] bg-white p-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-[#C81E3A]" />
+                  <div>
+                    <h3 className="text-[16px] font-extrabold text-[#1B1026]">
+                      Admin Direct Escalation
+                    </h3>
+                    <p className="text-[11px] text-[#6E6578]">
+                      Priority assistance for {selectedTable}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setComplaintOpen(false)}
+                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {['Food Quality', 'Order Delay', 'Billing Issue', 'Service'].map(
+                    (item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setComplaintCategory(item)}
+                        className={`h-8 px-3 rounded-full text-xs font-bold cursor-pointer transition-colors ${
+                          complaintCategory === item
+                            ? 'bg-[#C81E3A] text-white'
+                            : 'bg-[#FFF2F3] text-[#7F1D2C]'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <textarea
+                  rows={3}
+                  value={complaintNote}
+                  onChange={(e) => setComplaintNote(e.target.value)}
+                  placeholder="Tell us what went wrong so our floor manager can resolve it immediately..."
+                  className="w-full p-3.5 rounded-2xl bg-[#FAF5F0] text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#C81E3A]/30"
+                />
+
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <a
+                    href="tel:+917488260572"
+                    className="h-11 rounded-full bg-[#FAF5F0] text-[#1B1026] text-xs font-extrabold inline-flex items-center justify-center gap-1.5"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-[#2D1148]" />
+                    <span>Call Manager</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setComplaintOpen(false);
+                      setComplaintNote('');
+                      showToast(`Manager alerted for ${selectedTable}.`);
+                    }}
+                    className="h-11 rounded-full bg-[#C81E3A] hover:bg-[#A61730] text-white text-xs font-extrabold cursor-pointer"
+                  >
+                    Register Complaint
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-// Wrap with Suspense boundary to avoid Next.js useSearchParams bailout
 export default function OrderMenuPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen w-full bg-[#0E0617] flex items-center justify-center text-[#F3C669]">
-          <div className="text-center space-y-3">
-            <div className="w-10 h-10 border-2 border-[#F3C669] border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs font-bold tracking-widest uppercase">Loading PM Zaika...</p>
-          </div>
-        </div>
-      }
-    >
-      <OrderMenuContent />
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF5F0]" />}>
+      <MainApp />
     </Suspense>
-  )
+  );
 }
