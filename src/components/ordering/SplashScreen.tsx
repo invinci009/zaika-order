@@ -5,25 +5,49 @@ import { useEffect, useState } from 'react'
 interface SplashScreenProps {
   onComplete: () => void
   restaurantName?: string
+  table?: string
+  phone?: string
+  helpline?: string
+  address?: string
 }
 
-export function SplashScreen({ onComplete, restaurantName = 'PM Zaika' }: SplashScreenProps) {
+export function SplashScreen({
+  onComplete,
+  restaurantName = 'PM Zaika Restaurant',
+  table,
+  phone = '+91 74882 60572',
+  helpline = '95257 48843',
+  address = 'Phulwari Sharif, Patna',
+}: SplashScreenProps) {
   const [phase, setPhase] = useState<'entering' | 'showing' | 'leaving'>('entering')
+  const [stepIndex, setStepIndex] = useState(0)
+
+  const steps = [
+    '✨ Curating Royal Awadhi Delicacies...',
+    '🌿 Sourcing Hand-Pounded Saffron & Spices...',
+    '🍽️ Welcome to PM Zaika Restaurant...',
+  ]
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('showing'), 80)
-    const t2 = setTimeout(() => setPhase('leaving'), 3200)
-    const t3 = setTimeout(() => onComplete(), 3900)
+    const t0 = setTimeout(() => setPhase('showing'), 60)
+    const s1 = setTimeout(() => setStepIndex(1), 1100)
+    const s2 = setTimeout(() => setStepIndex(2), 2200)
+    const tLeave = setTimeout(() => setPhase('leaving'), 3400)
+    const tEnd = setTimeout(() => onComplete(), 3850)
+
     return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-      clearTimeout(t3)
+      clearTimeout(t0)
+      clearTimeout(s1)
+      clearTimeout(s2)
+      clearTimeout(tLeave)
+      clearTimeout(tEnd)
     }
   }, [onComplete])
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden transition-all duration-700 ease-in-out select-none ${
+      onClick={onComplete}
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-between py-6 px-4 sm:px-6 overflow-hidden transition-all duration-700 ease-in-out select-none cursor-pointer ${
         phase === 'leaving' ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
       style={{
@@ -34,14 +58,14 @@ export function SplashScreen({ onComplete, restaurantName = 'PM Zaika' }: Splash
       <div
         className="absolute inset-0 pointer-events-none transition-opacity duration-1000"
         style={{
-          background: 'radial-gradient(circle at 50% 38%, rgba(245, 158, 11, 0.16) 0%, rgba(212, 162, 52, 0.06) 40%, transparent 68%)',
+          background: 'radial-gradient(circle at 50% 36%, rgba(245, 158, 11, 0.16) 0%, rgba(212, 162, 52, 0.06) 42%, transparent 70%)',
           animation: 'ambientBreath 4s ease-in-out infinite alternate',
         }}
       />
 
       {/* 2. Slow-Rotating Sacred Geometry Awadhi Mandala Watermark */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[620px] sm:w-[780px] sm:h-[780px] pointer-events-none opacity-[0.09]"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[620px] sm:w-[760px] sm:h-[760px] pointer-events-none opacity-[0.09]"
         style={{
           animation: 'mandalaRotate 120s linear infinite',
         }}
@@ -52,14 +76,14 @@ export function SplashScreen({ onComplete, restaurantName = 'PM Zaika' }: Splash
       {/* 3. Floating Golden Stardust Particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[
-          { top: '22%', left: '18%', delay: '0s', size: 3, dur: '3.6s' },
-          { top: '28%', left: '82%', delay: '1.2s', size: 2.5, dur: '4.2s' },
-          { top: '45%', left: '12%', delay: '0.6s', size: 2, dur: '3.8s' },
-          { top: '60%', left: '86%', delay: '1.8s', size: 3.5, dur: '4.5s' },
-          { top: '70%', left: '24%', delay: '0.9s', size: 2.5, dur: '3.9s' },
-          { top: '35%', left: '74%', delay: '2.1s', size: 2, dur: '4.1s' },
-          { top: '52%', left: '28%', delay: '1.5s', size: 3, dur: '3.5s' },
-          { top: '18%', left: '62%', delay: '2.4s', size: 2, dur: '4.8s' },
+          { top: '18%', left: '16%', delay: '0s', size: 3, dur: '3.6s' },
+          { top: '24%', left: '84%', delay: '1.2s', size: 2.5, dur: '4.2s' },
+          { top: '42%', left: '10%', delay: '0.6s', size: 2, dur: '3.8s' },
+          { top: '58%', left: '88%', delay: '1.8s', size: 3.5, dur: '4.5s' },
+          { top: '72%', left: '22%', delay: '0.9s', size: 2.5, dur: '3.9s' },
+          { top: '32%', left: '76%', delay: '2.1s', size: 2, dur: '4.1s' },
+          { top: '50%', left: '26%', delay: '1.5s', size: 3, dur: '3.5s' },
+          { top: '15%', left: '60%', delay: '2.4s', size: 2, dur: '4.8s' },
         ].map((star, i) => (
           <div
             key={i}
@@ -77,63 +101,80 @@ export function SplashScreen({ onComplete, restaurantName = 'PM Zaika' }: Splash
         ))}
       </div>
 
-      {/* 4. Main Royal Brand Content */}
-      <div className="relative z-10 flex flex-col items-center gap-5 px-6 max-w-[420px] w-full text-center">
+      {/* Top Header Badge */}
+      <header
+        className="relative z-10 w-full flex items-center justify-center pt-1"
+        style={{
+          opacity: phase === 'entering' ? 0 : 1,
+          transform: phase === 'entering' ? 'translateY(-14px)' : 'translateY(0)',
+          transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        <div className="flex items-center gap-2 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[#180e28]/90 border border-[#f59e0b]/35 shadow-lg backdrop-blur-md">
+          <span className="text-[#f59e0b] text-xs">✦</span>
+          <span className="text-[10px] sm:text-[11px] font-bold text-amber-200 tracking-widest uppercase">
+            {table ? `TABLE ${table} • ROYAL GUEST WELCOME` : 'ROYAL AWADHI HERITAGE • ESTD. PATNA'}
+          </span>
+          <span className="text-[#f59e0b] text-xs">✦</span>
+        </div>
+      </header>
 
+      {/* Main Center Content: Crown, Title, Cuisine, and Detailed Restaurant Card */}
+      <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 my-auto max-w-[390px] w-full text-center">
         {/* Imperial Crown Crest */}
         <div
           style={{
             opacity: phase === 'entering' ? 0 : 1,
-            transform: phase === 'entering' ? 'scale(0.72) translateY(24px)' : 'scale(1) translateY(0)',
-            transition: 'opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1)',
+            transform: phase === 'entering' ? 'scale(0.72) translateY(20px)' : 'scale(1) translateY(0)',
+            transition: 'opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)',
             transitionDelay: '0.05s',
           }}
         >
           <ImperialCrownEmblem />
         </div>
 
-        {/* Brand Title: ZAIKA Restaurant */}
+        {/* Brand Title: PM ZAIKA Restaurant */}
         <div
           className="flex flex-col items-center"
           style={{
             opacity: phase === 'entering' ? 0 : 1,
-            transform: phase === 'entering' ? 'translateY(22px)' : 'translateY(0)',
-            transition: 'opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)',
-            transitionDelay: '0.35s',
+            transform: phase === 'entering' ? 'translateY(18px)' : 'translateY(0)',
+            transition: 'opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1)',
+            transitionDelay: '0.25s',
           }}
         >
-          {/* "ZAIKA" with 24K Liquid Gold Foil Gradient & Specular Shadow */}
+          {/* "PM ZAIKA" with 24K Liquid Gold Foil Gradient */}
           <h1
-            className="text-6xl sm:text-7xl font-black uppercase leading-none select-none"
+            className="text-5xl sm:text-6xl font-black uppercase leading-none select-none"
             style={{
               fontFamily: 'var(--font-cinzel), Cinzel, "Playfair Display", Georgia, serif',
-              letterSpacing: '0.18em',
+              letterSpacing: '0.14em',
               background: 'linear-gradient(135deg, #FFFFFF 0%, #FDE08B 22%, #F59E0B 52%, #FFF3CC 74%, #D97706 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              filter: 'drop-shadow(0 4px 22px rgba(245, 158, 11, 0.42))',
+              filter: 'drop-shadow(0 4px 22px rgba(245, 158, 11, 0.45))',
             }}
           >
-            Zaika
+            PM ZAIKA
           </h1>
 
-          {/* "Restaurant" in Romantic Champagne Gold Calligraphy Script */}
+          {/* "Restaurant" in Kaushan script calligraphy */}
           <div
             style={{
               opacity: phase === 'entering' ? 0 : 1,
               transition: 'opacity 0.8s ease-out',
-              transitionDelay: '0.55s',
+              transitionDelay: '0.45s',
             }}
           >
             <span
               className="text-2xl sm:text-3xl block italic font-medium select-none"
               style={{
-                fontFamily: 'var(--font-script), "Kaushan Script", "Playfair Display", cursive',
+                fontFamily: 'var(--font-script), "Kaushan Script", cursive',
                 letterSpacing: '0.04em',
                 color: '#FDEBD3',
-                marginTop: '-4px',
-                textShadow: '0 2px 14px rgba(245, 158, 11, 0.38)',
+                marginTop: '-2px',
+                textShadow: '0 2px 14px rgba(245, 158, 11, 0.4)',
               }}
             >
               Restaurant
@@ -143,12 +184,12 @@ export function SplashScreen({ onComplete, restaurantName = 'PM Zaika' }: Splash
 
         {/* Imperial Jewel Divider */}
         <div
-          className="flex items-center justify-center gap-2.5 my-1"
+          className="flex items-center justify-center gap-2.5 my-0.5"
           style={{
             opacity: phase === 'entering' ? 0 : 1,
-            width: phase === 'entering' ? '0px' : '220px',
-            transition: 'opacity 0.9s ease-out, width 0.9s ease-out',
-            transitionDelay: '0.75s',
+            width: phase === 'entering' ? '0px' : '200px',
+            transition: 'opacity 0.85s ease-out, width 0.85s ease-out',
+            transitionDelay: '0.6s',
           }}
         >
           <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#f59e0b]/60 to-[#f59e0b]" />
@@ -160,57 +201,117 @@ export function SplashScreen({ onComplete, restaurantName = 'PM Zaika' }: Splash
         <div
           style={{
             opacity: phase === 'entering' ? 0 : 1,
-            letterSpacing: phase === 'entering' ? '0.45em' : '0.22em',
-            transition: 'opacity 0.85s ease-out, letter-spacing 0.85s ease-out',
-            transitionDelay: '0.95s',
+            letterSpacing: phase === 'entering' ? '0.4em' : '0.2em',
+            transition: 'opacity 0.8s ease-out, letter-spacing 0.8s ease-out',
+            transitionDelay: '0.75s',
           }}
         >
-          <p className="text-center text-[11px] sm:text-xs font-bold uppercase select-none text-[#F3E8D2]">
-            INDIAN <span className="text-[#f59e0b] px-1 font-black">◈</span> CHINESE <span className="text-[#f59e0b] px-1 font-black">◈</span> TANDOOR <span className="text-[#f59e0b] px-1 font-black">◈</span> ROLLS
+          <p className="text-center text-[10.5px] sm:text-xs font-bold uppercase select-none text-[#F3E8D2]">
+            INDIAN <span className="text-[#f59e0b] px-0.5 font-black">◈</span> CHINESE <span className="text-[#f59e0b] px-0.5 font-black">◈</span> TANDOOR <span className="text-[#f59e0b] px-0.5 font-black">◈</span> ROLLS
           </p>
         </div>
 
-        {/* Chic Luxury Social & Heritage Pill */}
+        {/* Detailed Restaurant Information Glass Card */}
         <div
+          className="w-full mt-1.5 p-3 rounded-2xl bg-[#150d24]/85 border border-[#f59e0b]/30 shadow-2xl backdrop-blur-md text-center space-y-2"
           style={{
             opacity: phase === 'entering' ? 0 : 1,
-            transform: phase === 'entering' ? 'translateY(10px)' : 'translateY(0)',
-            transition: 'opacity 0.75s ease-out, transform 0.75s ease-out',
-            transitionDelay: '1.2s',
+            transform: phase === 'entering' ? 'translateY(16px)' : 'translateY(0)',
+            transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
+            transitionDelay: '0.9s',
           }}
         >
-          <div className="px-3.5 py-1 rounded-full bg-[#140b20]/75 border border-[#f59e0b]/25 shadow-md flex items-center gap-2 text-[#cfc5db] text-[11px] font-medium tracking-wide">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-pulse" />
-            <span>zaikarestaurant81</span>
+          {/* Row 1: Rating & Location Pill */}
+          <div className="flex items-center justify-center gap-2 flex-wrap text-[11px] font-semibold text-amber-100">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/35 text-amber-300">
+              <span className="text-amber-400">★</span> 4.8 Royal Dining
+            </span>
             <span className="text-white/30">•</span>
-            <span className="text-[#f59e0b] text-[10px] font-bold uppercase tracking-wider">Awadhi Dining</span>
+            <span className="text-amber-200/90">{address}</span>
+          </div>
+
+          {/* Row 2: Contact & Helpline */}
+          <div className="text-[11px] text-amber-200/80 flex items-center justify-center gap-1.5 flex-wrap">
+            <span className="text-amber-400 font-bold">Helpline:</span>
+            <span className="font-semibold text-white tracking-wide">{phone}</span>
+            {helpline && (
+              <>
+                <span className="text-white/30">•</span>
+                <span className="text-amber-300 font-medium">{helpline}</span>
+              </>
+            )}
+          </div>
+
+          {/* Row 3: Landmark & Social Handle */}
+          <div className="pt-0.5 border-t border-[#f59e0b]/15 flex items-center justify-between text-[10px] text-amber-200/60 px-1">
+            <span className="truncate max-w-[190px]">Phulwari Rd, Nr Shaheed Bhagat Singh Chowk</span>
+            <span className="font-semibold text-amber-300">@zaikarestaurant81</span>
           </div>
         </div>
       </div>
 
-      {/* 5. Glamorous Golden Pulsing Pearl Loading Indicator */}
-      <div
-        className="absolute bottom-10 left-0 right-0 flex flex-col items-center justify-center gap-2"
+      {/* Bottom Loading Progress Bar, Dynamic Steps & Pearls */}
+      <footer
+        className="relative z-10 w-full max-w-[340px] flex flex-col items-center gap-2.5 pb-1"
         style={{
           opacity: phase === 'entering' ? 0 : 1,
           transition: 'opacity 0.6s ease-out',
-          transitionDelay: '1.4s',
+          transitionDelay: '1.1s',
         }}
       >
-        <div className="flex items-center gap-2">
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="w-2 h-2 rounded-full"
-              style={{
-                background: 'linear-gradient(135deg, #FFFFFF 0%, #F5C76D 40%, #D48016 100%)',
-                boxShadow: '0 0 10px rgba(245, 158, 11, 0.9), 0 0 18px rgba(245, 158, 11, 0.45)',
-                animation: `pearlBreath 1.5s ease-in-out ${i * 0.22}s infinite alternate`,
-              }}
-            />
-          ))}
+        {/* Dynamic Culinary Stage Label */}
+        <div className="h-5 flex items-center justify-center">
+          <p
+            key={stepIndex}
+            className="text-[11px] sm:text-xs font-medium text-amber-200 tracking-wide animate-in fade-in zoom-in-95 duration-300 text-center"
+          >
+            {steps[stepIndex]}
+          </p>
         </div>
-      </div>
+
+        {/* 24K Liquid Gold Smooth Progress Bar */}
+        <div className="w-full h-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 overflow-hidden relative shadow-inner">
+          <div
+            className="h-full rounded-full transition-all duration-[3300ms] ease-out"
+            style={{
+              width: phase === 'entering' ? '4%' : '100%',
+              background: 'linear-gradient(90deg, #F59E0B 0%, #FDE08B 45%, #FFFFFF 75%, #F59E0B 100%)',
+              boxShadow: '0 0 12px rgba(245, 158, 11, 0.8), 0 0 24px rgba(245, 158, 11, 0.4)',
+            }}
+          />
+        </div>
+
+        {/* 3 Golden Pulsing Pearls & Skip Button */}
+        <div className="w-full flex items-center justify-between px-1 pt-0.5">
+          {/* Pearls */}
+          <div className="flex items-center gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #F5C76D 40%, #D48016 100%)',
+                  boxShadow: '0 0 8px rgba(245, 158, 11, 0.9)',
+                  animation: `pearlBreath 1.4s ease-in-out ${i * 0.22}s infinite alternate`,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Quick Skip Link */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onComplete()
+            }}
+            className="text-[10px] font-bold tracking-wider uppercase text-amber-300/80 hover:text-amber-200 transition-colors flex items-center gap-1"
+          >
+            <span>Skip to Menu</span>
+            <span className="text-amber-400">→</span>
+          </button>
+        </div>
+      </footer>
 
       <style>{`
         @keyframes ambientBreath {
@@ -252,8 +353,8 @@ function ImperialCrownEmblem() {
     <div
       className="relative flex items-center justify-center select-none"
       style={{
-        width: 140,
-        height: 140,
+        width: 125,
+        height: 125,
         filter: 'drop-shadow(0 0 28px rgba(245, 158, 11, 0.45)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8))',
       }}
     >

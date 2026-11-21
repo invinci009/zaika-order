@@ -117,5 +117,14 @@ export default async function OrderPortalPage({ params, searchParams }: PortalPa
   const menuHref = `/order/${slug}/menu${menuQuery.toString() ? `?${menuQuery.toString()}` : ''}`
 
   // Show splash screen, then navigate to menu
-  return <SplashPortalClient menuHref={menuHref} restaurantName={config.name} />
+  return (
+    <SplashPortalClient
+      menuHref={menuHref}
+      restaurantName={config.name}
+      table={tableLabel || tableParam || undefined}
+      phone={config.contact.phone ? `+91 ${config.contact.phone.replace(/^\+?91/, '').trim()}` : undefined}
+      helpline={config.contact.helpline}
+      address="Phulwari Sharif, Patna"
+    />
+  )
 }

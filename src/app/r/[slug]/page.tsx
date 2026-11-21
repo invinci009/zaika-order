@@ -3,18 +3,66 @@ import { Sparkles, AlertTriangle } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { getRestaurantConfig } from '@/config/loader'
 import { MandalaBackground } from '@/components/ordering/MandalaBackground'
+import { SplashPortalClient } from '@/components/ordering/SplashPortalClient'
 
 interface PublicQuizPageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ new?: string }>
+  searchParams: Promise<{
+    new?: string
+    mode?: string
+    feedback?: string
+    quiz?: string
+    table?: string
+    token?: string
+  }>
 }
 
 export default async function PublicQuizPage({ params, searchParams }: PublicQuizPageProps) {
   const { slug } = await params
-  const { new: forceNew } = await searchParams
+  const { new: forceNew, mode, feedback, quiz, table: tableParam, token } = await searchParams
   const config = getRestaurantConfig()
 
-  // 1. Look up campaign by slug.
+  // If NOT explicitly in feedback/quiz mode, direct straight to the royal loading animation -> home menu
+  const isFeedbackMode = mode === 'feedback' || mode === 'quiz' || feedback === '1' || quiz === '1'
+
+  if (!isFeedbackMode) {
+    let tableLabel: string | null = null
+    if (token) {
+      try {
+        const { resolveTableToken } = await import('@/lib/firebase/ordering')
+        const { hashToken } = await import('@/lib/ordering/tokens')
+        const resolved = await resolveTableToken(hashToken(token)).catch(() => null)
+        if (resolved) {
+          tableLabel = resolved.table.label
+        }
+      } catch (err) {
+        console.warn('PublicQuizPage: Table token resolution skipped:', err)
+      }
+    }
+
+    if (!tableLabel && tableParam) {
+      tableLabel = tableParam.replace(/^table\s*[-_]?/i, '').trim() || tableParam.trim()
+    }
+
+    const menuQuery = new URLSearchParams()
+    if (token) menuQuery.set('token', token)
+    if (tableLabel) menuQuery.set('table', tableLabel)
+    else if (tableParam) menuQuery.set('table', tableParam)
+    const menuHref = `/order/${slug}/menu${menuQuery.toString() ? `?${menuQuery.toString()}` : ''}`
+
+    return (
+      <SplashPortalClient
+        menuHref={menuHref}
+        restaurantName={config.name}
+        table={tableLabel || tableParam || undefined}
+        phone={config.contact.phone ? `+91 ${config.contact.phone.replace(/^\+?91/, '').trim()}` : '+91 74882 60572'}
+        helpline={config.contact.helpline || '95257 48843'}
+        address="Phulwari Sharif, Patna"
+      />
+    )
+  }
+
+  // 1. Look up campaign by slug (for explicit feedback mode).
   let backendUnavailable = false
   let firestore: typeof import('@/lib/firebase/firestore') | null = null
   try {
