@@ -41,11 +41,11 @@ export default function QuizProgressHeader({
             <div className="w-9 h-9 rounded-full bg-[#1b1028] flex items-center justify-center overflow-hidden shrink-0 shadow-md border border-amber-400/60 p-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/logo.svg"
+                src={logoUrl || '/logo.png'}
                 alt={restaurantName}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain rounded-full"
                 onError={(e) => {
-                  e.currentTarget.src = logoUrl || '/logo.png'
+                  e.currentTarget.src = '/logo.png'
                 }}
               />
             </div>

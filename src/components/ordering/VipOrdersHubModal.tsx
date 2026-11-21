@@ -109,7 +109,7 @@ export function VipOrdersHubModal({
             </div>
             <div>
               <h3 className="text-sm font-black text-stone-900">
-                {loyaltyCustomer ? 'Badshah VIP & Orders Hub' : 'Welcome to Biryani Badshah'}
+                {loyaltyCustomer ? 'PM Zaika VIP & Orders Hub' : 'Welcome to PM Zaika Restaurant'}
               </h3>
               <p className="text-[10px] text-stone-500">
                 {loyaltyCustomer ? 'Your Points, Perks & Order History' : 'Enter mobile to view past orders & earn points'}
@@ -462,7 +462,7 @@ export function VipOrdersHubModal({
                 <Crown className="w-7 h-7 fill-amber-300/30 text-amber-200" />
               </div>
               <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
-                Biryani Badshah VIP Club
+                PM Zaika VIP Club
               </span>
               <h4 className="text-base font-black text-stone-900">Enter Your Mobile Number</h4>
               <p className="text-xs text-stone-500 leading-relaxed max-w-xs mx-auto">

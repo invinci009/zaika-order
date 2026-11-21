@@ -304,16 +304,16 @@ export default function OrderConfirmationPage() {
       <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-stone-200 px-3 py-2.5 shadow-2xs">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl overflow-hidden border border-emerald-400 bg-white shrink-0 p-0.5 shadow-xs">
+            <div className="w-9 h-9 rounded-full overflow-hidden border border-[#f59e0b]/50 bg-black/80 shrink-0 p-0.5 shadow-xs">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Biryani Badshah" className="w-full h-full object-contain" />
+              <img src="/logo.png" alt="PM Zaika Restaurant" className="w-full h-full object-contain rounded-full" />
             </div>
             <div>
-              <p className="font-onstage font-bruce font-black text-sm uppercase tracking-wide text-stone-900 leading-none">
-                BIRYANI BADSHAH
+              <p className="font-heading font-black text-sm uppercase tracking-wider text-amber-300 leading-none">
+                PM ZAIKA RESTAURANT
               </p>
-              <p className="font-script text-[11px] text-emerald-800 leading-none mt-0.5">
-                A Family Restaurant
+              <p className="font-script text-[11px] text-amber-200/80 leading-none mt-0.5">
+                Royal Awadhi Dining
               </p>
             </div>
           </div>

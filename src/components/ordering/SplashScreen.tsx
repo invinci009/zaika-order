@@ -121,64 +121,33 @@ export function SplashScreen({
 
       {/* Main Center Content: Crown, Title, Cuisine, and Detailed Restaurant Card */}
       <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 my-auto max-w-[390px] w-full text-center">
-        {/* Imperial Crown Crest */}
+        {/* Official PM Zaika Medallion Logo */}
         <div
+          className="relative flex items-center justify-center my-1"
           style={{
             opacity: phase === 'entering' ? 0 : 1,
-            transform: phase === 'entering' ? 'scale(0.72) translateY(20px)' : 'scale(1) translateY(0)',
+            transform: phase === 'entering' ? 'scale(0.76) translateY(20px)' : 'scale(1) translateY(0)',
             transition: 'opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)',
-            transitionDelay: '0.05s',
+            transitionDelay: '0.08s',
           }}
         >
-          <ImperialCrownEmblem />
-        </div>
-
-        {/* Brand Title: PM ZAIKA Restaurant */}
-        <div
-          className="flex flex-col items-center"
-          style={{
-            opacity: phase === 'entering' ? 0 : 1,
-            transform: phase === 'entering' ? 'translateY(18px)' : 'translateY(0)',
-            transition: 'opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1)',
-            transitionDelay: '0.25s',
-          }}
-        >
-          {/* "PM ZAIKA" with 24K Liquid Gold Foil Gradient */}
-          <h1
-            className="text-5xl sm:text-6xl font-black uppercase leading-none select-none"
-            style={{
-              fontFamily: 'var(--font-cinzel), Cinzel, "Playfair Display", Georgia, serif',
-              letterSpacing: '0.14em',
-              background: 'linear-gradient(135deg, #FFFFFF 0%, #FDE08B 22%, #F59E0B 52%, #FFF3CC 74%, #D97706 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter: 'drop-shadow(0 4px 22px rgba(245, 158, 11, 0.45))',
-            }}
-          >
-            PM ZAIKA
-          </h1>
-
-          {/* "Restaurant" in Kaushan script calligraphy */}
+          {/* Luminous Pulsing Gold Halo Ring behind Logo */}
           <div
+            className="absolute -inset-3 sm:-inset-4 rounded-full pointer-events-none border border-amber-400/40"
             style={{
-              opacity: phase === 'entering' ? 0 : 1,
-              transition: 'opacity 0.8s ease-out',
-              transitionDelay: '0.45s',
+              boxShadow: '0 0 45px rgba(245, 158, 11, 0.55), inset 0 0 30px rgba(245, 158, 11, 0.25)',
+              animation: 'ambientBreath 3.5s ease-in-out infinite alternate',
             }}
-          >
-            <span
-              className="text-2xl sm:text-3xl block italic font-medium select-none"
-              style={{
-                fontFamily: 'var(--font-script), "Kaushan Script", cursive',
-                letterSpacing: '0.04em',
-                color: '#FDEBD3',
-                marginTop: '-2px',
-                textShadow: '0 2px 14px rgba(245, 158, 11, 0.4)',
-              }}
-            >
-              Restaurant
-            </span>
+          />
+
+          {/* Medallion Container */}
+          <div className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full overflow-hidden shadow-[0_12px_45px_rgba(0,0,0,0.95),0_0_35px_rgba(245,158,11,0.35)] border-2 border-[#f59e0b] bg-black/90 p-0.5 shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt={restaurantName}
+              className="w-full h-full object-contain rounded-full select-none"
+            />
           </div>
         </div>
 
@@ -187,9 +156,9 @@ export function SplashScreen({
           className="flex items-center justify-center gap-2.5 my-0.5"
           style={{
             opacity: phase === 'entering' ? 0 : 1,
-            width: phase === 'entering' ? '0px' : '200px',
+            width: phase === 'entering' ? '0px' : '220px',
             transition: 'opacity 0.85s ease-out, width 0.85s ease-out',
-            transitionDelay: '0.6s',
+            transitionDelay: '0.35s',
           }}
         >
           <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#f59e0b]/60 to-[#f59e0b]" />
@@ -201,9 +170,9 @@ export function SplashScreen({
         <div
           style={{
             opacity: phase === 'entering' ? 0 : 1,
-            letterSpacing: phase === 'entering' ? '0.4em' : '0.2em',
+            letterSpacing: phase === 'entering' ? '0.35em' : '0.18em',
             transition: 'opacity 0.8s ease-out, letter-spacing 0.8s ease-out',
-            transitionDelay: '0.75s',
+            transitionDelay: '0.5s',
           }}
         >
           <p className="text-center text-[10.5px] sm:text-xs font-bold uppercase select-none text-[#F3E8D2]">
@@ -336,220 +305,7 @@ export function SplashScreen({
   )
 }
 
-/**
- * Imperial PM Zaika Royal Seal Emblem
- * Features:
- * - 24K Polished Metallic Gold Gradients
- * - 32-Pearl Beaded Guilloché Halo
- * - 4 Cardinal Starburst Diamonds
- * - Handcrafted Sculpted Awadhi Crown with 5 Pearl Peaks & Central Faceted Jewel
- * - Imperial Velvet Arch Band & Gemstone Rivets
- * - Ornate "★ PM ★" Royal Monogram Scroll
- */
-function ImperialCrownEmblem() {
-  const spokes32 = Array.from({ length: 32 }, (_, i) => i * 11.25)
 
-  return (
-    <div
-      className="relative flex items-center justify-center select-none"
-      style={{
-        width: 125,
-        height: 125,
-        filter: 'drop-shadow(0 0 28px rgba(245, 158, 11, 0.45)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8))',
-      }}
-    >
-      <svg
-        viewBox="0 0 160 160"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full"
-      >
-        <defs>
-          {/* Metallic 24K Gold Gradient */}
-          <linearGradient id="gold24k" x1="20" y1="20" x2="140" y2="140" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="18%" stopColor="#FFF1B8" />
-            <stop offset="42%" stopColor="#F5C76D" />
-            <stop offset="68%" stopColor="#D48016" />
-            <stop offset="90%" stopColor="#9E5D00" />
-            <stop offset="100%" stopColor="#FDE49E" />
-          </linearGradient>
-
-          {/* Crown Body Rich Gradient */}
-          <linearGradient id="crownGrad" x1="40" y1="42" x2="120" y2="108" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="25%" stopColor="#FDE394" />
-            <stop offset="55%" stopColor="#E59E1B" />
-            <stop offset="85%" stopColor="#B36B00" />
-            <stop offset="100%" stopColor="#784400" />
-          </linearGradient>
-
-          {/* Deep Velvet Shield Center */}
-          <radialGradient id="shieldVelvet" cx="50%" cy="45%" r="50%">
-            <stop offset="0%" stopColor="#1c1130" />
-            <stop offset="65%" stopColor="#10081c" />
-            <stop offset="100%" stopColor="#08030f" />
-          </radialGradient>
-
-          {/* Ruby Gemstone Gradient */}
-          <radialGradient id="rubyGrad" cx="40%" cy="35%" r="50%">
-            <stop offset="0%" stopColor="#FF7B93" />
-            <stop offset="60%" stopColor="#DC2626" />
-            <stop offset="100%" stopColor="#7F1D1D" />
-          </radialGradient>
-
-          {/* Emerald Gemstone Gradient */}
-          <radialGradient id="emeraldGrad" cx="40%" cy="35%" r="50%">
-            <stop offset="0%" stopColor="#86EFAC" />
-            <stop offset="60%" stopColor="#16A34A" />
-            <stop offset="100%" stopColor="#14532D" />
-          </radialGradient>
-        </defs>
-
-        {/* 1. Outer Thin Beaded Ring */}
-        <circle cx="80" cy="80" r="75" stroke="url(#gold24k)" strokeWidth="1.2" opacity="0.85" />
-        <circle cx="80" cy="80" r="71" stroke="url(#gold24k)" strokeWidth="0.6" strokeDasharray="3 3" opacity="0.65" />
-        <circle cx="80" cy="80" r="67" stroke="url(#gold24k)" strokeWidth="1.0" opacity="0.9" />
-
-        {/* 2. 32 Beaded Pearl Halo */}
-        {spokes32.map((deg) => (
-          <circle
-            key={deg}
-            cx={80 + 69 * Math.cos((deg * Math.PI) / 180)}
-            cy={80 + 69 * Math.sin((deg * Math.PI) / 180)}
-            r="1.4"
-            fill="url(#gold24k)"
-            opacity="0.9"
-          />
-        ))}
-
-        {/* 3. 4 Cardinal Starburst Diamonds (North, South, East, West) */}
-        {[
-          { x: 80, y: 7 },
-          { x: 80, y: 153 },
-          { x: 7, y: 80 },
-          { x: 153, y: 80 },
-        ].map((pt, idx) => (
-          <g key={idx}>
-            <polygon
-              points={`${pt.x},${pt.y - 4} ${pt.x + 3},${pt.y} ${pt.x},${pt.y + 4} ${pt.x - 3},${pt.y}`}
-              fill="url(#gold24k)"
-            />
-            <circle cx={pt.x} cy={pt.y} r="1" fill="#FFFFFF" />
-          </g>
-        ))}
-
-        {/* 4. Velvet Obsidian Inner Shield Disk */}
-        <circle cx="80" cy="80" r="58" fill="url(#shieldVelvet)" stroke="url(#gold24k)" strokeWidth="1.5" />
-        <circle cx="80" cy="80" r="55" stroke="url(#gold24k)" strokeWidth="0.5" strokeDasharray="2 2" opacity="0.4" />
-
-        {/* 5. Handcrafted Sculpted Imperial Crown */}
-        <g id="crown">
-          {/* Back Velvet Cushion Shadow */}
-          <path
-            d="M 44 86 C 44 68, 62 60, 80 60 C 98 60, 116 68, 116 86 Z"
-            fill="#090412"
-            opacity="0.75"
-          />
-
-          {/* Main Crown Faceted Body (5 Regal Peaks) */}
-          <path
-            d="M 42 86 L 46 58 L 61 72 L 80 44 L 99 72 L 114 58 L 118 86 Z"
-            fill="url(#crownGrad)"
-            stroke="url(#gold24k)"
-            strokeWidth="1.4"
-            strokeLinejoin="round"
-          />
-
-          {/* Inner Filigree Contour Highlights */}
-          <path
-            d="M 48 84 L 51 64 L 62 74 L 80 50 L 98 74 L 109 64 L 112 84 Z"
-            fill="none"
-            stroke="#FFF5D6"
-            strokeWidth="0.8"
-            opacity="0.6"
-          />
-
-          {/* Crown Arch Cutout at bottom center */}
-          <path
-            d="M 64 86 Q 80 78 96 86 Z"
-            fill="#0f071c"
-            stroke="url(#gold24k)"
-            strokeWidth="0.8"
-          />
-
-          {/* Crown Base Velvet Headband */}
-          <path
-            d="M 40 86 Q 80 80 120 86 L 119 96 Q 80 90 41 96 Z"
-            fill="url(#gold24k)"
-            stroke="#FFE7A3"
-            strokeWidth="0.9"
-          />
-
-          {/* Headband Inset Gemstones (Alternating Ruby & Emerald) */}
-          <circle cx="52" cy="90.5" r="2.2" fill="url(#rubyGrad)" stroke="#FFEAA7" strokeWidth="0.5" />
-          <circle cx="66" cy="88" r="2.2" fill="url(#emeraldGrad)" stroke="#FFEAA7" strokeWidth="0.5" />
-          <circle cx="80" cy="87" r="2.6" fill="url(#rubyGrad)" stroke="#FFFFFF" strokeWidth="0.6" />
-          <circle cx="94" cy="88" r="2.2" fill="url(#emeraldGrad)" stroke="#FFEAA7" strokeWidth="0.5" />
-          <circle cx="108" cy="90.5" r="2.2" fill="url(#rubyGrad)" stroke="#FFEAA7" strokeWidth="0.5" />
-
-          {/* 5 Peak Crown Pearl Jewels */}
-          <circle cx="46" cy="58" r="3.2" fill="#FFFFFF" stroke="url(#gold24k)" strokeWidth="1" />
-          <circle cx="61" cy="72" r="2.6" fill="#FFFFFF" stroke="url(#gold24k)" strokeWidth="0.8" />
-          <circle cx="80" cy="44" r="4.2" fill="#FFFFFF" stroke="url(#gold24k)" strokeWidth="1.2" />
-          <circle cx="99" cy="72" r="2.6" fill="#FFFFFF" stroke="url(#gold24k)" strokeWidth="0.8" />
-          <circle cx="114" cy="58" r="3.2" fill="#FFFFFF" stroke="url(#gold24k)" strokeWidth="1" />
-
-          {/* Sparkling Diamond Crest Jewel on Highest Peak */}
-          <polygon
-            points="80,33 83.5,39 80,44 76.5,39"
-            fill="url(#gold24k)"
-            stroke="#FFFFFF"
-            strokeWidth="0.7"
-          />
-          <circle cx="80" cy="39" r="1.2" fill="#FFFFFF" />
-
-          {/* Crown Scepter Rays radiating from center jewel */}
-          <line x1="80" y1="28" x2="80" y2="31" stroke="url(#gold24k)" strokeWidth="1" opacity="0.8" />
-          <line x1="72" y1="34" x2="75" y2="36" stroke="url(#gold24k)" strokeWidth="0.8" opacity="0.6" />
-          <line x1="88" y1="34" x2="85" y2="36" stroke="url(#gold24k)" strokeWidth="0.8" opacity="0.6" />
-        </g>
-
-        {/* 6. Royal Monogram Banner: "★ PM ★" */}
-        <g id="monogram">
-          <text
-            x="80"
-            y="114"
-            textAnchor="middle"
-            fill="url(#gold24k)"
-            fontSize="12"
-            fontWeight="800"
-            letterSpacing="3.5"
-            style={{
-              fontFamily: 'var(--font-cinzel), Cinzel, Georgia, serif',
-            }}
-          >
-            PM
-          </text>
-
-          {/* Flanking Micro Stars */}
-          <polygon points="58,110 59.5,113 62.5,113.5 60.2,115.5 61,118.5 58,116.8 55,118.5 55.8,115.5 53.5,113.5 56.5,113" fill="url(#gold24k)" />
-          <polygon points="102,110 103.5,113 106.5,113.5 104.2,115.5 105,118.5 102,116.8 99,118.5 99.8,115.5 97.5,113.5 100.5,113" fill="url(#gold24k)" />
-
-          {/* Fine Curved Monogram Underline */}
-          <path
-            d="M 54 122 Q 80 126 106 122"
-            stroke="url(#gold24k)"
-            strokeWidth="0.8"
-            fill="none"
-            opacity="0.75"
-          />
-          <circle cx="80" cy="124" r="1.2" fill="url(#gold24k)" />
-        </g>
-      </svg>
-    </div>
-  )
-}
 
 /**
  * Sacred Awadhi Mandala Background Watermark

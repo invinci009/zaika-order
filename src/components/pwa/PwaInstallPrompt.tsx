@@ -64,7 +64,7 @@ export default function PwaInstallPrompt() {
               Install ReviewPulse
             </h2>
             <p className="text-xs text-slate-400">
-              Biryani Badshah Feedback &amp; Portal
+              PM Zaika Restaurant &amp; Order Portal
             </p>
           </div>
         </div>

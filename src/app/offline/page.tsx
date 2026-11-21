@@ -43,13 +43,13 @@ export default function OfflinePage() {
       {/* Top Header */}
       <header className="relative z-10 flex items-center justify-between max-w-md w-full mx-auto pt-2">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-white border border-emerald-500/40 flex items-center justify-center overflow-hidden p-0.5 shadow-md">
+          <div className="w-8 h-8 rounded-full bg-black/80 border border-amber-500/40 flex items-center justify-center overflow-hidden p-0.5 shadow-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Biryani Badshah" className="w-full h-full object-contain" />
+            <img src="/logo.png" alt="PM Zaika Restaurant" className="w-full h-full object-contain rounded-full" />
           </div>
           <div>
-            <span className="font-onstage font-bruce font-black text-sm tracking-wide text-white uppercase block leading-none">Biryani Badshah</span>
-            <span className="font-script text-[10px] text-emerald-400 block leading-none mt-0.5">A Family Restaurant</span>
+            <span className="font-heading font-black text-sm tracking-wider text-amber-300 uppercase block leading-none">PM Zaika</span>
+            <span className="font-script text-[10px] text-amber-200/80 block leading-none mt-0.5">Royal Awadhi Dining</span>
           </div>
         </div>
 
@@ -85,14 +85,14 @@ export default function OfflinePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
                 <Sparkles className="w-3.5 h-3.5" />
-                Biryani Badshah, Patna
+                PM Zaika Restaurant, Patna
               </div>
               <a
-                href="tel:7763949496"
+                href="tel:7488260572"
                 className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[11px] font-bold text-amber-300 hover:bg-amber-500/25 transition-colors"
               >
                 <Phone className="w-3 h-3 text-amber-400" />
-                <span>Call: 77639 49496</span>
+                <span>Call: 74882 60572</span>
               </a>
             </div>
             <p className="text-[11px] text-slate-400 leading-tight">

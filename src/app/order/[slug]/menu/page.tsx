@@ -3602,14 +3602,13 @@ const PmZaikaCrest = () => (
       accentColor="#E89223"
       strokeWidth={1.6}
     />
-    <div className="w-[46px] h-[46px] rounded-full bg-gradient-to-br from-[#2D1148] to-[#461B6E] border border-[#F3C669]/70 flex flex-col items-center justify-center leading-none relative z-10 shadow-[0_6px_16px_rgba(45,17,72,0.28)]">
-      <svg viewBox="0 0 24 14" className="w-3.5 h-2 fill-[#F3C669] mb-0.5">
-        <path d="M2 12L4 3L9 8L12 1L15 8L20 3L22 12H2Z" />
-      </svg>
-      <span className="text-[13px] font-extrabold tracking-wider text-white">PM</span>
-      <span className="text-[5.5px] font-bold tracking-[0.24em] text-[#FDEBD3] mt-0.5">
-        ZAIKA
-      </span>
+    <div className="w-[48px] h-[48px] rounded-full overflow-hidden border border-[#F3C669]/80 relative z-10 shadow-[0_6px_16px_rgba(0,0,0,0.6)] bg-black/90 p-0.5">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logo.png"
+        alt="PM Zaika Restaurant"
+        className="w-full h-full object-contain rounded-full"
+      />
     </div>
   </div>
 );
@@ -4307,15 +4306,20 @@ function MainApp() {
             <div className="px-4 pt-4 space-y-5">
               {/* 1. Top App Header */}
               <header className="flex items-center justify-between gap-2.5">
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <button
                     type="button"
                     onClick={() => setTableModalOpen(true)}
-                    className="w-11 h-11 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center justify-center text-[#f59e0b] hover:bg-[#1c0f2e] transition-colors cursor-pointer shrink-0"
-                    aria-label="Switch dining table"
-                    title="Select Table"
+                    className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-[#f59e0b]/60 shadow-md shadow-amber-500/10 hover:border-[#f59e0b] transition-all cursor-pointer shrink-0 bg-black/80 p-0.5"
+                    aria-label="Switch dining table or view restaurant info"
+                    title="PM Zaika Restaurant • Select Table"
                   >
-                    <MenuIcon className="w-5 h-5" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/logo.png"
+                      alt="PM Zaika Restaurant"
+                      className="w-full h-full object-contain rounded-full"
+                    />
                   </button>
 
                   <div className="min-w-0">

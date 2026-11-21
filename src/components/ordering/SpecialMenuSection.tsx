@@ -144,8 +144,8 @@ export function SpecialMenuSection({
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
-        title: 'Biryani Badshah — Mehman Nawazi & Shan-E-Biryani',
-        text: 'Check out the Party Packs and Grand Handi Biryani from Biryani Badshah!',
+        title: 'PM Zaika Restaurant — Mehman Nawazi & Royal Feast',
+        text: 'Check out the Party Packs and Grand Handi Biryani from PM Zaika Restaurant!',
         url: shareUrl,
       }).catch(() => {})
     } else {
@@ -409,7 +409,7 @@ export function SpecialMenuSection({
         <div className="flex items-center gap-2 shrink-0">
           <a
             href={`https://wa.me/91${cleanPhone}?text=${encodeURIComponent(
-              'Hello Biryani Badshah! I would like to inquire about your Mehman Nawazi Party Pack and Shan-E-Biryani Handi.'
+              'Hello PM Zaika Restaurant! I would like to inquire about your Mehman Nawazi Party Pack and Grand Handi Biryani.'
             )}`}
             target="_blank"
             rel="noreferrer"
@@ -463,11 +463,11 @@ export function SpecialMenuSection({
                 alt="Special Menu QR"
                 className="w-48 h-48 object-contain"
               />
-              <p className="font-onstage font-bruce font-black text-xs text-stone-700 mt-2">
-                BIRYANI BADSHAH
+              <p className="font-heading font-black text-xs text-amber-900 mt-2 tracking-wider">
+                PM ZAIKA RESTAURANT
               </p>
-              <p className="font-script text-[11px] text-emerald-700">
-                A Family Restaurant
+              <p className="font-script text-[11px] text-amber-700">
+                Royal Awadhi Dining
               </p>
             </div>
 

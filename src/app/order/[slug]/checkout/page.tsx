@@ -489,14 +489,14 @@ export default function CheckoutPage() {
           <Link href={menuHref} className="p-2 rounded-lg hover:bg-stone-100 transition-colors" aria-label="Back to menu">
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <div className="w-7 h-7 rounded-lg overflow-hidden border border-emerald-400 bg-white shrink-0 p-0.5">
+          <div className="w-8 h-8 rounded-full overflow-hidden border border-[#f59e0b]/50 bg-black/80 shrink-0 p-0.5 shadow-xs">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Biryani Badshah" className="w-full h-full object-contain" />
+            <img src="/logo.png" alt="PM Zaika Restaurant" className="w-full h-full object-contain rounded-full" />
           </div>
           <div>
             <div className="flex items-center gap-1.5 leading-none">
-              <span className="font-onstage font-bruce font-black text-xs uppercase tracking-wide text-stone-900">
-                BIRYANI BADSHAH
+              <span className="font-heading font-black text-xs uppercase tracking-wider text-amber-300">
+                PM ZAIKA
               </span>
               <span className="text-xs text-stone-400 font-bold">•</span>
               <span className="font-heading font-bold text-xs text-stone-700">

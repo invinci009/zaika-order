@@ -289,11 +289,11 @@ export default function QuizFlow({
               <div className="w-20 h-20 mx-auto rounded-full bg-[#1b1028] text-white flex items-center justify-center shadow-xl shadow-amber-500/20 overflow-hidden border-2 border-amber-400/60 p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/logo.svg"
+                  src={logoUrl || '/logo.png'}
                   alt={restaurantName}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-full"
                   onError={(e) => {
-                    e.currentTarget.src = logoUrl || '/logo.png'
+                    e.currentTarget.src = '/logo.png'
                   }}
                 />
               </div>

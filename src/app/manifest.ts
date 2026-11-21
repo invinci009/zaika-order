@@ -2,15 +2,15 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Biryani Badshah — Royal Indian Dining & Ordering',
-    short_name: 'Biryani Badshah',
-    description: 'Instant QR customer feedback, smart AI reviews & live table ordering for Biryani Badshah, Patna',
+    name: 'PM Zaika Restaurant — Royal Awadhi Dining & Ordering',
+    short_name: 'PM Zaika',
+    description: 'Instant QR customer feedback, smart AI reviews & live table ordering for PM Zaika Restaurant, Patna',
     start_url: '/',
     scope: '/',
     display: 'standalone',
     orientation: 'portrait-primary',
-    background_color: '#020617',
-    theme_color: '#0f172a',
+    background_color: '#0a0510',
+    theme_color: '#140b20',
     categories: ['food', 'business', 'productivity', 'lifestyle'],
     lang: 'en',
     dir: 'ltr',
@@ -44,8 +44,8 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         name: 'Guest Feedback Survey',
         short_name: 'Feedback',
-        description: 'Open customer survey experience for Biryani Badshah',
-        url: '/r/biryani-badshah-patna',
+        description: 'Open customer survey experience for PM Zaika Restaurant',
+        url: '/r/pm-zaika',
         icons: [{ src: '/icons/icon-192x192.png', sizes: '192x192' }],
       },
       {

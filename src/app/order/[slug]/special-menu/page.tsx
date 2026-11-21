@@ -314,20 +314,20 @@ export default function SpecialMenuPage() {
                 <ArrowLeft className="w-5 h-5" />
               </Link>
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl overflow-hidden border border-emerald-400 shadow-xs bg-white shrink-0 p-0.5">
+                <div className="w-9 h-9 rounded-full overflow-hidden border border-[#f59e0b]/50 shadow-xs bg-black/80 shrink-0 p-0.5">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/logo.png"
-                    alt="Biryani Badshah"
-                    className="w-full h-full object-contain"
+                    alt="PM Zaika Restaurant"
+                    className="w-full h-full object-contain rounded-full"
                   />
                 </div>
                 <div>
-                  <h1 className="font-onstage font-bruce font-black text-base text-stone-900 leading-tight uppercase tracking-wider">
-                    BIRYANI BADSHAH
+                  <h1 className="font-heading font-black text-base text-amber-300 leading-tight uppercase tracking-wider">
+                    PM ZAIKA
                   </h1>
-                  <p className="font-script text-[11px] text-emerald-800 leading-none">
-                    A Family Restaurant
+                  <p className="font-script text-[11px] text-amber-200/80 leading-none">
+                    Royal Awadhi Dining
                   </p>
                   <p className="text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
                     <span>Mehman Nawazi &amp; Shan-E-Biryani</span>
