@@ -35,7 +35,9 @@ import {
   Award,
   Flame,
   UtensilsCrossed,
-  Crown
+  Crown,
+  BookOpen,
+  ChevronUp
 } from 'lucide-react';
 
 // --- FALLBACK FOOD IMAGE ---
@@ -3553,22 +3555,37 @@ const RoyalPassCard = ({
   </section>
 );
 
-// --- AUTHENTIC INDIAN FSSAI VEG / NON-VEG SQUARE INDICATOR ---
-const FssaiDot = ({ veg, size = 'sm' }) => {
+// --- HELPER: FORMAT CATEGORY GROUP NAME TO TITLE CASE ---
+const formatGroupName = (group: string) => {
+  if (!group) return '';
+  if (group === 'SOUP') return 'Soups';
+  if (group === 'TANDOOR & KEBABS') return 'Tandoor & Kebabs';
+  if (group === 'BIRYANI & RICE') return 'Biryani & Mains';
+  if (group === 'STARTERS') return 'Starters';
+  if (group === 'CURRIES (NON-VEG)') return 'Curries (Non-Veg)';
+  if (group === 'CURRIES & DAL (VEG)') return 'Curries & Dal (Veg)';
+  if (group === 'BREADS & NAAN') return 'Breads & Naans';
+  if (group === 'CHINESE & ROLLS') return 'Chinese & Rolls';
+  if (group === 'MEHMAN NAWAZI PARTY PACKS') return 'Party Packs';
+  return group.charAt(0).toUpperCase() + group.slice(1).toLowerCase();
+};
+
+// --- AUTHENTIC INDIAN FSSAI VEG / NON-VEG SQUARE INDICATOR (DARK PALETTE) ---
+const FssaiDot = ({ veg, size = 'sm' }: { veg: boolean; size?: 'sm' | 'md' }) => {
   const box = size === 'sm' ? 'w-[14px] h-[14px]' : 'w-[16px] h-[16px]';
   const dot = size === 'sm' ? 'w-[6px] h-[6px]' : 'w-[7px] h-[7px]';
   return (
     <span
-      className={`inline-flex items-center justify-center ${box} rounded-[3px] border bg-white shrink-0 ${
-        veg ? 'border-[#15803D]' : 'border-[#DC2626]'
+      className={`inline-flex items-center justify-center ${box} rounded-[3px] border bg-[#140b20] shrink-0 ${
+        veg ? 'border-emerald-500' : 'border-rose-500'
       }`}
       title={veg ? 'Vegetarian' : 'Non-Vegetarian'}
       aria-label={veg ? 'Vegetarian' : 'Non-Vegetarian'}
     >
       {veg ? (
-        <span className={`${dot} rounded-full bg-[#15803D]`} />
+        <span className={`${dot} rounded-full bg-emerald-500`} />
       ) : (
-        <svg viewBox="0 0 10 10" className="w-[7px] h-[7px] fill-[#DC2626]">
+        <svg viewBox="0 0 10 10" className="w-[7px] h-[7px] fill-rose-500">
           <polygon points="5,1.5 9,8.5 1,8.5" />
         </svg>
       )}
@@ -3652,6 +3669,11 @@ function MainApp() {
   const [nonVegOnly, setNonVegOnly] = useState(false);
   const [under250, setUnder250] = useState(false);
   const [bestsellersOnly, setBestsellersOnly] = useState(false);
+  const [ratings45Only, setRatings45Only] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const toggleCategoryCollapse = (grp: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [grp]: !prev[grp] }));
+  };
 
   // Progressive Scroll Menu Rendering & Category Jump Drawer
   const [visibleGroupCount, setVisibleGroupCount] = useState(2);
@@ -3885,9 +3907,10 @@ function MainApp() {
     (vegOnly ? 1 : 0) +
     (nonVegOnly ? 1 : 0) +
     (under250 ? 1 : 0) +
-    (bestsellersOnly ? 1 : 0);
+    (bestsellersOnly ? 1 : 0) +
+    (ratings45Only ? 1 : 0);
 
-  const matchesFilters = (dish, applyCategory = true) => {
+  const matchesFilters = (dish: any, applyCategory = true) => {
     const q = searchQuery.trim().toLowerCase();
     if (
       q &&
@@ -3921,6 +3944,7 @@ function MainApp() {
     if (nonVegOnly && dish.veg) return false;
     if (under250 && dish.price > 250) return false;
     if (bestsellersOnly && !dish.badge) return false;
+    if (ratings45Only && (dish.rating || 0) < 4.5) return false;
     return true;
   };
 
@@ -3930,17 +3954,17 @@ function MainApp() {
       return filtered.filter((d) => d.popular);
     }
     return filtered;
-  }, [searchQuery, selectedCategory, vegOnly, nonVegOnly, under250, bestsellersOnly]);
+  }, [searchQuery, selectedCategory, vegOnly, nonVegOnly, under250, bestsellersOnly, ratings45Only]);
 
   const menuGroupedDishes = useMemo(() => {
-    const groups = {};
+    const groups: Record<string, typeof MENU_ITEMS> = {};
     MENU_GROUPS.forEach((grp) => {
       groups[grp] = MENU_ITEMS.filter(
         (d) => d.menuGroup === grp && matchesFilters(d, false)
       );
     });
     return groups;
-  }, [searchQuery, vegOnly, nonVegOnly, under250, bestsellersOnly]);
+  }, [searchQuery, vegOnly, nonVegOnly, under250, bestsellersOnly, ratings45Only]);
 
   const totalMenuResults = useMemo(
     () => Object.values(menuGroupedDishes).reduce((acc, arr) => acc + arr.length, 0),
@@ -4236,7 +4260,7 @@ function MainApp() {
   const activeSlide = HERO_SLIDES[heroIndex];
 
   return (
-    <div className="min-h-screen w-full bg-[#EFE8DF] text-[#1B1026] flex justify-center sm:py-5 font-jakarta antialiased selection:bg-[#E89223]/20 selection:text-[#2D1148]">
+    <div className="min-h-screen w-full bg-[#07030b] text-white flex justify-center sm:py-5 font-jakarta antialiased selection:bg-[#f59e0b]/20 selection:text-[#f59e0b]">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600;1,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
         .font-jakarta { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
@@ -4247,12 +4271,22 @@ function MainApp() {
       `}</style>
 
       {/* Mobile Viewport Container (430px centered on desktop, full-bleed on mobile) */}
-      <div className="w-full max-w-[430px] h-[100dvh] sm:h-[852px] bg-[#FAF5F0] relative sm:rounded-[34px] shadow-[0_0_60px_rgba(45,17,72,0.12)] overflow-hidden flex flex-col">
+      <div className="w-full max-w-[430px] h-[100dvh] sm:h-[852px] bg-[#0c0615] relative sm:rounded-[34px] shadow-[0_0_60px_rgba(0,0,0,0.9)] sm:border sm:border-[#2b1942] overflow-hidden flex flex-col text-white">
+        {/* Subtle architectural background watermark matching client reference */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.08] overflow-hidden z-0">
+          <ArchitecturalMandalaSvg
+            className="w-[720px] h-[720px] -top-28 -left-36 absolute"
+            strokeColor="#7241a3"
+            accentColor="#f59e0b"
+            strokeWidth={0.8}
+          />
+        </div>
+
         {/* Floating Toast */}
         {toast && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-[88%] max-w-[340px] pointer-events-none">
-            <div className="px-4 py-2.5 rounded-2xl bg-[#2D1148] text-white text-xs font-semibold shadow-[0_12px_28px_rgba(45,17,72,0.28)] flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#E89223] shrink-0" />
+            <div className="px-4 py-2.5 rounded-2xl bg-[#1c0f2e] border border-[#3b1d5c] text-white text-xs font-semibold shadow-[0_12px_28px_rgba(0,0,0,0.6)] flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#f59e0b] shrink-0" />
               <span className="truncate">{toast}</span>
             </div>
           </div>
@@ -4277,7 +4311,7 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => setTableModalOpen(true)}
-                    className="w-11 h-11 rounded-2xl bg-white shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center text-[#2D1148] hover:bg-[#F7F1FA] transition-colors cursor-pointer shrink-0"
+                    className="w-11 h-11 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center justify-center text-[#f59e0b] hover:bg-[#1c0f2e] transition-colors cursor-pointer shrink-0"
                     aria-label="Switch dining table"
                     title="Select Table"
                   >
@@ -4288,7 +4322,7 @@ function MainApp() {
                     <button
                       type="button"
                       onClick={() => setTableModalOpen(true)}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#6E6578] hover:text-[#2D1148] cursor-pointer tnum"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#8e829c] hover:text-white cursor-pointer tnum"
                     >
                       <span>
                         {selectedTable} •{' '}
@@ -4296,10 +4330,10 @@ function MainApp() {
                       </span>
                       <ChevronDown className="w-3.5 h-3.5 text-[#E89223]" />
                     </button>
-                    <h1 className="text-[21px] font-extrabold tracking-tight text-[#2D1148] leading-none mt-0.5">
+                    <h1 className="text-[21px] font-black tracking-tight text-white leading-none mt-0.5">
                       PM ZAIKA
                     </h1>
-                    <p className="text-[11px] font-medium text-[#6E6578] mt-0.5 truncate">
+                    <p className="text-[11px] font-medium text-[#8e829c] mt-0.5 truncate">
                       Indian • Chinese • Tandoor • Rolls
                     </p>
                   </div>
@@ -4310,29 +4344,29 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('offers')}
-                    className="h-10 px-2.5 rounded-2xl bg-white shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center gap-1.5 text-[#2D1148] hover:bg-[#F7F1FA] transition-colors cursor-pointer"
+                    className="h-10 px-2.5 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center gap-1.5 text-white hover:bg-[#1c0f2e] transition-colors cursor-pointer"
                     title="View PM Zaika Rewards & Offers"
                     aria-label="View PM Zaika Rewards"
                   >
                     <Crown className="w-3.5 h-3.5 text-[#E89223]" />
-                    <span className="text-[11px] font-black text-[#2D1148] tnum">{royalPoints}</span>
-                    <span className="text-[9px] font-bold text-[#E89223]">PTS</span>
+                    <span className="text-[11px] font-black text-white tnum">{royalPoints}</span>
+                    <span className="text-[9px] font-bold text-[#f59e0b]">PTS</span>
                   </button>
 
                   {/* Steward Bell */}
                   <button
                     type="button"
                     onClick={() => handleRingSteward()}
-                    className={`relative w-10 h-10 rounded-2xl shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center transition-colors cursor-pointer ${
+                    className={`relative w-10 h-10 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer ${
                       stewardAlerted
-                        ? 'bg-[#2D1148] text-[#E89223]'
-                        : 'bg-white text-[#2D1148] hover:bg-[#F7F1FA]'
+                        ? 'bg-[#f59e0b] text-[#140b20]'
+                        : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
                     }`}
                     aria-label="Notify Steward"
                     title="Call Steward to Table"
                   >
                     <Bell className="w-[18px] h-[18px]" />
-                    <span className="absolute -top-1 -right-1 w-[16px] h-[16px] rounded-full bg-[#3B155E] text-white text-[9px] font-bold flex items-center justify-center border-2 border-[#FAF5F0] tnum">
+                    <span className="absolute -top-1 -right-1 w-[16px] h-[16px] rounded-full bg-[#f59e0b] text-[#140b20] text-[9px] font-black flex items-center justify-center border-2 border-[#0c0615] tnum">
                       {stewardAlerted ? '✓' : '1'}
                     </span>
                   </button>
@@ -4341,12 +4375,12 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => setCartOpen(true)}
-                    className="relative w-10 h-10 rounded-2xl bg-white shadow-[0_4px_14px_rgba(45,17,72,0.07)] flex items-center justify-center text-[#2D1148] hover:bg-[#F7F1FA] transition-colors cursor-pointer"
+                    className="relative w-10 h-10 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center justify-center text-white hover:bg-[#1c0f2e] transition-colors cursor-pointer"
                     aria-label="Open Order Bag"
                   >
                     <ShoppingBag className="w-[18px] h-[18px]" />
                     {cartSummary.itemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#3B155E] text-white text-[9px] font-bold flex items-center justify-center border-2 border-[#FAF5F0] tnum">
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#f59e0b] text-[#140b20] text-[9px] font-black flex items-center justify-center border-2 border-[#0c0615] tnum">
                         {cartSummary.itemCount}
                       </span>
                     )}
@@ -4393,7 +4427,7 @@ function MainApp() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search biryani, tandoor, rolls..."
-                    className="w-full h-12 rounded-full bg-white shadow-[0_4px_16px_rgba(45,17,72,0.05)] pl-11 pr-9 text-[13.5px] font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                    className="w-full h-12 rounded-2xl bg-[#140b20] border border-[#2b1942] pl-11 pr-9 text-[13.5px] font-medium text-white placeholder-[#796d8a] focus:outline-none focus:border-[#7241a3] transition-colors"
                   />
                   {searchQuery && (
                     <button
@@ -4410,10 +4444,10 @@ function MainApp() {
                 <button
                   type="button"
                   onClick={() => setFilterSheetOpen(true)}
-                  className={`relative w-12 h-12 rounded-2xl shadow-[0_4px_16px_rgba(45,17,72,0.05)] flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                  className={`relative w-12 h-12 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
                     activeFilterCount > 0
-                      ? 'bg-[#2D1148] text-white'
-                      : 'bg-white text-[#2D1148] hover:bg-[#F7F1FA]'
+                      ? 'bg-[#f59e0b] text-[#140b20]'
+                      : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
                   }`}
                   aria-label="Open Dish Filters"
                 >
@@ -4519,8 +4553,8 @@ function MainApp() {
                         <div
                           className={`w-[64px] h-[64px] rounded-full p-1 transition-all ${
                             isActive
-                              ? 'bg-[#FDEBD3] ring-2 ring-[#E89223]'
-                              : 'bg-white shadow-[0_4px_14px_rgba(45,17,72,0.06)] group-hover:ring-1 group-hover:ring-[#2D1148]/20'
+                              ? 'bg-[#180e28] ring-2 ring-[#f59e0b]'
+                              : 'bg-[#140b20] border border-[#2b1942] group-hover:border-[#7241a3]'
                           }`}
                         >
                           <img
@@ -4536,8 +4570,8 @@ function MainApp() {
                         <span
                           className={`text-[11.5px] leading-none ${
                             isActive
-                              ? 'font-bold text-[#D48016]'
-                              : 'font-semibold text-[#5B5266]'
+                              ? 'font-bold text-[#f59e0b]'
+                              : 'font-semibold text-[#8e829c]'
                           }`}
                         >
                           {cat.label}
@@ -4554,7 +4588,7 @@ function MainApp() {
               {/* 5. Popular Picks Horizontal Scrollable Card Row */}
               <section>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-[18px] font-extrabold text-[#1B1026] tracking-tight">
+                  <h2 className="text-[18px] font-extrabold text-white tracking-tight">
                     {selectedCategory === 'All' && !searchQuery.trim()
                       ? 'Popular Picks'
                       : selectedCategory !== 'All'
@@ -4578,7 +4612,7 @@ function MainApp() {
                         }, 120);
                       }
                     }}
-                    className="text-[13px] font-bold text-[#461B6E] hover:text-[#2D1148] inline-flex items-center gap-1 cursor-pointer"
+                    className="text-[13px] font-bold text-[#f59e0b] hover:text-[#fbbf24] inline-flex items-center gap-1 cursor-pointer"
                   >
                     <span>View All</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -4617,7 +4651,7 @@ function MainApp() {
                         <article
                           key={dish.id}
                           onClick={() => openCustomization(dish)}
-                          className="w-[168px] shrink-0 bg-white rounded-[22px] p-3 shadow-[0_6px_22px_rgba(45,17,72,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(45,17,72,0.1)] transition-shadow"
+                          className="w-[168px] shrink-0 bg-[#140b20] border border-[#2b1942] rounded-[22px] p-3 shadow-lg flex flex-col justify-between cursor-pointer hover:border-[#7241a3] transition-colors"
                         >
                           <div>
                             <div className="flex items-center justify-between gap-1 mb-2">
@@ -4660,10 +4694,10 @@ function MainApp() {
                               />
                             </div>
 
-                            <h3 className="text-[14px] font-bold text-[#1B1026] truncate leading-snug">
+                            <h3 className="text-[14px] font-bold text-white truncate leading-snug">
                               {dish.name}
                             </h3>
-                            <p className="text-[11px] text-[#7A7184] line-clamp-1 mt-0.5">
+                            <p className="text-[11px] text-[#8e829c] line-clamp-1 mt-0.5">
                               {dish.description}
                             </p>
 
@@ -4683,7 +4717,7 @@ function MainApp() {
                             onClick={(e) => e.stopPropagation()}
                             className="mt-3 pt-1 flex items-center justify-between"
                           >
-                            <span className="text-[15px] font-extrabold text-[#1B1026] tnum">
+                            <span className="text-[15px] font-black text-white tnum">
                               ₹{dish.price}
                             </span>
 
@@ -4695,13 +4729,13 @@ function MainApp() {
                                     ? openCustomization(dish)
                                     : quickAddDish(dish)
                                 }
-                                className="w-8 h-8 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white flex items-center justify-center shadow-[0_4px_12px_rgba(232,146,35,0.35)] cursor-pointer transition-colors"
+                                className="w-8 h-8 rounded-full bg-[#140b20] border border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b] hover:text-[#140b20] flex items-center justify-center shadow-lg cursor-pointer transition-colors"
                                 aria-label={`Add ${dish.name}`}
                               >
                                 <Plus className="w-4 h-4 stroke-[2.8]" />
                               </button>
                             ) : (
-                              <div className="h-8 px-1.5 rounded-full bg-[#E89223] text-white inline-flex items-center gap-2 text-xs font-extrabold tnum shadow-[0_4px_12px_rgba(232,146,35,0.3)]">
+                              <div className="h-8 px-1.5 rounded-full bg-[#140b20] border border-[#f59e0b] text-[#f59e0b] inline-flex items-center gap-2 text-xs font-black tnum shadow-lg">
                                 <button
                                   type="button"
                                   onClick={() => quickDecrementDish(dish.id)}
@@ -4767,16 +4801,16 @@ function MainApp() {
               </section>
 
               {/* 7. Quick Guest Feedback Nudge */}
-              <section className="rounded-[22px] bg-white p-3.5 shadow-[0_6px_22px_rgba(45,17,72,0.06)] flex items-center justify-between gap-3">
+              <section className="rounded-[22px] bg-[#140b20] border border-[#2b1942] p-3.5 shadow-md flex items-center justify-between gap-3 text-white">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-9 h-9 rounded-xl bg-[#FDEBD3] flex items-center justify-center shrink-0">
                     <Star className="w-4 h-4 fill-[#E89223] text-[#E89223]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[12.5px] font-bold text-[#1B1026] leading-snug">
+                    <p className="text-[12.5px] font-bold text-white leading-snug">
                       Dining at PM Zaika?
                     </p>
-                    <p className="text-[11px] text-[#6E6578] truncate">
+                    <p className="text-[11px] text-[#8e829c] truncate">
                       Share 30-sec feedback &amp; earn 50 pts
                     </p>
                   </div>
@@ -4787,7 +4821,7 @@ function MainApp() {
                     setFeedbackDone(false);
                     setFeedbackOpen(true);
                   }}
-                  className="shrink-0 h-8 px-3.5 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[11.5px] font-bold cursor-pointer transition-colors"
+                  className="shrink-0 h-8 px-4 rounded-full bg-[#f59e0b] text-[#140b20] text-xs font-black cursor-pointer transition-colors shadow-md"
                 >
                   Rate Now
                 </button>
@@ -4799,62 +4833,48 @@ function MainApp() {
               TAB 2: FULL CATEGORIZED MENU
              --------------------------------------------------------------- */}
           {activeTab === 'menu' && (
-            <div className="pb-4">
-              <div className="sticky top-0 z-20 bg-[#FAF5F0] px-4 pt-4 pb-3 border-b border-[#2D1148]/[0.08] shadow-xs">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h1 className="text-[20px] font-extrabold text-[#1B1026] leading-tight">
-                      Full Menu
-                    </h1>
-                    <p className="text-[11.5px] font-medium text-[#6E6578] tnum">
-                      {selectedTable} • {totalMenuResults} dishes available
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setTableModalOpen(true)}
-                    className="h-8 px-3 rounded-full bg-white shadow-sm border border-[#2D1148]/10 text-[11.5px] font-bold text-[#2D1148] inline-flex items-center gap-1 cursor-pointer tnum"
-                  >
-                    <span>{selectedTable}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-[#E89223]" />
-                  </button>
-                </div>
-
+            <div className="pb-10">
+              {/* Sticky Search & Filter Header matching client reference screenshot */}
+              <div className="sticky top-0 z-20 bg-[#0c0615]/95 backdrop-blur-md px-4 pt-3.5 pb-3 border-b border-[#2b1942] shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                {/* Search Input */}
                 <div className="relative">
-                  <Search className="w-4 h-4 text-[#8C8396] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4 h-4 text-[#796d8a] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search soups, biryani, kebabs, naan..."
-                    className="w-full h-11 rounded-full bg-white shadow-[0_4px_14px_rgba(45,17,72,0.05)] pl-10 pr-9 text-[13px] font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                    placeholder="Search for biryani, paneer, soup, rolls..."
+                    className="w-full h-11 rounded-xl sm:rounded-2xl bg-[#180e28] border border-[#2e1d44] text-white placeholder-[#796d8a] pl-10 pr-9 text-xs sm:text-[13px] font-medium focus:outline-none focus:border-[#7241a3] transition-colors"
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C8396] cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#796d8a] hover:text-white cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 mt-3 overflow-x-auto no-scrollbar">
+                {/* 4 Filter Chips row: Veg Only, Non-Veg, Bestseller, Ratings 4.5+ */}
+                <div className="flex items-center gap-2 mt-2.5 overflow-x-auto no-scrollbar">
                   <button
                     type="button"
                     onClick={() => {
                       setVegOnly((v) => !v);
                       if (!vegOnly) setNonVegOnly(false);
                     }}
-                    className={`h-8 px-3 rounded-full text-[11.5px] font-bold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                    className={`h-8 px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                       vegOnly
-                        ? 'bg-[#15803D] text-white'
-                        : 'bg-white text-[#1B1026] shadow-sm'
+                        ? 'bg-emerald-950/80 border border-emerald-500 text-emerald-300 font-bold'
+                        : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
                     }`}
                   >
-                    <FssaiDot veg={true} />
-                    <span>Pure Veg</span>
+                    <span className="w-3.5 h-3.5 rounded-[3px] border border-emerald-500 bg-[#140b20] flex items-center justify-center shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    </span>
+                    <span>Veg Only</span>
                   </button>
 
                   <button
@@ -4863,135 +4883,130 @@ function MainApp() {
                       setNonVegOnly((v) => !v);
                       if (!nonVegOnly) setVegOnly(false);
                     }}
-                    className={`h-8 px-3 rounded-full text-[11.5px] font-bold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                    className={`h-8 px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                       nonVegOnly
-                        ? 'bg-[#DC2626] text-white'
-                        : 'bg-white text-[#1B1026] shadow-sm'
+                        ? 'bg-rose-950/80 border border-rose-500 text-rose-300 font-bold'
+                        : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
                     }`}
                   >
-                    <FssaiDot veg={false} />
+                    <span className="w-3.5 h-3.5 rounded-[3px] border border-rose-500 bg-[#140b20] flex items-center justify-center shrink-0">
+                      <svg viewBox="0 0 10 10" className="w-[6px] h-[6px] fill-rose-500">
+                        <polygon points="5,1.5 9,8.5 1,8.5" />
+                      </svg>
+                    </span>
                     <span>Non-Veg</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setBestsellersOnly((v) => !v)}
-                    className={`h-8 px-3 rounded-full text-[11.5px] font-bold whitespace-nowrap cursor-pointer transition-colors ${
+                    className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       bestsellersOnly
-                        ? 'bg-[#2D1148] text-white'
-                        : 'bg-white text-[#1B1026] shadow-sm'
+                        ? 'bg-amber-950/80 border border-[#f59e0b] text-[#f59e0b] font-bold'
+                        : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
                     }`}
                   >
-                    Bestsellers
+                    Bestseller
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setUnder250((v) => !v)}
-                    className={`h-8 px-3 rounded-full text-[11.5px] font-bold whitespace-nowrap cursor-pointer transition-colors tnum ${
-                      under250
-                        ? 'bg-[#E89223] text-white'
-                        : 'bg-white text-[#1B1026] shadow-sm'
+                    onClick={() => setRatings45Only((v) => !v)}
+                    className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                      ratings45Only
+                        ? 'bg-amber-950/80 border border-[#f59e0b] text-[#f59e0b] font-bold'
+                        : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
                     }`}
                   >
-                    Under ₹250
+                    Ratings 4.5+
                   </button>
                 </div>
               </div>
 
-              <div className="px-4 pt-4 space-y-5">
-                {displayedMenuGroups.map((group, groupIdx) => {
+              {/* Category Accordion Cards List */}
+              <div className="px-4 pt-4 pb-20 space-y-4">
+                {displayedMenuGroups.map((group) => {
                   const dishes = menuGroupedDishes[group] || [];
                   if (dishes.length === 0) return null;
+                  const isCollapsed = !!collapsedGroups[group];
 
                   return (
-                    <React.Fragment key={group}>
-                      {groupIdx > 0 && <ArchitecturalMandalaDivider className="my-5" />}
-                      <section className="scroll-mt-32" id={`section-${group.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
-                        {/* Regal High-Contrast Gold Foil Ribbon Section Header */}
-                        <div className="flex items-center gap-2.5 mb-3.5 pt-1">
-                          <div
-                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-r-full rounded-l-md shadow-md select-none relative overflow-hidden shrink-0 border border-[#C88B2B]/40"
-                            style={{
-                              background: 'linear-gradient(90deg, #E89223 0%, #F3B046 38%, #F5C76D 75%, #E89223 100%)',
-                              boxShadow: '0 3px 12px rgba(232, 146, 35, 0.26)'
-                            }}
-                          >
-                            {/* Royal micro-diamond */}
-                            <span className="text-[11px] font-black shrink-0" style={{ color: '#1B0A2B' }}>
-                              ◈
-                            </span>
-
-                            {/* Ultra-Readable High-Contrast Category Title */}
-                            <span
-                              className="text-[13px] font-extrabold uppercase tracking-wider select-none"
-                              style={{
-                                color: '#1B0A2B',
-                                fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
-                                letterSpacing: '0.12em',
-                                textShadow: 'none'
-                              }}
-                            >
-                              {group}
-                            </span>
-                          </div>
-
-                          {/* Decorative gold hairline rule */}
-                          <div className="flex-1 h-[1px] bg-gradient-to-r from-[#E89223]/50 via-[#F3C669]/25 to-transparent" />
-
-                          {/* Item count chip */}
-                          <span className="text-[11px] font-bold text-[#4A3E57] px-2.5 py-0.5 rounded-full bg-white border border-[#2D1148]/10 shadow-xs tnum shrink-0">
-                            {dishes.length} items
-                          </span>
+                    <section
+                      key={group}
+                      id={`section-${group.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                      className="scroll-mt-36 rounded-2xl sm:rounded-3xl bg-[#140b20] border border-[#2b1942] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
+                    >
+                      {/* Accordion Card Header */}
+                      <button
+                        type="button"
+                        onClick={() => toggleCategoryCollapse(group)}
+                        className="w-full px-4 py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-white/[0.02] transition-colors"
+                      >
+                        <h2 className="text-white font-bold text-[15px] sm:text-base tracking-tight">
+                          {formatGroupName(group)}{' '}
+                          <span className="text-[#8e829c] font-semibold text-sm">({dishes.length})</span>
+                        </h2>
+                        <div className="text-[#8e829c] p-1">
+                          {isCollapsed ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronUp className="w-4 h-4" />
+                          )}
                         </div>
+                      </button>
 
-                        <div className="space-y-3">
+                      {/* Dish Rows separated by divide-y */}
+                      {!isCollapsed && (
+                        <div className="divide-y divide-[#221334] border-t border-[#221334]">
                           {dishes.map((dish) => {
                             const qty = getDishQty(dish.id);
+                            const hasBadge = dish.badge || dish.popular;
+                            const badgeLabel = dish.badge === 'BESTSELLER' ? 'Bestseller' : (dish.badge === 'POPULAR' || dish.popular ? 'Must Try' : dish.badge);
+
                             return (
                               <article
                                 key={dish.id}
                                 onClick={() => openCustomization(dish)}
-                                className="bg-white rounded-[22px] p-3.5 shadow-[0_6px_24px_rgba(45,17,72,0.06)] flex items-center justify-between gap-3 cursor-pointer"
+                                className="p-3.5 sm:p-4 flex items-start justify-between gap-3 cursor-pointer hover:bg-white/[0.015] transition-colors"
                               >
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-1.5 mb-1">
+                                {/* Left: Info */}
+                                <div className="flex-1 min-w-0 pr-1">
+                                  <div className="flex items-center gap-2 mb-1">
                                     <FssaiDot veg={dish.veg} />
-                                    {dish.badge && (
-                                      <span
-                                        className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${badgeStyle(
-                                          dish.badgeType
-                                        )}`}
-                                      >
-                                        {dish.badge}
+                                    {hasBadge && (
+                                      <span className="text-[#f59e0b] font-bold text-xs flex items-center gap-1">
+                                        ★ {badgeLabel}
                                       </span>
                                     )}
                                   </div>
 
-                                  <h3 className="text-[15px] font-bold text-[#1B1026] leading-snug">
+                                  <h3 className="text-white font-bold text-[15px] sm:text-base leading-snug mt-1 cursor-pointer hover:text-[#f59e0b] transition-colors">
                                     {dish.name}
                                   </h3>
 
                                   <div className="flex items-center gap-2 mt-1 tnum">
-                                    <span className="text-[14.5px] font-extrabold text-[#2D1148]">
+                                    <span className="text-white font-black text-sm sm:text-base">
                                       ₹{dish.price}
                                     </span>
-                                    <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#6E6578]">
-                                      <Star className="w-3.5 h-3.5 fill-[#E89223] text-[#E89223]" />
-                                      {dish.rating} ({dish.ratingCount})
+                                    <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-400">
+                                      ★ {dish.rating || 4.7}
+                                    </span>
+                                    <span className="text-[#8e829c] text-xs font-medium">
+                                      ({dish.ratingCount || '150+'})
                                     </span>
                                   </div>
 
-                                  <p className="text-[11.5px] text-[#6E6578] line-clamp-2 mt-1 leading-relaxed">
+                                  <p className="text-[12px] text-[#9d93a8] line-clamp-2 mt-1.5 leading-relaxed font-normal">
                                     {dish.description}
                                   </p>
                                 </div>
 
+                                {/* Right: Image & Docked ADD Button */}
                                 <div
                                   onClick={(e) => e.stopPropagation()}
                                   className="flex flex-col items-center shrink-0"
                                 >
-                                  <div className="relative w-[96px] h-[96px]">
+                                  <div className="relative w-24 h-24 sm:w-28 sm:h-28">
                                     <img
                                       src={dish.image}
                                       alt={dish.name}
@@ -4999,10 +5014,10 @@ function MainApp() {
                                       onError={(e) => {
                                         e.currentTarget.src = FALLBACK_FOOD_IMG;
                                       }}
-                                      className="w-full h-full rounded-[16px] object-cover cursor-pointer"
+                                      className="w-full h-full rounded-2xl object-cover cursor-pointer border border-white/5 shadow-md"
                                       loading="lazy"
                                     />
-                                    <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2">
+                                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-10">
                                       {qty === 0 ? (
                                         <button
                                           type="button"
@@ -5011,25 +5026,25 @@ function MainApp() {
                                               ? openCustomization(dish)
                                               : quickAddDish(dish)
                                           }
-                                          className="h-7 px-4 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[11px] font-extrabold shadow-md cursor-pointer transition-colors whitespace-nowrap"
+                                          className="h-7 px-5 rounded-lg bg-[#140b20] border border-[#f59e0b] hover:bg-[#f59e0b] hover:text-[#140b20] text-[#f59e0b] text-[11px] font-black uppercase tracking-wider shadow-lg cursor-pointer transition-colors whitespace-nowrap"
                                         >
-                                          + Add
+                                          ADD
                                         </button>
                                       ) : (
-                                        <div className="h-7 px-2 rounded-full bg-[#2D1148] text-white inline-flex items-center gap-2 text-[11.5px] font-extrabold shadow-md tnum">
+                                        <div className="h-7 px-2 rounded-lg bg-[#140b20] border border-[#f59e0b] text-[#f59e0b] inline-flex items-center gap-2 text-xs font-black shadow-lg tnum">
                                           <button
                                             type="button"
                                             onClick={() => quickDecrementDish(dish.id)}
-                                            className="cursor-pointer"
+                                            className="cursor-pointer hover:text-white"
                                             aria-label="Decrease"
                                           >
                                             <Minus className="w-3.5 h-3.5 stroke-[2.8]" />
                                           </button>
-                                          <span>{qty}</span>
+                                          <span className="min-w-[14px] text-center">{qty}</span>
                                           <button
                                             type="button"
                                             onClick={() => quickAddDish(dish)}
-                                            className="cursor-pointer"
+                                            className="cursor-pointer hover:text-white"
                                             aria-label="Increase"
                                           >
                                             <Plus className="w-3.5 h-3.5 stroke-[2.8]" />
@@ -5039,7 +5054,7 @@ function MainApp() {
                                     </div>
                                   </div>
                                   {dish.customizable && (
-                                    <span className="text-[9.5px] font-semibold text-[#8C8396] mt-3.5">
+                                    <span className="text-[10px] text-[#8e829c] mt-3.5 block text-center font-medium">
                                       Customisable
                                     </span>
                                   )}
@@ -5048,48 +5063,53 @@ function MainApp() {
                             );
                           })}
                         </div>
-                      </section>
-                    </React.Fragment>
+                      )}
+                    </section>
                   );
                 })}
 
-                {/* Progressive Scroll Loading Sentinel & Royal Luxury Status Indicator */}
+                {/* Progressive Scroll Loading Sentinel */}
                 {effectiveVisibleCount < MENU_GROUPS.length && !isFilteredOrSearching && (
                   <div
                     ref={sentinelRef}
                     className="pt-4 pb-8 flex flex-col items-center justify-center gap-2.5"
                   >
-                    <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-[#2D1148]/10 shadow-sm">
-                      <div className="w-3.5 h-3.5 border-2 border-[#E89223] border-t-transparent rounded-full animate-spin shrink-0" />
-                      <span className="text-[11.5px] font-bold text-[#4A3E57] tracking-wide">
-                        Scroll to reveal more specialties ({effectiveVisibleCount} of {MENU_GROUPS.length} sections)
+                    <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#140b20] border border-[#2b1942] shadow-sm">
+                      <div className="w-3.5 h-3.5 border-2 border-[#f59e0b] border-t-transparent rounded-full animate-spin shrink-0" />
+                      <span className="text-[11.5px] font-bold text-[#cfc5db] tracking-wide">
+                        Revealing royal sections ({effectiveVisibleCount} of {MENU_GROUPS.length})
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setVisibleGroupCount(MENU_GROUPS.length)}
-                      className="text-[11px] font-bold text-[#E89223] hover:text-[#D48016] underline cursor-pointer"
+                      className="text-[11px] font-bold text-[#f59e0b] hover:text-[#fbbf24] underline cursor-pointer"
                     >
                       Load all sections now
                     </button>
                   </div>
                 )}
 
+                {/* End of Menu Marker */}
                 {effectiveVisibleCount >= MENU_GROUPS.length && totalMenuResults > 0 && !isFilteredOrSearching && (
                   <div className="pt-6 pb-8 text-center space-y-1 opacity-75">
-                    <p className="text-[11.5px] font-extrabold uppercase tracking-[0.16em] text-[#C88B2B]">
+                    <p className="text-[11.5px] font-extrabold uppercase tracking-[0.16em] text-[#f59e0b]">
                       ◈ End of PM Zaika Royal Menu ◈
                     </p>
-                    <p className="text-[11px] font-medium text-[#8C8396]">
+                    <p className="text-[11px] font-medium text-[#8e829c]">
                       {totalMenuResults} authentic Awadhi delicacies freshly prepared to order
                     </p>
                   </div>
                 )}
 
+                {/* Empty State */}
                 {totalMenuResults === 0 && (
-                  <div className="p-8 rounded-[22px] bg-white text-center shadow-[0_6px_24px_rgba(45,17,72,0.06)]">
-                    <p className="text-sm font-bold text-[#1B1026]">
+                  <div className="p-8 rounded-[22px] bg-[#140b20] border border-[#2b1942] text-center shadow-lg">
+                    <p className="text-sm font-bold text-white">
                       No dishes match your filters
+                    </p>
+                    <p className="text-xs text-[#8e829c] mt-1">
+                      Try adjusting your search query or dietary filters.
                     </p>
                     <button
                       type="button"
@@ -5099,8 +5119,9 @@ function MainApp() {
                         setNonVegOnly(false);
                         setBestsellersOnly(false);
                         setUnder250(false);
+                        setRatings45Only(false);
                       }}
-                      className="mt-3 h-9 px-5 rounded-full bg-[#2D1148] text-white text-xs font-bold cursor-pointer"
+                      className="mt-3 h-9 px-5 rounded-full bg-[#f59e0b] text-[#140b20] text-xs font-black cursor-pointer shadow-md hover:brightness-110"
                     >
                       Clear All Filters
                     </button>
@@ -5116,10 +5137,10 @@ function MainApp() {
           {activeTab === 'offers' && (
             <div className="px-4 pt-5 space-y-5">
               <div>
-                <h1 className="text-[21px] font-extrabold text-[#1B1026]">
+                <h1 className="text-[21px] font-extrabold text-white">
                   Offers &amp; Rewards
                 </h1>
-                <p className="text-xs font-medium text-[#6E6578] mt-0.5">
+                <p className="text-xs font-medium text-[#8e829c] mt-0.5">
                   Exclusive PM Zaika dine-in privileges &amp; combos
                 </p>
               </div>
@@ -5131,7 +5152,7 @@ function MainApp() {
               />
 
               <section className="space-y-3">
-                <h2 className="text-[15px] font-extrabold text-[#1B1026]">
+                <h2 className="text-[15px] font-extrabold text-white">
                   Available Coupons
                 </h2>
                 {COUPONS.map((c) => {
@@ -5139,21 +5160,21 @@ function MainApp() {
                   return (
                     <div
                       key={c.code}
-                      className="rounded-[22px] bg-white p-4 shadow-[0_6px_22px_rgba(45,17,72,0.06)] flex items-center justify-between gap-3"
+                      className="rounded-[22px] bg-[#140b20] border border-[#2b1942] p-4 shadow-lg flex items-center justify-between gap-3 text-white"
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-0.5 rounded-md bg-[#F2EAF8] text-[#2D1148] text-[11px] font-extrabold tracking-wider tnum">
+                          <span className="px-2.5 py-0.5 rounded-md bg-[#180e28] text-[#f59e0b] border border-[#2b1942] text-[11px] font-extrabold tracking-wider tnum">
                             {c.code}
                           </span>
-                          <span className="text-[9.5px] font-bold uppercase text-[#E89223]">
+                          <span className="text-[9.5px] font-bold uppercase text-[#f59e0b]">
                             {c.badge}
                           </span>
                         </div>
-                        <h3 className="text-[14.5px] font-bold text-[#1B1026] mt-1.5">
+                        <h3 className="text-[14.5px] font-bold text-white mt-1.5">
                           {c.title}
                         </h3>
-                        <p className="text-[11.5px] text-[#6E6578] mt-0.5">
+                        <p className="text-[11.5px] text-[#8e829c] mt-0.5">
                           {c.subtitle}
                         </p>
                       </div>
@@ -5168,7 +5189,7 @@ function MainApp() {
                         className={`shrink-0 h-9 px-4 rounded-full text-xs font-bold cursor-pointer transition-colors ${
                           isApplied
                             ? 'bg-[#1A7F5A] text-white'
-                            : 'bg-[#2D1148] hover:bg-[#461B6E] text-white'
+                            : 'bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] font-black'
                         }`}
                       >
                         {isApplied ? 'Applied' : 'Apply'}
@@ -5185,13 +5206,13 @@ function MainApp() {
              --------------------------------------------------------------- */}
           {activeTab === 'hub' && (
             <div className="px-4 pt-5 space-y-4">
-              <section className="rounded-[24px] bg-white p-4 shadow-[0_6px_24px_rgba(45,17,72,0.06)] flex items-center gap-3.5">
+              <section className="rounded-[24px] bg-[#140b20] border border-[#2b1942] p-4 shadow-lg flex items-center gap-3.5 text-white">
                 <PmZaikaCrest />
                 <div className="min-w-0">
-                  <h1 className="text-[18px] font-extrabold text-[#2D1148] leading-tight">
+                  <h1 className="text-[18px] font-extrabold text-white leading-tight">
                     PM ZAIKA RESTAURANT
                   </h1>
-                  <p className="text-[11.5px] font-medium text-[#6E6578] mt-0.5">
+                  <p className="text-[11.5px] font-medium text-[#8e829c] mt-0.5">
                     Indian • Chinese • Tandoor • Rolls
                   </p>
                   <div className="mt-1.5 inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[#1B1026] tnum">
@@ -5211,12 +5232,12 @@ function MainApp() {
                 compact
               />
 
-              <section className="rounded-[22px] bg-white p-4 shadow-[0_6px_24px_rgba(45,17,72,0.06)] space-y-3">
+              <section className="rounded-[22px] bg-[#140b20] border border-[#2b1942] p-4 shadow-lg space-y-3 text-white">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#6E6578]">
+                  <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#8e829c]">
                     Restaurant Contact &amp; Orders
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#FDEBD3] text-[#D48016] text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-[#180e28] border border-[#2b1942] text-[#f59e0b] text-[10px] font-bold">
                     Main Helpline
                   </span>
                 </div>
@@ -5225,11 +5246,11 @@ function MainApp() {
                   <div>
                     <a
                       href="tel:+917488260572"
-                      className="text-[17px] font-extrabold text-[#1B1026] hover:text-[#2D1148] tnum"
+                      className="text-[17px] font-extrabold text-white hover:text-[#f59e0b] tnum"
                     >
                       +91 74882 60572
                     </a>
-                    <p className="text-[11.5px] text-[#6E6578] mt-0.5 tnum">
+                    <p className="text-[11.5px] text-[#8e829c] mt-0.5 tnum">
                       Secondary Helpline: 95257 48843
                     </p>
                   </div>
@@ -5238,7 +5259,7 @@ function MainApp() {
                     <button
                       type="button"
                       onClick={handleCopyPhone}
-                      className="h-9 px-3 rounded-xl bg-[#FAF5F0] hover:bg-[#F2EAF8] text-[#2D1148] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                      className="h-9 px-3 rounded-xl bg-[#180e28] hover:bg-[#201036] border border-[#2b1942] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                     >
                       {phoneCopied ? (
                         <>
@@ -5255,7 +5276,7 @@ function MainApp() {
 
                     <a
                       href="tel:+917488260572"
-                      className="h-9 px-3.5 rounded-xl bg-[#2D1148] hover:bg-[#461B6E] text-white text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                      className="h-9 px-3.5 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] text-xs font-black inline-flex items-center gap-1.5 transition-colors"
                     >
                       <Phone className="w-3.5 h-3.5" />
                       <span>Call</span>
@@ -5264,16 +5285,16 @@ function MainApp() {
                 </div>
               </section>
 
-              <section className="rounded-[22px] bg-white p-4 shadow-[0_6px_24px_rgba(45,17,72,0.06)] flex items-start justify-between gap-3">
+              <section className="rounded-[22px] bg-[#140b20] border border-[#2b1942] p-4 shadow-lg flex items-start justify-between gap-3 text-white">
                 <div className="flex items-start gap-2.5 min-w-0">
                   <div className="w-9 h-9 rounded-xl bg-[#F2EAF8] flex items-center justify-center shrink-0 mt-0.5">
                     <MapPin className="w-4 h-4 text-[#2D1148]" />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-[13px] font-bold text-[#1B1026]">
+                    <h2 className="text-[13px] font-bold text-white">
                       Phulwari Sharif, Patna
                     </h2>
-                    <p className="text-[11.5px] text-[#6E6578] leading-relaxed mt-0.5">
+                    <p className="text-[11.5px] text-[#8e829c] leading-relaxed mt-0.5">
                       Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505
                     </p>
                   </div>
@@ -5283,7 +5304,7 @@ function MainApp() {
                   href="https://maps.google.com/?q=Phulwari+Rd+Near+Shaheed+Bhagat+Singh+Chowk+Birla+Colony+Phulwari+Sharif+Patna+Bihar+801505"
                   target="_blank"
                   rel="noreferrer"
-                  className="shrink-0 h-8 px-3 rounded-full bg-[#F2EAF8] hover:bg-[#2D1148] text-[#2D1148] hover:text-white text-[11px] font-bold inline-flex items-center gap-1 transition-colors"
+                  className="shrink-0 h-8 px-3 rounded-full bg-[#180e28] hover:bg-[#201036] border border-[#2b1942] text-[#f59e0b] text-[11px] font-bold inline-flex items-center gap-1 transition-colors"
                 >
                   <span>Directions</span>
                   <ExternalLink className="w-3 h-3" />
@@ -5344,11 +5365,11 @@ function MainApp() {
         </main>
 
         {/* =================================================================
-            DOCKED 5-SLOT BOTTOM NAVIGATION BAR
+            BOTTOM 5-TAB NAVIGATION (DARK OBSIDIAN GLASS WITH GOLD ACCENTS)
            ================================================================= */}
         <nav
           aria-label="Primary Navigation"
-          className="absolute bottom-0 left-0 right-0 z-30 h-[74px] bg-white rounded-t-[26px] shadow-[0_-8px_30px_rgba(45,17,72,0.08)] px-3 grid grid-cols-5 items-center"
+          className="absolute bottom-0 left-0 right-0 z-30 h-[74px] bg-[#0c0615]/95 backdrop-blur-md rounded-t-[26px] border-t border-[#2b1942] shadow-[0_-8px_30px_rgba(0,0,0,0.6)] px-3 grid grid-cols-5 items-center"
         >
           <button
             type="button"
@@ -5357,14 +5378,14 @@ function MainApp() {
           >
             <Home
               className={`w-[21px] h-[21px] transition-colors ${
-                activeTab === 'home' ? 'text-[#2D1148] stroke-[2.4]' : 'text-[#9B92A6]'
+                activeTab === 'home' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
               }`}
             />
             <span
               className={`text-[10.5px] ${
                 activeTab === 'home'
-                  ? 'font-extrabold text-[#2D1148]'
-                  : 'font-semibold text-[#9B92A6]'
+                  ? 'font-extrabold text-[#f59e0b]'
+                  : 'font-semibold text-[#8e829c]'
               }`}
             >
               Home
@@ -5378,14 +5399,14 @@ function MainApp() {
           >
             <LayoutGrid
               className={`w-[21px] h-[21px] transition-colors ${
-                activeTab === 'menu' ? 'text-[#2D1148] stroke-[2.4]' : 'text-[#9B92A6]'
+                activeTab === 'menu' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
               }`}
             />
             <span
               className={`text-[10.5px] ${
                 activeTab === 'menu'
-                  ? 'font-extrabold text-[#2D1148]'
-                  : 'font-semibold text-[#9B92A6]'
+                  ? 'font-extrabold text-[#f59e0b]'
+                  : 'font-semibold text-[#8e829c]'
               }`}
             >
               Menu
@@ -5395,21 +5416,21 @@ function MainApp() {
           <div className="flex flex-col items-center justify-center relative">
             <div className="relative -mt-7 w-[74px] h-[74px] flex items-center justify-center">
               <ArchitecturalMandalaSvg
-                className="absolute inset-0 w-full h-full opacity-80"
-                strokeColor="#C88B2B"
-                accentColor="#E89223"
-                strokeWidth={1.7}
+                className="absolute inset-0 w-full h-full opacity-60"
+                strokeColor="#7241a3"
+                accentColor="#f59e0b"
+                strokeWidth={1.5}
               />
               <button
                 type="button"
                 onClick={() => setCartOpen(true)}
-                className="w-[62px] h-[62px] rounded-full bg-[#3B155E] hover:bg-[#2D1148] text-white shadow-[0_10px_24px_rgba(59,21,94,0.38)] border-[3px] border-[#FAF5F0] flex flex-col items-center justify-center cursor-pointer transition-transform active:scale-95 relative z-10"
+                className="w-[62px] h-[62px] rounded-full bg-[#180c29] hover:bg-[#201036] text-[#f59e0b] shadow-[0_10px_24px_rgba(0,0,0,0.7)] border-2 border-[#f59e0b] flex flex-col items-center justify-center cursor-pointer transition-transform active:scale-95 relative z-10"
                 aria-label="Open Cart & Order"
               >
                 <ShoppingBag className="w-[20px] h-[20px]" />
                 <span className="text-[9.5px] font-bold mt-0.5 leading-none">Order</span>
                 {cartSummary.itemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-[20px] px-1 rounded-full bg-[#E89223] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white tnum">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-[20px] px-1 rounded-full bg-[#f59e0b] text-[#0c0615] text-[10px] font-extrabold flex items-center justify-center border-2 border-[#0c0615] tnum">
                     {cartSummary.itemCount}
                   </span>
                 )}
@@ -5424,14 +5445,14 @@ function MainApp() {
           >
             <Tag
               className={`w-[21px] h-[21px] transition-colors ${
-                activeTab === 'offers' ? 'text-[#2D1148] stroke-[2.4]' : 'text-[#9B92A6]'
+                activeTab === 'offers' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
               }`}
             />
             <span
               className={`text-[10.5px] ${
                 activeTab === 'offers'
-                  ? 'font-extrabold text-[#2D1148]'
-                  : 'font-semibold text-[#9B92A6]'
+                  ? 'font-extrabold text-[#f59e0b]'
+                  : 'font-semibold text-[#8e829c]'
               }`}
             >
               Offers
@@ -5445,14 +5466,14 @@ function MainApp() {
           >
             <User
               className={`w-[21px] h-[21px] transition-colors ${
-                activeTab === 'hub' ? 'text-[#2D1148] stroke-[2.4]' : 'text-[#9B92A6]'
+                activeTab === 'hub' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
               }`}
             />
             <span
               className={`text-[10.5px] ${
                 activeTab === 'hub'
-                  ? 'font-extrabold text-[#2D1148]'
-                  : 'font-semibold text-[#9B92A6]'
+                  ? 'font-extrabold text-[#f59e0b]'
+                  : 'font-semibold text-[#8e829c]'
               }`}
             >
               Hub
@@ -5460,19 +5481,16 @@ function MainApp() {
           </button>
         </nav>
 
-        {/* Floating Category Quick-Jump Button on Menu tab */}
+        {/* Floating 📖 MENU Quick-Jump Button on Menu tab */}
         {activeTab === 'menu' && (
           <button
             type="button"
             onClick={() => setCategoryDrawerOpen(true)}
-            className="absolute bottom-[86px] right-4 z-20 h-10 px-3.5 rounded-full bg-gradient-to-r from-[#E89223] to-[#F3B046] text-[#1B0A2B] font-extrabold text-[12px] shadow-[0_6px_20px_rgba(232,146,35,0.4)] flex items-center gap-2 cursor-pointer border border-white/40 active:scale-95 transition-all select-none hover:brightness-105"
+            className="absolute bottom-[86px] right-4 z-20 h-10 px-4 rounded-full bg-[#140b20] border border-[#f59e0b] text-[#f59e0b] font-black text-xs tracking-wider shadow-[0_8px_24px_rgba(0,0,0,0.6)] flex items-center gap-2 cursor-pointer active:scale-95 transition-all select-none hover:bg-[#f59e0b] hover:text-[#140b20]"
             aria-label="Browse Menu Categories"
           >
-            <UtensilsCrossed className="w-3.5 h-3.5 stroke-[2.6]" />
-            <span>Categories</span>
-            <span className="w-4 h-4 rounded-full bg-[#1B0A2B] text-white text-[9.5px] flex items-center justify-center font-black">
-              {MENU_GROUPS.length}
-            </span>
+            <BookOpen className="w-4 h-4 stroke-[2.5]" />
+            <span>MENU</span>
           </button>
         )}
 
@@ -5480,25 +5498,25 @@ function MainApp() {
         {tableModalOpen && (
           <div
             onClick={() => setTableModalOpen(false)}
-            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#140b20] border-t border-[#2b1942] p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 text-white"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#2b1942]">
                 <div>
-                  <h3 className="text-[16px] font-extrabold text-[#1B1026]">
+                  <h3 className="text-[16px] font-extrabold text-white">
                     Select Dining Table
                   </h3>
-                  <p className="text-xs text-[#6E6578]">
+                  <p className="text-xs text-[#8e829c]">
                     Choose your table number or takeaway pickup
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setTableModalOpen(false)}
-                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-[#180e28] flex items-center justify-center text-[#8e829c] hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -5526,8 +5544,8 @@ function MainApp() {
                     }}
                     className={`py-2.5 rounded-2xl text-xs font-bold tnum cursor-pointer transition-colors ${
                       selectedTable === tbl
-                        ? 'bg-[#2D1148] text-white shadow-md'
-                        : 'bg-[#FAF5F0] text-[#1B1026] hover:bg-[#F2EAF8]'
+                        ? 'bg-[#f59e0b] text-[#140b20] font-black shadow-lg'
+                        : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036]'
                     }`}
                   >
                     {tbl}
@@ -5542,20 +5560,20 @@ function MainApp() {
         {filterSheetOpen && (
           <div
             onClick={() => setFilterSheetOpen(false)}
-            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#140b20] border-t border-[#2b1942] p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 text-white"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
-                <h3 className="text-[16px] font-extrabold text-[#1B1026]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#2b1942]">
+                <h3 className="text-[16px] font-extrabold text-white">
                   Filter Menu
                 </h3>
                 <button
                   type="button"
                   onClick={() => setFilterSheetOpen(false)}
-                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-[#180e28] flex items-center justify-center text-[#8e829c] hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -5580,6 +5598,11 @@ function MainApp() {
                     }
                   },
                   {
+                    label: 'Ratings 4.5+ Only',
+                    active: ratings45Only,
+                    toggle: () => setRatings45Only((v) => !v)
+                  },
+                  {
                     label: 'Under ₹250',
                     active: under250,
                     toggle: () => setUnder250((v) => !v)
@@ -5596,14 +5619,14 @@ function MainApp() {
                     onClick={opt.toggle}
                     className={`w-full px-4 py-3 rounded-2xl flex items-center justify-between text-[13px] font-bold cursor-pointer transition-colors ${
                       opt.active
-                        ? 'bg-[#F2EAF8] text-[#2D1148] ring-1 ring-[#2D1148]/30'
-                        : 'bg-[#FAF5F0] text-[#1B1026]'
+                        ? 'bg-amber-950/70 border border-[#f59e0b] text-[#f59e0b]'
+                        : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036]'
                     }`}
                   >
                     <span>{opt.label}</span>
                     <span
                       className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                        opt.active ? 'bg-[#2D1148] text-white' : 'bg-white border border-[#D4CCD9]'
+                        opt.active ? 'bg-[#f59e0b] text-[#140b20]' : 'bg-[#140b20] border border-[#3e245c]'
                       }`}
                     >
                       {opt.active && <Check className="w-3 h-3 stroke-[3]" />}
@@ -5618,17 +5641,18 @@ function MainApp() {
                   onClick={() => {
                     setVegOnly(false);
                     setNonVegOnly(false);
+                    setRatings45Only(false);
                     setUnder250(false);
                     setBestsellersOnly(false);
                   }}
-                  className="h-11 rounded-full bg-[#FAF5F0] text-[#2D1148] text-xs font-extrabold cursor-pointer"
+                  className="h-11 rounded-full bg-[#180e28] border border-[#2b1942] text-[#8e829c] hover:text-white text-xs font-extrabold cursor-pointer transition-colors"
                 >
                   Clear All
                 </button>
                 <button
                   type="button"
                   onClick={() => setFilterSheetOpen(false)}
-                  className="h-11 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-xs font-extrabold cursor-pointer"
+                  className="h-11 rounded-full bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] text-xs font-black cursor-pointer transition-colors shadow-md"
                 >
                   Apply Filters
                 </button>
@@ -5641,11 +5665,11 @@ function MainApp() {
         {customDish && (
           <div
             onClick={() => setCustomDish(null)}
-            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-white max-h-[88%] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#140b20] border-t border-[#2b1942] max-h-[88%] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200 text-white"
             >
               <div className="relative h-[168px] shrink-0">
                 <img
@@ -5656,11 +5680,11 @@ function MainApp() {
                   }}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1B1026]/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#140b20] via-black/40 to-transparent" />
                 <button
                   type="button"
                   onClick={() => setCustomDish(null)}
-                  className="absolute top-3.5 right-3.5 w-9 h-9 rounded-full bg-white/95 text-[#1B1026] flex items-center justify-center shadow-md cursor-pointer"
+                  className="absolute top-3.5 right-3.5 w-9 h-9 rounded-full bg-[#140b20]/90 border border-white/20 text-white flex items-center justify-center shadow-md cursor-pointer hover:bg-[#140b20]"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -5668,7 +5692,7 @@ function MainApp() {
                   <div className="flex items-center gap-2">
                     <FssaiDot veg={customDish.veg} />
                     <span className="text-xs font-bold inline-flex items-center gap-1 tnum">
-                      <Star className="w-3.5 h-3.5 fill-[#E89223] text-[#E89223]" />
+                      <Star className="w-3.5 h-3.5 fill-[#f59e0b] text-[#f59e0b]" />
                       {customDish.rating} ({customDish.ratingCount})
                     </span>
                   </div>
@@ -5679,17 +5703,17 @@ function MainApp() {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                <p className="text-xs text-[#6E6578] leading-relaxed">
+                <p className="text-xs text-[#9d93a8] leading-relaxed">
                   {customDish.description}
                 </p>
 
                 {customDish.halfPrice && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[13px] font-extrabold text-[#1B1026]">
+                      <span className="text-[13px] font-extrabold text-white">
                         Choose Portion
                       </span>
-                      <span className="text-[10.5px] font-bold text-[#E89223]">
+                      <span className="text-[10.5px] font-bold text-[#f59e0b]">
                         Required
                       </span>
                     </div>
@@ -5704,8 +5728,8 @@ function MainApp() {
                           onClick={() => setCustomPortion(opt.label)}
                           className={`p-3 rounded-2xl border text-left flex items-center justify-between cursor-pointer transition-colors ${
                             customPortion === opt.label
-                              ? 'bg-[#FDEBD3]/60 border-[#E89223] text-[#1B1026]'
-                              : 'bg-[#FAF5F0] border-transparent text-[#5B5266]'
+                              ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
+                              : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
                           }`}
                         >
                           <span className="text-xs font-bold">{opt.label}</span>
@@ -5717,7 +5741,7 @@ function MainApp() {
                 )}
 
                 <div>
-                  <span className="block text-[13px] font-extrabold text-[#1B1026] mb-2">
+                  <span className="block text-[13px] font-extrabold text-white mb-2">
                     Spice Preference
                   </span>
                   <div className="grid grid-cols-3 gap-2">
@@ -5728,12 +5752,12 @@ function MainApp() {
                         onClick={() => setCustomSpice(level)}
                         className={`py-2.5 px-2 rounded-2xl border text-[11.5px] font-bold inline-flex items-center justify-center gap-1 cursor-pointer transition-colors ${
                           customSpice === level
-                            ? 'bg-[#F2EAF8] border-[#3B155E] text-[#2D1148]'
-                            : 'bg-[#FAF5F0] border-transparent text-[#6E6578]'
+                            ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
+                            : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
                         }`}
                       >
                         {level === 'Royal Spicy' && (
-                          <Flame className="w-3 h-3 text-[#E89223]" />
+                          <Flame className="w-3 h-3 text-[#f59e0b]" />
                         )}
                         <span>{level}</span>
                       </button>
@@ -5742,17 +5766,12 @@ function MainApp() {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[13px] font-extrabold text-[#1B1026]">
-                      Recommended Add-ons
-                    </span>
-                    <span className="text-[10.5px] font-medium text-[#8C8396]">
-                      Optional
-                    </span>
-                  </div>
+                  <span className="block text-[13px] font-extrabold text-white mb-2">
+                    Add Royal Accompaniments
+                  </span>
                   <div className="space-y-2">
                     {ADDONS.map((addon) => {
-                      const selected = customAddons.includes(addon.id);
+                      const isSelected = customAddons.includes(addon.id);
                       return (
                         <button
                           key={addon.id}
@@ -5760,21 +5779,29 @@ function MainApp() {
                           onClick={() =>
                             setCustomAddons((prev) =>
                               prev.includes(addon.id)
-                                ? prev.filter((i) => i !== addon.id)
+                                ? prev.filter((id) => id !== addon.id)
                                 : [...prev, addon.id]
                             )
                           }
-                          className={`w-full px-3.5 py-2.5 rounded-2xl border flex items-center justify-between text-xs font-bold cursor-pointer transition-colors ${
-                            selected
-                              ? 'bg-[#FDEBD3]/55 border-[#E89223] text-[#1B1026]'
-                              : 'bg-[#FAF5F0] border-transparent text-[#5B5266]'
+                          className={`w-full p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-colors ${
+                            isSelected
+                              ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
+                              : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
                           }`}
                         >
-                          <span className="inline-flex items-center gap-2">
-                            <FssaiDot veg={addon.veg} />
-                            <span>{addon.name}</span>
-                          </span>
-                          <span className="tnum text-[#2D1148]">+₹{addon.price}</span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-black ${
+                                isSelected
+                                  ? 'bg-[#f59e0b] text-[#140b20]'
+                                  : 'bg-[#140b20] border border-[#3e245c]'
+                              }`}
+                            >
+                              {isSelected && '✓'}
+                            </span>
+                            <span className="text-xs font-bold">{addon.name}</span>
+                          </div>
+                          <span className="text-xs font-extrabold tnum">+₹{addon.price}</span>
                         </button>
                       );
                     })}
@@ -5782,26 +5809,34 @@ function MainApp() {
                 </div>
 
                 <div>
-                  <span className="block text-[13px] font-extrabold text-[#1B1026] mb-1.5">
-                    Cooking Notes
+                  <span className="block text-[13px] font-extrabold text-white mb-1.5">
+                    Cooking Instructions
                   </span>
                   <input
                     type="text"
                     value={customNotes}
                     onChange={(e) => setCustomNotes(e.target.value)}
-                    placeholder="e.g. Less oil, extra mint chutney, no onions..."
-                    className="w-full h-10 px-3.5 rounded-2xl bg-[#FAF5F0] text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                    placeholder="e.g. Less oil, extra crispy, no onion..."
+                    className="w-full h-11 px-3.5 rounded-2xl bg-[#180e28] border border-[#2b1942] text-xs font-medium text-white placeholder-[#796d8a] focus:outline-none focus:border-[#7241a3]"
                   />
                 </div>
               </div>
 
-              <div className="p-4 border-t border-[#EFE8DF] bg-white">
+              <div className="p-4 bg-[#140b20] border-t border-[#2b1942] flex items-center justify-between gap-4">
+                <div>
+                  <span className="block text-[10.5px] uppercase tracking-wider text-[#8e829c]">
+                    Dish Total
+                  </span>
+                  <span className="text-[20px] font-black text-white tnum">
+                    ₹{customTotalUnit}
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={confirmCustomizationAdd}
-                  className="w-full h-12 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[14px] font-extrabold shadow-[0_8px_20px_rgba(232,146,35,0.32)] cursor-pointer transition-colors tnum"
+                  className="flex-1 h-12 rounded-full bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] text-sm font-black shadow-lg cursor-pointer transition-colors"
                 >
-                  Add to Order — ₹{customTotalUnit}
+                  Add to Order
                 </button>
               </div>
             </div>
@@ -5816,11 +5851,11 @@ function MainApp() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-[#FAF5F0] max-h-[90%] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#0c0615] border-t border-[#2b1942] max-h-[90%] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200"
             >
-              <div className="px-5 py-4 bg-white border-b border-[#EFE8DF] flex items-center justify-between">
+              <div className="px-5 py-4 bg-[#140b20] border-b border-[#2b1942] flex items-center justify-between">
                 <div>
-                  <h3 className="text-[17px] font-extrabold text-[#1B1026]">
+                  <h3 className="text-[17px] font-extrabold text-white">
                     {liveOrder && cartSummary.itemCount === 0
                       ? 'Live Order Tracker'
                       : 'Your Order Bag'}
@@ -5828,7 +5863,7 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => setTableModalOpen(true)}
-                    className="text-[11.5px] font-bold text-[#461B6E] inline-flex items-center gap-1 mt-0.5 cursor-pointer tnum"
+                    className="text-[11.5px] font-bold text-[#f59e0b] inline-flex items-center gap-1 mt-0.5 cursor-pointer tnum"
                   >
                     <span>
                       {selectedTable} •{' '}
@@ -5840,7 +5875,7 @@ function MainApp() {
                 <button
                   type="button"
                   onClick={() => setCartOpen(false)}
-                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-[#180e28] flex items-center justify-center text-[#8e829c] hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -6153,18 +6188,18 @@ function MainApp() {
                           ₹{cartSummary.gst}
                         </span>
                       </div>
-                      <div className="flex justify-between text-[15px] font-extrabold text-[#1B1026] pt-2.5 border-t border-[#EFE8DF]">
+                      <div className="flex justify-between text-[15px] font-black text-white pt-2.5 border-t border-[#EFE8DF]">
                         <span>Grand Total</span>
                         <span className="text-[#2D1148]">₹{cartSummary.grandTotal}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 bg-white border-t border-[#EFE8DF]">
+                  <div className="p-4 bg-[#140b20] border-t border-[#2b1942]">
                     <button
                       type="button"
                       onClick={handlePlaceOrder}
-                      className="w-full h-12 rounded-full bg-[#2D1148] hover:bg-[#461B6E] text-white text-[14px] font-extrabold shadow-[0_10px_24px_rgba(45,17,72,0.28)] cursor-pointer transition-colors tnum"
+                      className="w-full h-12 rounded-full bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] font-black text-[14px] font-extrabold shadow-[0_10px_24px_rgba(45,17,72,0.28)] cursor-pointer transition-colors tnum"
                     >
                       Place Table Order • ₹{cartSummary.grandTotal}
                     </button>
@@ -6183,21 +6218,21 @@ function MainApp() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 max-h-[88%] overflow-y-auto no-scrollbar shadow-2xl animate-in slide-in-from-bottom duration-200"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#140b20] border-t border-[#2b1942] p-5 max-h-[88%] text-white overflow-y-auto no-scrollbar shadow-2xl animate-in slide-in-from-bottom duration-200"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#2b1942]">
                 <div>
-                  <h3 className="text-[17px] font-extrabold text-[#1B1026]">
+                  <h3 className="text-[17px] font-extrabold text-white">
                     Guest Feedback
                   </h3>
-                  <p className="text-xs text-[#6E6578]">
+                  <p className="text-xs text-[#8e829c]">
                     5 quick questions • Earn +50 Royal Points
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setFeedbackOpen(false)}
-                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-[#180e28] flex items-center justify-center text-[#8e829c] hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -6211,7 +6246,7 @@ function MainApp() {
                   <h4 className="text-[18px] font-extrabold text-[#1B1026]">
                     Thank You for Dining With Us!
                   </h4>
-                  <p className="text-xs text-[#6E6578] max-w-[260px] mx-auto">
+                  <p className="text-xs text-[#8e829c] max-w-[260px] mx-auto">
                     +50 Royal Points have been credited to your balance.
                   </p>
                   <button
@@ -6264,7 +6299,7 @@ function MainApp() {
                     value={feedbackComment}
                     onChange={(e) => setFeedbackComment(e.target.value)}
                     placeholder="Any suggestions or dish shout-outs (optional)..."
-                    className="w-full p-3.5 rounded-2xl bg-[#FAF5F0] text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                    className="w-full p-3.5 rounded-2xl bg-[#180e28] border border-[#2b1942] text-xs font-medium text-white placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
                   />
 
                   <button
@@ -6293,16 +6328,16 @@ function MainApp() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#140b20] border-t border-[#2b1942] p-5 shadow-2xl text-white animate-in slide-in-from-bottom duration-200"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DF]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#2b1942]">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-[#C81E3A]" />
                   <div>
-                    <h3 className="text-[16px] font-extrabold text-[#1B1026]">
+                    <h3 className="text-[16px] font-extrabold text-white">
                       Admin Direct Escalation
                     </h3>
-                    <p className="text-[11px] text-[#6E6578]">
+                    <p className="text-[11px] text-[#8e829c]">
                       Priority assistance for {selectedTable}
                     </p>
                   </div>
@@ -6310,7 +6345,7 @@ function MainApp() {
                 <button
                   type="button"
                   onClick={() => setComplaintOpen(false)}
-                  className="w-8 h-8 rounded-full bg-[#FAF5F0] flex items-center justify-center text-[#6E6578] cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-[#180e28] flex items-center justify-center text-[#8e829c] hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -6327,7 +6362,7 @@ function MainApp() {
                         className={`h-8 px-3 rounded-full text-xs font-bold cursor-pointer transition-colors ${
                           complaintCategory === item
                             ? 'bg-[#C81E3A] text-white'
-                            : 'bg-[#FFF2F3] text-[#7F1D2C]'
+                            : 'bg-[#180e28] border border-[#2b1942] text-white'
                         }`}
                       >
                         {item}
@@ -6341,7 +6376,7 @@ function MainApp() {
                   value={complaintPhone}
                   onChange={(e) => setComplaintPhone(e.target.value)}
                   placeholder="Your phone number (e.g. 9876543210)"
-                  className="w-full h-11 px-3.5 rounded-2xl bg-[#FAF5F0] text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#C81E3A]/30"
+                  className="w-full h-11 px-3.5 rounded-2xl bg-[#180e28] border border-[#2b1942] text-xs font-medium text-white placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#C81E3A]/30"
                 />
 
                 <textarea
@@ -6349,13 +6384,13 @@ function MainApp() {
                   value={complaintNote}
                   onChange={(e) => setComplaintNote(e.target.value)}
                   placeholder="Tell us what went wrong so our floor manager can resolve it immediately..."
-                  className="w-full p-3.5 rounded-2xl bg-[#FAF5F0] text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#C81E3A]/30"
+                  className="w-full p-3.5 rounded-2xl bg-[#180e28] border border-[#2b1942] text-xs font-medium text-white placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#C81E3A]/30"
                 />
 
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <a
                     href="tel:+917488260572"
-                    className="h-11 rounded-full bg-[#FAF5F0] text-[#1B1026] text-xs font-extrabold inline-flex items-center justify-center gap-1.5"
+                    className="h-11 rounded-full bg-[#180e28] border border-[#2b1942] text-white text-xs font-extrabold inline-flex items-center justify-center gap-1.5"
                   >
                     <Phone className="w-3.5 h-3.5 text-[#2D1148]" />
                     <span>Call Manager</span>
@@ -6378,25 +6413,25 @@ function MainApp() {
         {categoryDrawerOpen && (
           <div
             onClick={() => setCategoryDrawerOpen(false)}
-            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-[#FAF5F0] p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[80vh] flex flex-col"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#140b20] border-t border-[#2b1942] p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[80vh] flex flex-col text-white"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-[#2D1148]/10 shrink-0">
+              <div className="flex items-center justify-between pb-3 border-b border-[#2b1942] shrink-0">
                 <div>
-                  <h3 className="text-[16px] font-extrabold text-[#1B1026]">
+                  <h3 className="text-[16px] font-extrabold text-white">
                     Menu Categories
                   </h3>
-                  <p className="text-xs text-[#6E6578]">
+                  <p className="text-xs text-[#8e829c]">
                     Jump directly to any royal section
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setCategoryDrawerOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-[#2D1148] cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-[#180e28] flex items-center justify-center text-[#8e829c] hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -6421,15 +6456,15 @@ function MainApp() {
                           }
                         }, 80);
                       }}
-                      className="w-full px-4 py-3 rounded-2xl bg-white hover:bg-[#F2EAF8] border border-[#2D1148]/10 flex items-center justify-between text-left transition-colors cursor-pointer shadow-xs active:scale-[0.99]"
+                      className="w-full px-4 py-3 rounded-2xl bg-[#180e28] hover:bg-[#201036] border border-[#2b1942] flex items-center justify-between text-left transition-colors cursor-pointer shadow-md active:scale-[0.99]"
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="text-[#E89223] font-black text-xs">◈</span>
-                        <span className="text-[13px] font-extrabold text-[#1B1026]">
-                          {grp}
+                        <span className="text-[#f59e0b] font-black text-xs">◈</span>
+                        <span className="text-[13.5px] font-bold text-white">
+                          {formatGroupName(grp)}
                         </span>
                       </div>
-                      <span className="text-[11px] font-bold text-[#4A3E57] px-2.5 py-0.5 rounded-full bg-[#FAF5F0] border border-[#2D1148]/10 tnum">
+                      <span className="text-[11px] font-bold text-[#8e829c] px-2.5 py-0.5 rounded-full bg-[#140b20] border border-[#2b1942] tnum">
                         {count} items
                       </span>
                     </button>
@@ -6438,15 +6473,14 @@ function MainApp() {
               </div>
             </div>
           </div>
-        )}
-      </div>
+        )}</div>
     </div>
   );
 }
 
 export default function OrderMenuPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#FAF5F0]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#07030b]" />}>
       <MainApp />
     </Suspense>
   );
