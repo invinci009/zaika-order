@@ -3503,7 +3503,20 @@ const RoyalPassCard = ({
   royalPoints,
   selectedTable,
   onRedeem,
+  loyaltyCustomer,
+  loyaltySnapshot,
+  onOpenLogin,
+  onLogout,
   compact = false
+}: {
+  royalPoints: number;
+  selectedTable: string;
+  onRedeem: () => void;
+  loyaltyCustomer?: { name: string; phone: string; customerId: string } | null;
+  loyaltySnapshot?: { availablePoints: number; earnedTotal: number; redeemedTotal: number } | null;
+  onOpenLogin?: () => void;
+  onLogout?: () => void;
+  compact?: boolean;
 }) => (
   <section
     className={`rounded-[24px] bg-gradient-to-br from-[#1B0A2B] via-[#281040] to-[#2D1148] text-white relative overflow-hidden border border-[#F3C669]/30 shadow-[0_16px_34px_rgba(27,10,43,0.28)] ${compact ? 'p-4' : 'p-5'
@@ -3517,25 +3530,66 @@ const RoyalPassCard = ({
       strokeWidth={1.05}
     />
 
-    <div className="relative z-10 flex items-center justify-between gap-2 pb-3">
-      <div className="flex items-center gap-2">
-        <div className="w-6 h-6 rounded-full bg-[#E89223]/20 border border-[#F3C669]/50 flex items-center justify-center">
-          <Award className="w-3.5 h-3.5 text-[#F3C669]" />
+    {/* Header: Tier info & Table */}
+    <div className="relative z-10 flex items-center justify-between gap-2 pb-2.5">
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="w-6 h-6 rounded-full bg-[#E89223]/20 border border-[#F3C669]/50 flex items-center justify-center shrink-0">
+          {loyaltyCustomer ? (
+            <Crown className="w-3.5 h-3.5 text-[#F3C669]" />
+          ) : (
+            <Award className="w-3.5 h-3.5 text-[#F3C669]" />
+          )}
         </div>
-        <span className="text-[10.5px] font-extrabold tracking-[0.16em] uppercase text-[#F7DC9C]">
-          ROYAL CLUB PASS • TIER I
+        <span className="text-[10px] font-extrabold tracking-[0.16em] uppercase text-[#F7DC9C] truncate">
+          {loyaltyCustomer ? 'ROYAL VIP MEMBER • TIER I' : 'ROYAL CLUB PASS • TIER I'}
         </span>
       </div>
-      <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[10px] font-bold text-[#FDEBD3] tnum">
+      <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[10px] font-bold text-[#FDEBD3] tnum shrink-0">
         {selectedTable}
       </span>
     </div>
+
+    {/* User Details Pill when Logged In */}
+    {loyaltyCustomer && (
+      <div className="relative z-10 mb-2.5 p-2.5 rounded-2xl bg-[#140624]/70 border border-[#F3C669]/25 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f59e0b] to-[#b45309] text-[#140b20] font-black text-xs flex items-center justify-center shrink-0 shadow-md">
+            {loyaltyCustomer.name ? loyaltyCustomer.name.charAt(0).toUpperCase() : 'V'}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <p className="text-[13px] font-black text-white leading-tight truncate">
+                {loyaltyCustomer.name || 'Royal Guest'}
+              </p>
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-[9px] font-bold text-emerald-400">
+                <Check className="w-2.5 h-2.5 stroke-[3]" /> Active
+              </span>
+            </div>
+            <p className="text-[10.5px] font-mono font-medium text-[#F7DC9C]/80 mt-0.5 tnum tracking-wider">
+              +91 {loyaltyCustomer.phone ? loyaltyCustomer.phone.replace(/(\d{5})(\d{5})/, '$1 $2') : ''}
+            </p>
+          </div>
+        </div>
+
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="shrink-0 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 text-[10px] font-bold text-white/60 hover:text-rose-300 transition-colors cursor-pointer"
+            title="Sign out of Royal Points"
+          >
+            Sign Out
+          </button>
+        )}
+      </div>
+    )}
 
     <div className="relative z-10 -mx-5 my-0.5">
       <GoldHairline />
     </div>
 
-    <div className="relative z-10 pt-3.5 flex items-end justify-between gap-3">
+    {/* Points & Redemption Action */}
+    <div className="relative z-10 pt-3 flex items-end justify-between gap-3">
       <div>
         <span className="block text-[10px] font-semibold uppercase tracking-wider text-white/60">
           Available Balance
@@ -3546,20 +3600,35 @@ const RoyalPassCard = ({
           </span>
           <span className="text-xs font-extrabold text-[#F3C669] tracking-wider">PTS</span>
         </div>
-        {!compact && (
+        {loyaltyCustomer && loyaltySnapshot && (loyaltySnapshot.earnedTotal > 0 || loyaltySnapshot.redeemedTotal > 0) && (
+          <p className="text-[10px] text-[#FDEBD3]/70 mt-1 tnum">
+            Lifetime: {loyaltySnapshot.earnedTotal} earned • {loyaltySnapshot.redeemedTotal} used
+          </p>
+        )}
+        {!compact && !loyaltyCustomer && (
           <p className="text-[11px] text-white/75 mt-1.5">
             Redeem 50 pts for instant ₹50 off your dine-in bill.
           </p>
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={onRedeem}
-        className="h-9 px-4 rounded-full bg-gradient-to-r from-[#E89223] to-[#F3B046] hover:from-[#D48016] hover:to-[#E89223] text-[#1B0A2B] text-xs font-extrabold shadow-[0_6px_16px_rgba(232,146,35,0.35)] cursor-pointer transition-all shrink-0"
-      >
-        Redeem ₹50
-      </button>
+      {loyaltyCustomer ? (
+        <button
+          type="button"
+          onClick={onRedeem}
+          className="h-9 px-4 rounded-full bg-gradient-to-r from-[#E89223] to-[#F3B046] hover:from-[#D48016] hover:to-[#E89223] text-[#1B0A2B] text-xs font-extrabold shadow-[0_6px_16px_rgba(232,146,35,0.35)] cursor-pointer transition-all shrink-0 active:scale-95"
+        >
+          {royalPoints >= 50 ? 'Redeem ₹50' : 'Redeem Pts'}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={onOpenLogin}
+          className="h-9 px-3.5 rounded-full bg-gradient-to-r from-[#E89223] to-[#F3B046] hover:from-[#D48016] hover:to-[#E89223] text-[#1B0A2B] text-xs font-black shadow-[0_6px_16px_rgba(232,146,35,0.35)] cursor-pointer transition-all shrink-0 active:scale-95"
+        >
+          Login with Phone →
+        </button>
+      )}
     </div>
   </section>
 );
@@ -5334,6 +5403,14 @@ function MainApp() {
                 royalPoints={royalPoints}
                 selectedTable={selectedTable}
                 onRedeem={handleRedeemRoyalPoints}
+                loyaltyCustomer={loyaltyCustomer}
+                loyaltySnapshot={loyaltySnapshot}
+                onOpenLogin={() => {
+                  setLoyaltyModalOpen(true);
+                  setLoyaltyStep('phone');
+                  setLoyaltyError('');
+                }}
+                onLogout={handleLoyaltyLogout}
               />
 
               <section className="space-y-3">
@@ -5413,6 +5490,14 @@ function MainApp() {
                 royalPoints={royalPoints}
                 selectedTable={selectedTable}
                 onRedeem={handleRedeemRoyalPoints}
+                loyaltyCustomer={loyaltyCustomer}
+                loyaltySnapshot={loyaltySnapshot}
+                onOpenLogin={() => {
+                  setLoyaltyModalOpen(true);
+                  setLoyaltyStep('phone');
+                  setLoyaltyError('');
+                }}
+                onLogout={handleLoyaltyLogout}
                 compact
               />
 
