@@ -3506,14 +3506,12 @@ const RoyalPassCard = ({
   compact = false
 }) => (
   <section
-    className={`rounded-[24px] bg-gradient-to-br from-[#1B0A2B] via-[#281040] to-[#2D1148] text-white relative overflow-hidden border border-[#F3C669]/30 shadow-[0_16px_34px_rgba(27,10,43,0.28)] ${
-      compact ? 'p-4' : 'p-5'
-    }`}
+    className={`rounded-[24px] bg-gradient-to-br from-[#1B0A2B] via-[#281040] to-[#2D1148] text-white relative overflow-hidden border border-[#F3C669]/30 shadow-[0_16px_34px_rgba(27,10,43,0.28)] ${compact ? 'p-4' : 'p-5'
+      }`}
   >
     <ArchitecturalMandalaSvg
-      className={`absolute -right-14 top-1/2 -translate-y-1/2 opacity-[0.26] ${
-        compact ? 'w-[190px] h-[190px]' : 'w-[240px] h-[240px]'
-      }`}
+      className={`absolute -right-14 top-1/2 -translate-y-1/2 opacity-[0.26] ${compact ? 'w-[190px] h-[190px]' : 'w-[240px] h-[240px]'
+        }`}
       strokeColor="#E8D2F5"
       accentColor="#F3C669"
       strokeWidth={1.05}
@@ -3587,9 +3585,8 @@ const FssaiDot = ({ veg, size = 'sm' }: { veg: boolean; size?: 'sm' | 'md' }) =>
   const dot = size === 'sm' ? 'w-[6px] h-[6px]' : 'w-[7px] h-[7px]';
   return (
     <span
-      className={`inline-flex items-center justify-center ${box} rounded-[3px] border bg-[#140b20] shrink-0 ${
-        veg ? 'border-emerald-500' : 'border-rose-500'
-      }`}
+      className={`inline-flex items-center justify-center ${box} rounded-[3px] border bg-[#140b20] shrink-0 ${veg ? 'border-emerald-500' : 'border-rose-500'
+        }`}
       title={veg ? 'Vegetarian' : 'Non-Vegetarian'}
       aria-label={veg ? 'Vegetarian' : 'Non-Vegetarian'}
     >
@@ -3708,42 +3705,208 @@ function MainApp() {
   const mainScrollRef = useRef(null);
   const sentinelRef = useRef(null);
 
-  // Favorites Set (persisted safely after mount to avoid hydration mismatch)
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({
-    'mutton-handi-biryani': true,
-    'paneer-tikka-shashlik': true
+  // Favorites Set (persisted)
+  const [favorites, setFavorites] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('pm_zaika_favorites');
+        if (saved) return JSON.parse(saved);
+      } catch { }
+    }
+    return {
+      'mutton-handi-biryani': true,
+      'paneer-tikka-shashlik': true
+    };
   });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem('pm_zaika_favorites', JSON.stringify(favorites));
-      } catch {}
+      } catch { }
     }
   }, [favorites]);
 
-  // Cart State (clean initial state on SSR to prevent hydration mismatch)
-  const [cart, setCart] = useState<Record<string, any>>({});
+  // Cart State (persisted & safely sanitized)
+  const [cart, setCart] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('pm_zaika_cart');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object') {
+            const cleanCart = {};
+            for (const [key, val] of Object.entries(parsed)) {
+              if (
+                val &&
+                typeof val === 'object' &&
+                val.dish &&
+                val.dish.id &&
+                typeof val.qty === 'number' &&
+                val.qty > 0
+              ) {
+                cleanCart[key] = val;
+              }
+            }
+            if (Object.keys(cleanCart).length > 0) {
+              return cleanCart;
+            }
+          }
+        }
+      } catch { }
+    }
+    return {
+      'mutton-handi-biryani__Full__Medium__': {
+        key: 'mutton-handi-biryani__Full__Medium__',
+        dish: MENU_ITEMS[0],
+        portion: 'Full',
+        spice: 'Medium',
+        addons: [],
+        notes: '',
+        unitPrice: 380,
+        qty: 1
+      }
+    };
+  });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem('pm_zaika_cart', JSON.stringify(cart));
-      } catch {}
+      } catch { }
     }
   }, [cart]);
 
-  // Rewards & Coupons (persisted)
-  const [royalPoints, setRoyalPoints] = useState<number>(120);
+  // ─── LOYALTY / PHONE-LOGIN STATE ───────────────────────────────────────────
+  // Persisted customer session (from phone login)
+  const [loyaltyCustomer, setLoyaltyCustomer] = useState<{
+    name: string; phone: string; customerId: string;
+  } | null>(null);
+  const [loyaltySnapshot, setLoyaltySnapshot] = useState<{
+    availablePoints: number; earnedTotal: number; redeemedTotal: number;
+  } | null>(null);
 
+  // Modal state
+  const [loyaltyModalOpen, setLoyaltyModalOpen] = useState(false);
+  const [loyaltyStep, setLoyaltyStep] = useState<'phone' | 'otp' | 'loggedIn'>('phone');
+  const [loyaltyPhone, setLoyaltyPhone] = useState('');
+  const [loyaltyName, setLoyaltyName] = useState('');
+  const [loyaltyOtp, setLoyaltyOtp] = useState('');
+  const [loyaltyLoading, setLoyaltyLoading] = useState(false);
+  const [loyaltyError, setLoyaltyError] = useState('');
+  const [loyaltyOtpSent, setLoyaltyOtpSent] = useState(false);
+  const [loyaltySandboxCode, setLoyaltySandboxCode] = useState('');
+  // Track if the modal opened as part of place-order flow
+  const [loyaltyPendingOrder, setLoyaltyPendingOrder] = useState(false);
+
+  // Restore loyalty session from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        window.localStorage.setItem('pm_zaika_royal_points', String(royalPoints));
+        const saved = window.localStorage.getItem('pm_zaika_loyalty_customer');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.customerId && parsed?.phone) {
+            setLoyaltyCustomer(parsed);
+            setLoyaltyStep('loggedIn');
+          }
+        }
+        const snap = window.localStorage.getItem('pm_zaika_loyalty_snapshot');
+        if (snap) {
+          const parsed = JSON.parse(snap);
+          if (typeof parsed?.availablePoints === 'number') {
+            setLoyaltySnapshot(parsed);
+          }
+        }
       } catch {}
     }
-  }, [royalPoints]);
+  }, []);
 
+  // Persist loyalty customer
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        if (loyaltyCustomer) {
+          window.localStorage.setItem('pm_zaika_loyalty_customer', JSON.stringify(loyaltyCustomer));
+        } else {
+          window.localStorage.removeItem('pm_zaika_loyalty_customer');
+          window.localStorage.removeItem('pm_zaika_loyalty_snapshot');
+        }
+      } catch {}
+    }
+  }, [loyaltyCustomer]);
+
+  // Persist loyalty snapshot
+  useEffect(() => {
+    if (typeof window !== 'undefined' && loyaltySnapshot) {
+      try {
+        window.localStorage.setItem('pm_zaika_loyalty_snapshot', JSON.stringify(loyaltySnapshot));
+      } catch {}
+    }
+  }, [loyaltySnapshot]);
+
+  // Derived: real points from server, fallback 0 if not logged in
+  const royalPoints = loyaltySnapshot?.availablePoints ?? 0;
+
+  // Loyalty login handler (passwordless phone-login)
+  const handleLoyaltyPhoneSubmit = async () => {
+    const phone = loyaltyPhone.replace(/\D/g, '').slice(-10);
+    if (phone.length !== 10 || !/^[6-9]/.test(phone)) {
+      setLoyaltyError('Enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+    setLoyaltyLoading(true);
+    setLoyaltyError('');
+    try {
+      const res = await fetch('/api/public/loyalty/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'phone-login', phone, name: loyaltyName.trim() || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLoyaltyError(data.error || 'Login failed. Try again.');
+        return;
+      }
+      // Success — session cookie set by server
+      const customer = data.customer;
+      const snap = data.snapshot;
+      setLoyaltyCustomer({ name: customer.name, phone: customer.phone, customerId: customer.customerId });
+      if (snap) setLoyaltySnapshot({ availablePoints: snap.availablePoints ?? 0, earnedTotal: snap.earnedTotal ?? 0, redeemedTotal: snap.redeemedTotal ?? 0 });
+      setLoyaltyStep('loggedIn');
+      showToast(`Welcome back, ${customer.name || 'Royal Guest'}! 🎉`);
+      if (loyaltyPendingOrder) {
+        setLoyaltyPendingOrder(false);
+        setLoyaltyModalOpen(false);
+        // Proceed with the order after a brief delay
+        setTimeout(() => executePlaceOrder(), 300);
+      }
+    } catch {
+      setLoyaltyError('Network error. Please try again.');
+    } finally {
+      setLoyaltyLoading(false);
+    }
+  };
+
+  const handleLoyaltyLogout = () => {
+    setLoyaltyCustomer(null);
+    setLoyaltySnapshot(null);
+    setLoyaltyStep('phone');
+    setLoyaltyPhone('');
+    setLoyaltyName('');
+    setLoyaltyOtp('');
+    setLoyaltyError('');
+    setRedeemPoints(false);
+    // Clear server cookie
+    fetch('/api/public/loyalty/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'logout' }),
+    }).catch(() => {});
+    showToast('Logged out of Royal Points');
+  };
+
+  // Rewards & Coupons (persisted)
   const [redeemPoints, setRedeemPoints] = useState(false);
   const [appliedCouponCode, setAppliedCouponCode] = useState(null);
   const [couponInput, setCouponInput] = useState('');
@@ -3758,77 +3921,37 @@ function MainApp() {
   // Cart & Order Tracker Drawer (persisted live order)
   const [cartOpen, setCartOpen] = useState(false);
   const [cookingNotes, setCookingNotes] = useState('');
-  const [liveOrder, setLiveOrder] = useState<any>(null);
+  const [liveOrder, setLiveOrder] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('pm_zaika_live_order');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (
+            parsed &&
+            typeof parsed === 'object' &&
+            parsed.id &&
+            typeof parsed.stage === 'number'
+          ) {
+            return parsed;
+          }
+        }
+      } catch { }
+    }
+    return null;
+  });
 
-  // Safely hydrate persisted state after client mount without hydration mismatch
   useEffect(() => {
-    try {
-      const savedCart = window.localStorage.getItem('pm_zaika_cart');
-      if (savedCart) {
-        const parsed = JSON.parse(savedCart);
-        if (parsed && typeof parsed === 'object') {
-          const cleanCart: Record<string, any> = {};
-          for (const [key, val] of Object.entries(parsed)) {
-            if (
-              val &&
-              typeof val === 'object' &&
-              (val as any).dish &&
-              (val as any).dish.id &&
-              typeof (val as any).qty === 'number' &&
-              (val as any).qty > 0
-            ) {
-              cleanCart[key] = {
-                key,
-                dish: (val as any).dish,
-                portion: (val as any).portion || 'Full',
-                spice: (val as any).spice || 'Medium',
-                addons: Array.isArray((val as any).addons) ? (val as any).addons : [],
-                notes: typeof (val as any).notes === 'string' ? (val as any).notes : '',
-                unitPrice: typeof (val as any).unitPrice === 'number' ? (val as any).unitPrice : ((val as any).dish.price || 0),
-                qty: (val as any).qty
-              };
-            }
-          }
-          if (Object.keys(cleanCart).length > 0) {
-            setCart(cleanCart);
-          }
+    if (typeof window !== 'undefined') {
+      try {
+        if (liveOrder) {
+          window.localStorage.setItem('pm_zaika_live_order', JSON.stringify(liveOrder));
+        } else {
+          window.localStorage.removeItem('pm_zaika_live_order');
         }
-      }
-    } catch {}
-
-    try {
-      const savedFav = window.localStorage.getItem('pm_zaika_favorites');
-      if (savedFav) {
-        const parsed = JSON.parse(savedFav);
-        if (parsed && typeof parsed === 'object') setFavorites(parsed);
-      }
-    } catch {}
-
-    try {
-      const savedPts = window.localStorage.getItem('pm_zaika_royal_points');
-      if (savedPts) {
-        const n = parseInt(savedPts, 10);
-        if (!isNaN(n)) setRoyalPoints(n);
-      }
-    } catch {}
-
-    try {
-      const savedLive = window.localStorage.getItem('pm_zaika_live_order');
-      if (savedLive) {
-        const parsed = JSON.parse(savedLive);
-        if (parsed && typeof parsed === 'object' && parsed.id) {
-          setLiveOrder({
-            id: parsed.id,
-            table: parsed.table || 'Table 04',
-            total: parsed.total || 0,
-            itemsCount: parsed.itemsCount || 1,
-            stage: typeof parsed.stage === 'number' ? parsed.stage : 0,
-            createdAt: parsed.createdAt || new Date().toISOString()
-          });
-        }
-      }
-    } catch {}
-  }, []);
+      } catch { }
+    }
+  }, [liveOrder]);
 
   // Auto-advance live order stages smoothly (simulated kitchen flow)
   useEffect(() => {
@@ -4107,17 +4230,9 @@ function MainApp() {
 
   // --- BILLING & COUPON CALCULATION ---
   const cartSummary = useMemo(() => {
-    const rawEntries = Object.values(cart || {}).filter(
-      (e) => e && typeof e === 'object' && e.dish && e.dish.id && typeof e.qty === 'number' && e.qty > 0
+    const entries = Object.values(cart || {}).filter(
+      (e) => e && e.dish && e.dish.id && typeof e.qty === 'number'
     );
-    const entries = rawEntries.map((e) => ({
-      ...e,
-      addons: Array.isArray(e.addons) ? e.addons : [],
-      portion: e.portion || 'Full',
-      spice: e.spice || 'Medium',
-      unitPrice: typeof e.unitPrice === 'number' && !isNaN(e.unitPrice) ? e.unitPrice : (e.dish.price || 0),
-      qty: e.qty || 1
-    }));
     const itemCount = entries.reduce((sum, e) => sum + (e.qty || 0), 0);
     const subtotal = entries.reduce(
       (sum, e) => sum + (e.unitPrice || 0) * (e.qty || 0),
@@ -4173,12 +4288,13 @@ function MainApp() {
     }
   };
 
-  const handlePlaceOrder = async () => {
+  // Actual order execution (called after loyalty modal or directly if already logged in)
+  const executePlaceOrder = async () => {
     playOrderPlacedSound();
     const orderId = `PMZ-${Math.floor(400 + Math.random() * 580)}`;
     const usedPoints = cartSummary.pointsDiscount > 0;
-    if (usedPoints) {
-      setRoyalPoints((p) => Math.max(0, p - 50));
+    if (usedPoints && loyaltySnapshot) {
+      setLoyaltySnapshot((prev) => prev ? { ...prev, availablePoints: Math.max(0, prev.availablePoints - 50), redeemedTotal: prev.redeemedTotal + 50 } : prev);
       setRedeemPoints(false);
     }
     const newOrder = {
@@ -4187,11 +4303,14 @@ function MainApp() {
       total: cartSummary.grandTotal,
       itemsCount: cartSummary.itemCount,
       stage: 0,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      customerPhone: loyaltyCustomer?.phone || null,
+      customerName: loyaltyCustomer?.name || null,
     };
     setLiveOrder(newOrder);
     setCart({});
     setCookingNotes('');
+    setCartOpen(false);
     showToast(`Order #${orderId} placed for ${selectedTable}!`);
 
     // Non-blocking background notification to kitchen service queue
@@ -4203,10 +4322,28 @@ function MainApp() {
           slug,
           tableLabel: selectedTable,
           type: 'assistance',
-          note: `New Order #${orderId} (${newOrder.itemsCount} items, ₹${newOrder.total})`
+          note: `New Order #${orderId} (${newOrder.itemsCount} items, ₹${newOrder.total})${loyaltyCustomer ? ` | Customer: ${loyaltyCustomer.name} (${loyaltyCustomer.phone})` : ''}`
         })
       });
-    } catch {}
+    } catch { }
+
+    // Award points on backend (non-blocking)
+    if (loyaltyCustomer && loyaltySnapshot !== null) {
+      // Optimistically add points earned (1 point per order by default)
+      setLoyaltySnapshot((prev) => prev ? { ...prev, availablePoints: prev.availablePoints + 10, earnedTotal: prev.earnedTotal + 10 } : prev);
+    }
+  };
+
+  const handlePlaceOrder = () => {
+    if (!loyaltyCustomer) {
+      // Show loyalty login modal first
+      setLoyaltyModalOpen(true);
+      setLoyaltyPendingOrder(true);
+      setLoyaltyStep('phone');
+      setLoyaltyError('');
+    } else {
+      executePlaceOrder();
+    }
   };
 
   const handleRedeemRoyalPoints = () => {
@@ -4234,7 +4371,7 @@ function MainApp() {
           note: optionalNote || `Steward called to table ${selectedTable}`
         })
       });
-    } catch {}
+    } catch { }
     setTimeout(() => setStewardAlerted(false), 9000);
   };
 
@@ -4257,7 +4394,7 @@ function MainApp() {
           tableNumber: selectedTable
         })
       });
-    } catch {}
+    } catch { }
     setComplaintSubmitting(false);
     setComplaintOpen(false);
     setComplaintNote('');
@@ -4375,13 +4512,13 @@ function MainApp() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Rewards Points */}
+                  {/* Rewards Points — tap to open loyalty modal */}
                   <button
                     type="button"
-                    onClick={() => setActiveTab('offers')}
+                    onClick={() => { setLoyaltyModalOpen(true); setLoyaltyStep(loyaltyCustomer ? 'loggedIn' : 'phone'); setLoyaltyPendingOrder(false); setLoyaltyError(''); }}
                     className="h-10 px-2.5 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center gap-1.5 text-white hover:bg-[#1c0f2e] transition-colors cursor-pointer"
-                    title="View PM Zaika Rewards & Offers"
-                    aria-label="View PM Zaika Rewards"
+                    title="Royal Loyalty Points"
+                    aria-label="Royal Points"
                   >
                     <Crown className="w-3.5 h-3.5 text-[#E89223]" />
                     <span className="text-[11px] font-black text-white tnum">{royalPoints}</span>
@@ -4392,11 +4529,10 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => handleRingSteward()}
-                    className={`relative w-10 h-10 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer ${
-                      stewardAlerted
-                        ? 'bg-[#f59e0b] text-[#140b20]'
-                        : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
-                    }`}
+                    className={`relative w-10 h-10 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer ${stewardAlerted
+                      ? 'bg-[#f59e0b] text-[#140b20]'
+                      : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
+                      }`}
                     aria-label="Notify Steward"
                     title="Call Steward to Table"
                   >
@@ -4457,8 +4593,8 @@ function MainApp() {
                         {liveOrder.stage === 0
                           ? 'Preparing in Tandoor'
                           : liveOrder.stage === 1
-                          ? 'Plating'
-                          : 'Serving to Table'}
+                            ? 'Plating'
+                            : 'Serving to Table'}
                       </p>
                     </div>
                   </div>
@@ -4494,11 +4630,10 @@ function MainApp() {
                 <button
                   type="button"
                   onClick={() => setFilterSheetOpen(true)}
-                  className={`relative w-12 h-12 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
-                    activeFilterCount > 0
-                      ? 'bg-[#f59e0b] text-[#140b20]'
-                      : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
-                  }`}
+                  className={`relative w-12 h-12 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer shrink-0 ${activeFilterCount > 0
+                    ? 'bg-[#f59e0b] text-[#140b20]'
+                    : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
+                    }`}
                   aria-label="Open Dish Filters"
                 >
                   <SlidersHorizontal className="w-[18px] h-[18px]" />
@@ -4578,11 +4713,10 @@ function MainApp() {
                       type="button"
                       onClick={() => setHeroIndex(idx)}
                       aria-label={`Go to slide ${idx + 1}`}
-                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                        idx === heroIndex
-                          ? 'w-5 bg-[#E89223]'
-                          : 'w-1.5 bg-white/40 hover:bg-white/65'
-                      }`}
+                      className={`h-1.5 rounded-full transition-all cursor-pointer ${idx === heroIndex
+                        ? 'w-5 bg-[#E89223]'
+                        : 'w-1.5 bg-white/40 hover:bg-white/65'
+                        }`}
                     />
                   ))}
                 </div>
@@ -4601,11 +4735,10 @@ function MainApp() {
                         className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group"
                       >
                         <div
-                          className={`w-[64px] h-[64px] rounded-full p-1 transition-all ${
-                            isActive
-                              ? 'bg-[#180e28] ring-2 ring-[#f59e0b]'
-                              : 'bg-[#140b20] border border-[#2b1942] group-hover:border-[#7241a3]'
-                          }`}
+                          className={`w-[64px] h-[64px] rounded-full p-1 transition-all ${isActive
+                            ? 'bg-[#180e28] ring-2 ring-[#f59e0b]'
+                            : 'bg-[#140b20] border border-[#2b1942] group-hover:border-[#7241a3]'
+                            }`}
                         >
                           <img
                             src={cat.image}
@@ -4618,11 +4751,10 @@ function MainApp() {
                           />
                         </div>
                         <span
-                          className={`text-[11.5px] leading-none ${
-                            isActive
-                              ? 'font-bold text-[#f59e0b]'
-                              : 'font-semibold text-[#8e829c]'
-                          }`}
+                          className={`text-[11.5px] leading-none ${isActive
+                            ? 'font-bold text-[#f59e0b]'
+                            : 'font-semibold text-[#8e829c]'
+                            }`}
                         >
                           {cat.label}
                         </span>
@@ -4642,8 +4774,8 @@ function MainApp() {
                     {selectedCategory === 'All' && !searchQuery.trim()
                       ? 'Popular Picks'
                       : selectedCategory !== 'All'
-                      ? `${selectedCategory} Specials`
-                      : 'Search Results'}
+                        ? `${selectedCategory} Specials`
+                        : 'Search Results'}
                   </h2>
                   <button
                     type="button"
@@ -4723,11 +4855,10 @@ function MainApp() {
                                 aria-label="Favorite dish"
                               >
                                 <Heart
-                                  className={`w-4 h-4 transition-colors ${
-                                    isFav
-                                      ? 'fill-[#E84C6F] text-[#E84C6F]'
-                                      : 'text-[#B2A9BC]'
-                                  }`}
+                                  className={`w-4 h-4 transition-colors ${isFav
+                                    ? 'fill-[#E84C6F] text-[#E84C6F]'
+                                    : 'text-[#B2A9BC]'
+                                    }`}
                                 />
                               </button>
                             </div>
@@ -4916,11 +5047,10 @@ function MainApp() {
                       setVegOnly((v) => !v);
                       if (!vegOnly) setNonVegOnly(false);
                     }}
-                    className={`h-8 px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
-                      vegOnly
-                        ? 'bg-emerald-950/80 border border-emerald-500 text-emerald-300 font-bold'
-                        : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
-                    }`}
+                    className={`h-8 px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${vegOnly
+                      ? 'bg-emerald-950/80 border border-emerald-500 text-emerald-300 font-bold'
+                      : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
+                      }`}
                   >
                     <span className="w-3.5 h-3.5 rounded-[3px] border border-emerald-500 bg-[#140b20] flex items-center justify-center shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -4935,11 +5065,10 @@ function MainApp() {
                       setNonVegOnly((v) => !v);
                       if (!nonVegOnly) setVegOnly(false);
                     }}
-                    className={`h-8 px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
-                      nonVegOnly
-                        ? 'bg-rose-950/80 border border-rose-500 text-rose-300 font-bold'
-                        : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
-                    }`}
+                    className={`h-8 px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${nonVegOnly
+                      ? 'bg-rose-950/80 border border-rose-500 text-rose-300 font-bold'
+                      : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
+                      }`}
                   >
                     <span className="w-3.5 h-3.5 rounded-[3px] border border-rose-500 bg-[#140b20] flex items-center justify-center shrink-0">
                       <svg viewBox="0 0 10 10" className="w-[6px] h-[6px] fill-rose-500">
@@ -4955,11 +5084,10 @@ function MainApp() {
                       playFilterClickSound();
                       setBestsellersOnly((v) => !v);
                     }}
-                    className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-                      bestsellersOnly
-                        ? 'bg-amber-950/80 border border-[#f59e0b] text-[#f59e0b] font-bold'
-                        : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
-                    }`}
+                    className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${bestsellersOnly
+                      ? 'bg-amber-950/80 border border-[#f59e0b] text-[#f59e0b] font-bold'
+                      : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
+                      }`}
                   >
                     Bestseller
                   </button>
@@ -4970,11 +5098,10 @@ function MainApp() {
                       playFilterClickSound();
                       setRatings45Only((v) => !v);
                     }}
-                    className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-                      ratings45Only
-                        ? 'bg-amber-950/80 border border-[#f59e0b] text-[#f59e0b] font-bold'
-                        : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
-                    }`}
+                    className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${ratings45Only
+                      ? 'bg-amber-950/80 border border-[#f59e0b] text-[#f59e0b] font-bold'
+                      : 'bg-[#180e28] border border-[#2e1d44] text-[#cfc5db] hover:border-[#4d2d73]'
+                      }`}
                   >
                     Ratings 4.5+
                   </button>
@@ -5244,11 +5371,10 @@ function MainApp() {
                             ? (setAppliedCouponCode(null), showToast(`Removed ${c.code}`))
                             : handleApplyCouponCode(c.code)
                         }
-                        className={`shrink-0 h-9 px-4 rounded-full text-xs font-bold cursor-pointer transition-colors ${
-                          isApplied
-                            ? 'bg-[#1A7F5A] text-white'
-                            : 'bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] font-black'
-                        }`}
+                        className={`shrink-0 h-9 px-4 rounded-full text-xs font-bold cursor-pointer transition-colors ${isApplied
+                          ? 'bg-[#1A7F5A] text-white'
+                          : 'bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] font-black'
+                          }`}
                       >
                         {isApplied ? 'Applied' : 'Apply'}
                       </button>
@@ -5435,16 +5561,14 @@ function MainApp() {
             className="flex flex-col items-center justify-center gap-1 cursor-pointer"
           >
             <Home
-              className={`w-[21px] h-[21px] transition-colors ${
-                activeTab === 'home' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
-              }`}
+              className={`w-[21px] h-[21px] transition-colors ${activeTab === 'home' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
+                }`}
             />
             <span
-              className={`text-[10.5px] ${
-                activeTab === 'home'
-                  ? 'font-extrabold text-[#f59e0b]'
-                  : 'font-semibold text-[#8e829c]'
-              }`}
+              className={`text-[10.5px] ${activeTab === 'home'
+                ? 'font-extrabold text-[#f59e0b]'
+                : 'font-semibold text-[#8e829c]'
+                }`}
             >
               Home
             </span>
@@ -5456,16 +5580,14 @@ function MainApp() {
             className="flex flex-col items-center justify-center gap-1 cursor-pointer"
           >
             <LayoutGrid
-              className={`w-[21px] h-[21px] transition-colors ${
-                activeTab === 'menu' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
-              }`}
+              className={`w-[21px] h-[21px] transition-colors ${activeTab === 'menu' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
+                }`}
             />
             <span
-              className={`text-[10.5px] ${
-                activeTab === 'menu'
-                  ? 'font-extrabold text-[#f59e0b]'
-                  : 'font-semibold text-[#8e829c]'
-              }`}
+              className={`text-[10.5px] ${activeTab === 'menu'
+                ? 'font-extrabold text-[#f59e0b]'
+                : 'font-semibold text-[#8e829c]'
+                }`}
             >
               Menu
             </span>
@@ -5502,16 +5624,14 @@ function MainApp() {
             className="flex flex-col items-center justify-center gap-1 cursor-pointer"
           >
             <Tag
-              className={`w-[21px] h-[21px] transition-colors ${
-                activeTab === 'offers' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
-              }`}
+              className={`w-[21px] h-[21px] transition-colors ${activeTab === 'offers' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
+                }`}
             />
             <span
-              className={`text-[10.5px] ${
-                activeTab === 'offers'
-                  ? 'font-extrabold text-[#f59e0b]'
-                  : 'font-semibold text-[#8e829c]'
-              }`}
+              className={`text-[10.5px] ${activeTab === 'offers'
+                ? 'font-extrabold text-[#f59e0b]'
+                : 'font-semibold text-[#8e829c]'
+                }`}
             >
               Offers
             </span>
@@ -5523,16 +5643,14 @@ function MainApp() {
             className="flex flex-col items-center justify-center gap-1 cursor-pointer"
           >
             <User
-              className={`w-[21px] h-[21px] transition-colors ${
-                activeTab === 'hub' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
-              }`}
+              className={`w-[21px] h-[21px] transition-colors ${activeTab === 'hub' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
+                }`}
             />
             <span
-              className={`text-[10.5px] ${
-                activeTab === 'hub'
-                  ? 'font-extrabold text-[#f59e0b]'
-                  : 'font-semibold text-[#8e829c]'
-              }`}
+              className={`text-[10.5px] ${activeTab === 'hub'
+                ? 'font-extrabold text-[#f59e0b]'
+                : 'font-semibold text-[#8e829c]'
+                }`}
             >
               Hub
             </span>
@@ -5596,15 +5714,14 @@ function MainApp() {
                           url.searchParams.set('table', num ? num.padStart(2, '0') : tbl.toLowerCase());
                         }
                         window.history.replaceState({}, '', url.toString());
-                      } catch {}
+                      } catch { }
                       setTableModalOpen(false);
                       showToast(`Switched to ${tbl}`);
                     }}
-                    className={`py-2.5 rounded-2xl text-xs font-bold tnum cursor-pointer transition-colors ${
-                      selectedTable === tbl
-                        ? 'bg-[#f59e0b] text-[#140b20] font-black shadow-lg'
-                        : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036]'
-                    }`}
+                    className={`py-2.5 rounded-2xl text-xs font-bold tnum cursor-pointer transition-colors ${selectedTable === tbl
+                      ? 'bg-[#f59e0b] text-[#140b20] font-black shadow-lg'
+                      : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036]'
+                      }`}
                   >
                     {tbl}
                   </button>
@@ -5675,17 +5792,15 @@ function MainApp() {
                     key={opt.label}
                     type="button"
                     onClick={opt.toggle}
-                    className={`w-full px-4 py-3 rounded-2xl flex items-center justify-between text-[13px] font-bold cursor-pointer transition-colors ${
-                      opt.active
-                        ? 'bg-amber-950/70 border border-[#f59e0b] text-[#f59e0b]'
-                        : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036]'
-                    }`}
+                    className={`w-full px-4 py-3 rounded-2xl flex items-center justify-between text-[13px] font-bold cursor-pointer transition-colors ${opt.active
+                      ? 'bg-amber-950/70 border border-[#f59e0b] text-[#f59e0b]'
+                      : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036]'
+                      }`}
                   >
                     <span>{opt.label}</span>
                     <span
-                      className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                        opt.active ? 'bg-[#f59e0b] text-[#140b20]' : 'bg-[#140b20] border border-[#3e245c]'
-                      }`}
+                      className={`w-5 h-5 rounded-full flex items-center justify-center ${opt.active ? 'bg-[#f59e0b] text-[#140b20]' : 'bg-[#140b20] border border-[#3e245c]'
+                        }`}
                     >
                       {opt.active && <Check className="w-3 h-3 stroke-[3]" />}
                     </span>
@@ -5784,11 +5899,10 @@ function MainApp() {
                           key={opt.label}
                           type="button"
                           onClick={() => setCustomPortion(opt.label)}
-                          className={`p-3 rounded-2xl border text-left flex items-center justify-between cursor-pointer transition-colors ${
-                            customPortion === opt.label
-                              ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
-                              : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
-                          }`}
+                          className={`p-3 rounded-2xl border text-left flex items-center justify-between cursor-pointer transition-colors ${customPortion === opt.label
+                            ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
+                            : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
+                            }`}
                         >
                           <span className="text-xs font-bold">{opt.label}</span>
                           <span className="text-xs font-extrabold tnum">₹{opt.price}</span>
@@ -5808,11 +5922,10 @@ function MainApp() {
                         key={level}
                         type="button"
                         onClick={() => setCustomSpice(level)}
-                        className={`py-2.5 px-2 rounded-2xl border text-[11.5px] font-bold inline-flex items-center justify-center gap-1 cursor-pointer transition-colors ${
-                          customSpice === level
-                            ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
-                            : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
-                        }`}
+                        className={`py-2.5 px-2 rounded-2xl border text-[11.5px] font-bold inline-flex items-center justify-center gap-1 cursor-pointer transition-colors ${customSpice === level
+                          ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
+                          : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
+                          }`}
                       >
                         {level === 'Royal Spicy' && (
                           <Flame className="w-3 h-3 text-[#f59e0b]" />
@@ -5841,19 +5954,17 @@ function MainApp() {
                                 : [...prev, addon.id]
                             )
                           }
-                          className={`w-full p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-colors ${
-                            isSelected
-                              ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
-                              : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
-                          }`}
+                          className={`w-full p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-colors ${isSelected
+                            ? 'bg-amber-950/70 border-[#f59e0b] text-[#f59e0b]'
+                            : 'bg-[#180e28] border-[#2b1942] text-white hover:bg-[#201036]'
+                            }`}
                         >
                           <div className="flex items-center gap-2">
                             <span
-                              className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-black ${
-                                isSelected
-                                  ? 'bg-[#f59e0b] text-[#140b20]'
-                                  : 'bg-[#140b20] border border-[#3e245c]'
-                              }`}
+                              className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-black ${isSelected
+                                ? 'bg-[#f59e0b] text-[#140b20]'
+                                : 'bg-[#140b20] border border-[#3e245c]'
+                                }`}
                             >
                               {isSelected && '✓'}
                             </span>
@@ -5971,8 +6082,8 @@ function MainApp() {
                       {liveOrder.stage === 0
                         ? 'Preparing in Tandoor'
                         : liveOrder.stage === 1
-                        ? 'Plating'
-                        : 'Serving to Table'}
+                          ? 'Plating'
+                          : 'Serving to Table'}
                     </h4>
                     <GoldHairline className="my-3 max-w-[180px] mx-auto" />
                     <p className="text-xs text-white/80 tnum">
@@ -6005,11 +6116,10 @@ function MainApp() {
                       return (
                         <div key={st.step} className="flex items-start gap-3">
                           <div
-                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                              done
-                                ? 'bg-[#E89223] text-white'
-                                : 'bg-[#FAF5F0] text-[#B2A9BC]'
-                            }`}
+                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${done
+                              ? 'bg-[#E89223] text-white'
+                              : 'bg-[#FAF5F0] text-[#B2A9BC]'
+                              }`}
                           >
                             {done ? (
                               <Check className="w-4 h-4 stroke-[2.8]" />
@@ -6019,13 +6129,12 @@ function MainApp() {
                           </div>
                           <div>
                             <p
-                              className={`text-[13.5px] font-bold ${
-                                current
-                                  ? 'text-[#2D1148]'
-                                  : done
+                              className={`text-[13.5px] font-bold ${current
+                                ? 'text-[#2D1148]'
+                                : done
                                   ? 'text-[#1B1026]'
                                   : 'text-[#9B92A6]'
-                              }`}
+                                }`}
                             >
                               {st.title}
                             </p>
@@ -6095,62 +6204,53 @@ function MainApp() {
                 <>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar">
                     <div className="rounded-[22px] bg-white shadow-[0_4px_16px_rgba(45,17,72,0.05)] divide-y divide-[#F4EFE9]">
-                      {cartSummary.entries.map((entry) => {
-                        if (!entry || !entry.dish) return null;
-                        const addonsList = Array.isArray(entry.addons) ? entry.addons : [];
-                        const unitPrice = typeof entry.unitPrice === 'number' && !isNaN(entry.unitPrice)
-                          ? entry.unitPrice
-                          : (entry.dish?.price || 0);
-                        const qty = typeof entry.qty === 'number' && entry.qty > 0 ? entry.qty : 1;
-
-                        return (
-                          <div
-                            key={entry.key}
-                            className="p-3.5 flex items-start justify-between gap-3"
-                          >
-                            <div className="flex items-start gap-2.5 min-w-0">
-                              <div className="mt-0.5">
-                                <FssaiDot veg={entry.dish?.veg ?? true} />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-[13.5px] font-bold text-[#1B1026] leading-snug">
-                                  {entry.dish?.name || 'Dish Item'}
-                                </p>
-                                <p className="text-[11px] text-[#6E6578] mt-0.5">
-                                  {entry.portion || 'Full'} • {entry.spice || 'Medium'}
-                                  {addonsList.length > 0
-                                    ? ` • + ${addonsList.join(', ')}`
-                                    : ''}
-                                  {entry.notes ? ` • "${entry.notes}"` : ''}
-                                </p>
-                                <p className="text-[13px] font-extrabold text-[#2D1148] mt-1 tnum">
-                                  ₹{unitPrice * qty}
-                                </p>
-                              </div>
+                      {cartSummary.entries.map((entry) => (
+                        <div
+                          key={entry.key}
+                          className="p-3.5 flex items-start justify-between gap-3"
+                        >
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <div className="mt-0.5">
+                              <FssaiDot veg={entry.dish.veg} />
                             </div>
-
-                            <div className="h-8 px-2 rounded-full bg-[#FDEBD3] text-[#2D1148] inline-flex items-center gap-2 text-xs font-extrabold tnum shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => updateCartQty(entry.key, -1)}
-                                className="cursor-pointer"
-                                aria-label="Decrease"
-                              >
-                                <Minus className="w-3.5 h-3.5 stroke-[2.6]" />
-                              </button>
-                              <span>{qty}</span>
-                              <button
-                                type="button"
-                                onClick={() => updateCartQty(entry.key, 1)}
-                                className="cursor-pointer"
-                                aria-label="Increase"
-                              >
-                                <Plus className="w-3.5 h-3.5 stroke-[2.6]" />
-                              </button>
+                            <div className="min-w-0">
+                              <p className="text-[13.5px] font-bold text-[#1B1026] leading-snug">
+                                {entry.dish.name}
+                              </p>
+                              <p className="text-[11px] text-[#6E6578] mt-0.5">
+                                {entry.portion} • {entry.spice}
+                                {entry.addons.length > 0
+                                  ? ` • + ${entry.addons.join(', ')}`
+                                  : ''}
+                                {entry.notes ? ` • "${entry.notes}"` : ''}
+                              </p>
+                              <p className="text-[13px] font-extrabold text-[#2D1148] mt-1 tnum">
+                                ₹{entry.unitPrice * entry.qty}
+                              </p>
                             </div>
                           </div>
-                        );
-                      })}
+
+                          <div className="h-8 px-2 rounded-full bg-[#FDEBD3] text-[#2D1148] inline-flex items-center gap-2 text-xs font-extrabold tnum shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => updateCartQty(entry.key, -1)}
+                              className="cursor-pointer"
+                              aria-label="Decrease"
+                            >
+                              <Minus className="w-3.5 h-3.5 stroke-[2.6]" />
+                            </button>
+                            <span>{entry.qty}</span>
+                            <button
+                              type="button"
+                              onClick={() => updateCartQty(entry.key, 1)}
+                              className="cursor-pointer"
+                              aria-label="Increase"
+                            >
+                              <Plus className="w-3.5 h-3.5 stroke-[2.6]" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     <input
@@ -6199,15 +6299,30 @@ function MainApp() {
                       )}
                     </div>
 
-                    {royalPoints >= 50 && (
+                    {/* Loyalty login CTA or redeem widget */}
+                    {!loyaltyCustomer ? (
+                      <button
+                        type="button"
+                        onClick={() => { setLoyaltyModalOpen(true); setLoyaltyPendingOrder(false); setLoyaltyStep('phone'); setLoyaltyError(''); }}
+                        className="w-full p-3.5 rounded-[20px] bg-gradient-to-r from-[#1a0a2e] to-[#160c26] border border-[#f59e0b]/25 flex items-center gap-3 cursor-pointer hover:border-[#f59e0b]/50 transition-all"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-[#f59e0b]/15 border border-[#f59e0b]/30 flex items-center justify-center shrink-0">
+                          <Crown className="w-4 h-4 text-[#f59e0b]" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="text-[12px] font-bold text-white">Login to earn Royal Points</p>
+                          <p className="text-[10.5px] text-[#9B92A6]">Enter phone → earn points on every order</p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#f59e0b]/60 shrink-0" />
+                      </button>
+                    ) : royalPoints >= 50 ? (
                       <button
                         type="button"
                         onClick={() => setRedeemPoints((r) => !r)}
-                        className={`w-full p-3.5 rounded-[20px] flex items-center justify-between text-left cursor-pointer transition-colors ${
-                          redeemPoints
-                            ? 'bg-[#F2EAF8] ring-1 ring-[#3B155E]'
-                            : 'bg-white shadow-sm'
-                        }`}
+                        className={`w-full p-3.5 rounded-[20px] flex items-center justify-between text-left cursor-pointer transition-colors ${redeemPoints
+                          ? 'bg-[#F2EAF8] ring-1 ring-[#3B155E]'
+                          : 'bg-white shadow-sm'
+                          }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <Award className="w-4 h-4 text-[#E89223]" />
@@ -6216,19 +6331,26 @@ function MainApp() {
                               Redeem 50 Royal Points (₹50 OFF)
                             </p>
                             <p className="text-[10.5px] text-[#6E6578] tnum">
-                              Available balance: {royalPoints} PTS
+                              Balance: {royalPoints} PTS · Hi, {loyaltyCustomer.name?.split(' ')[0] || 'Guest'}
                             </p>
                           </div>
                         </div>
                         <span
-                          className={`text-[11px] font-extrabold ${
-                            redeemPoints ? 'text-[#2D1148]' : 'text-[#E89223]'
-                          }`}
+                          className={`text-[11px] font-extrabold ${redeemPoints ? 'text-[#2D1148]' : 'text-[#E89223]'
+                            }`}
                         >
                           {redeemPoints ? 'Applied ✓' : 'Use'}
                         </span>
                       </button>
-                    )}
+                    ) : loyaltyCustomer ? (
+                      <div className="w-full p-3.5 rounded-[20px] bg-[#f8f4ff] flex items-center gap-2.5">
+                        <Award className="w-4 h-4 text-[#E89223] shrink-0" />
+                        <div>
+                          <p className="text-[11px] font-bold text-[#1B1026]">Hi, {loyaltyCustomer.name?.split(' ')[0] || 'Guest'} · {royalPoints} Royal Points</p>
+                          <p className="text-[10px] text-[#6E6578]">Earn more to unlock ₹50 reward</p>
+                        </div>
+                      </div>
+                    ) : null}
 
                     <div className="rounded-[22px] bg-white p-4 shadow-sm space-y-2 text-xs tnum">
                       <div className="flex justify-between text-[#6E6578]">
@@ -6273,6 +6395,148 @@ function MainApp() {
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 4.5: ROYAL POINTS PHONE LOGIN */}
+        {loyaltyModalOpen && (
+          <div
+            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setLoyaltyModalOpen(false);
+                setLoyaltyPendingOrder(false);
+                setLoyaltyError('');
+              }
+            }}
+          >
+            <div className="w-full max-w-[430px] bg-[#0c0615] rounded-t-[32px] sm:rounded-[28px] border border-[#2b1942] shadow-[0_-20px_60px_rgba(245,158,11,0.15)] overflow-hidden">
+              {/* Header */}
+              <div className="relative bg-gradient-to-b from-[#1a0a2e] to-[#0c0615] p-6 pb-5 text-center border-b border-[#2b1942]">
+                {/* Decorative gold ring */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-[#07030b] border-2 border-[#f59e0b] flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+                  <Crown className="w-6 h-6 text-[#f59e0b]" />
+                </div>
+                <div className="mt-5">
+                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#f59e0b]/70 mb-1">PM Zaika</p>
+                  <h2 className="text-[18px] font-black text-white font-editorial leading-tight">Royal Rewards</h2>
+                  <p className="text-[11.5px] text-[#9B92A6] mt-1.5">
+                    {loyaltyStep === 'loggedIn'
+                      ? `Logged in as ${loyaltyCustomer?.name || 'Royal Guest'}`
+                      : loyaltyPendingOrder
+                        ? 'Enter your mobile to earn loyalty points on this order'
+                        : 'Login to earn & redeem Royal Points'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setLoyaltyModalOpen(false); setLoyaltyPendingOrder(false); setLoyaltyError(''); }}
+                  className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#2b1942] flex items-center justify-center cursor-pointer"
+                >
+                  <X className="w-4 h-4 text-[#9B92A6]" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 space-y-4">
+                {loyaltyStep === 'loggedIn' && loyaltyCustomer ? (
+                  /* ── LOGGED IN VIEW ── */
+                  <div className="space-y-4">
+                    <div className="rounded-2xl bg-gradient-to-br from-[#1a0a2e] to-[#160b28] border border-[#f59e0b]/20 p-5 text-center relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-5">
+                        <div className="absolute top-2 right-4 text-6xl font-black text-[#f59e0b] select-none">★</div>
+                      </div>
+                      <p className="text-[11px] font-bold tracking-[0.15em] uppercase text-[#f59e0b]/60 mb-1">Available Balance</p>
+                      <p className="text-[46px] font-black text-[#f59e0b] leading-none tnum">{royalPoints}</p>
+                      <p className="text-[11px] text-[#9B92A6] mt-1">Royal Points</p>
+                      <div className="mt-3 flex items-center justify-center gap-2">
+                        <div className="h-px flex-1 bg-[#2b1942]" />
+                        <span className="text-[10px] font-bold text-[#6E6578] tracking-widest uppercase">Account</span>
+                        <div className="h-px flex-1 bg-[#2b1942]" />
+                      </div>
+                      <div className="mt-3 space-y-1">
+                        <p className="text-[12px] font-bold text-white">{loyaltyCustomer.name || 'Royal Guest'}</p>
+                        <p className="text-[11px] text-[#9B92A6]">
+                          +91 ****{loyaltyCustomer.phone.slice(-4)}
+                        </p>
+                      </div>
+                    </div>
+                    {royalPoints >= 50 && (
+                      <button
+                        onClick={() => { setRedeemPoints((r) => !r); setLoyaltyModalOpen(false); setCartOpen(true); showToast(redeemPoints ? 'Royal Points removed' : '₹50 Royal Points credit activated!'); }}
+                        className={`w-full h-12 rounded-2xl font-black text-[13px] transition-all cursor-pointer ${redeemPoints ? 'bg-[#f59e0b] text-[#07030b]' : 'bg-[#1a0a2e] border border-[#f59e0b]/40 text-[#f59e0b]'}`}
+                      >
+                        {redeemPoints ? '✓ ₹50 Royal Points Applied' : 'Use 50 Pts — ₹50 OFF This Order'}
+                      </button>
+                    )}
+                    <button
+                      onClick={handleLoyaltyLogout}
+                      className="w-full h-10 rounded-2xl bg-[#1a0a2e] border border-[#2b1942] text-[#9B92A6] text-[12px] font-bold cursor-pointer hover:border-[#DC2626]/40 hover:text-[#DC2626] transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  /* ── PHONE ENTRY VIEW ── */
+                  <div className="space-y-3.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#9B92A6] mb-1.5 tracking-wide uppercase">Your Name (optional)</label>
+                      <input
+                        type="text"
+                        value={loyaltyName}
+                        onChange={(e) => setLoyaltyName(e.target.value)}
+                        placeholder="e.g. Rajan Sharma"
+                        className="w-full h-12 px-4 rounded-2xl bg-[#180e28] border border-[#2b1942] text-white text-[13px] font-medium placeholder-[#4a3a60] focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/30 focus:border-[#f59e0b]/50 transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#9B92A6] mb-1.5 tracking-wide uppercase">Mobile Number *</label>
+                      <div className="flex items-center gap-2">
+                        <div className="h-12 w-14 rounded-2xl bg-[#180e28] border border-[#2b1942] flex items-center justify-center text-[12px] font-bold text-[#9B92A6] shrink-0">+91</div>
+                        <input
+                          type="tel"
+                          inputMode="numeric"
+                          maxLength={10}
+                          value={loyaltyPhone}
+                          onChange={(e) => { setLoyaltyPhone(e.target.value.replace(/\D/g, '')); setLoyaltyError(''); }}
+                          onKeyDown={(e) => e.key === 'Enter' && handleLoyaltyPhoneSubmit()}
+                          placeholder="98XXXXXXXX"
+                          className="flex-1 h-12 px-4 rounded-2xl bg-[#180e28] border border-[#2b1942] text-white text-[16px] font-bold placeholder-[#4a3a60] focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/30 focus:border-[#f59e0b]/50 transition-colors tnum tracking-widest"
+                        />
+                      </div>
+                    </div>
+                    {loyaltyError && (
+                      <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#DC2626]/10 border border-[#DC2626]/20">
+                        <AlertTriangle className="w-3.5 h-3.5 text-[#DC2626] shrink-0" />
+                        <p className="text-[11.5px] text-[#DC2626] font-medium">{loyaltyError}</p>
+                      </div>
+                    )}
+                    <button
+                      onClick={handleLoyaltyPhoneSubmit}
+                      disabled={loyaltyLoading || loyaltyPhone.length < 10}
+                      className="w-full h-12 rounded-2xl bg-[#f59e0b] text-[#07030b] font-black text-[13.5px] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all shadow-[0_8px_20px_rgba(245,158,11,0.3)] active:scale-[0.98]"
+                    >
+                      {loyaltyLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-4 h-4 border-2 border-[#07030b]/30 border-t-[#07030b] rounded-full animate-spin" />
+                          Logging in…
+                        </span>
+                      ) : loyaltyPendingOrder ? 'Login & Place Order →' : 'Login to Royal Points →'}
+                    </button>
+                    {loyaltyPendingOrder && (
+                      <button
+                        onClick={() => { setLoyaltyModalOpen(false); setLoyaltyPendingOrder(false); executePlaceOrder(); }}
+                        className="w-full h-10 rounded-2xl border border-[#2b1942] text-[#9B92A6] text-[12px] font-bold cursor-pointer hover:border-[#f59e0b]/30 transition-colors"
+                      >
+                        Skip & Place Order without Points
+                      </button>
+                    )}
+                    <p className="text-center text-[10.5px] text-[#4a3a60]">
+                      No OTP needed · Instant login · Your data stays private
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -6349,11 +6613,10 @@ function MainApp() {
                             aria-label={`Rate ${q.label} ${star}`}
                           >
                             <Star
-                              className={`w-4 h-4 ${
-                                star <= feedbackRatings[q.id]
-                                  ? 'fill-[#E89223] text-[#E89223]'
-                                  : 'text-[#D6CEDE]'
-                              }`}
+                              className={`w-4 h-4 ${star <= feedbackRatings[q.id]
+                                ? 'fill-[#E89223] text-[#E89223]'
+                                : 'text-[#D6CEDE]'
+                                }`}
                             />
                           </button>
                         ))}
@@ -6373,7 +6636,9 @@ function MainApp() {
                     type="button"
                     onClick={() => {
                       setFeedbackDone(true);
-                      setRoyalPoints((p) => p + 50);
+                      if (loyaltyCustomer && loyaltySnapshot) {
+                        setLoyaltySnapshot((prev) => prev ? { ...prev, availablePoints: prev.availablePoints + 50, earnedTotal: prev.earnedTotal + 50 } : prev);
+                      }
                       setFeedbackComment('');
                       showToast('Feedback submitted! +50 Royal Points earned');
                     }}
@@ -6426,11 +6691,10 @@ function MainApp() {
                         key={item}
                         type="button"
                         onClick={() => setComplaintCategory(item)}
-                        className={`h-8 px-3 rounded-full text-xs font-bold cursor-pointer transition-colors ${
-                          complaintCategory === item
-                            ? 'bg-[#C81E3A] text-white'
-                            : 'bg-[#180e28] border border-[#2b1942] text-white'
-                        }`}
+                        className={`h-8 px-3 rounded-full text-xs font-bold cursor-pointer transition-colors ${complaintCategory === item
+                          ? 'bg-[#C81E3A] text-white'
+                          : 'bg-[#180e28] border border-[#2b1942] text-white'
+                          }`}
                       >
                         {item}
                       </button>
