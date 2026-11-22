@@ -38,10 +38,13 @@ export async function GET(request: NextRequest) {
   if (type === 'special' || customPath === 'special-menu') {
     targetUrl = `${baseUrl}/order/${slug}/special-menu`
     qrColor = '#1a6234' // Brand emerald green
+  } else if (type === 'menu' || customPath === 'menu') {
+    targetUrl = `${baseUrl}/order/${slug}/menu`
+    qrColor = '#f59e0b'
   } else if (customPath) {
     const cleanPath = customPath.replace(/^\/+/, '').trim()
-    // Disallow protocol-relative URLs (//) and path traversal
-    if (!cleanPath.startsWith('http:') && !cleanPath.startsWith('https:') && !cleanPath.includes('//') && !cleanPath.includes('..')) {
+    // Security: Only allow internal alphanumeric path structures (e.g. order/slug/...) to prevent phishing QR creation
+    if (/^[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*$/.test(cleanPath)) {
       targetUrl = `${baseUrl}/${cleanPath}`
     }
   }

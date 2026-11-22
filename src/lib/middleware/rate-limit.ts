@@ -104,12 +104,11 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     'client'
 
-  // Extract session token or table identifier to prevent restaurant-wide NAT Wi-Fi false throttling
-  const sessionToken =
-    request.cookies.get('badshah_vip_session')?.value ||
+  // Security hardening: Only use trusted, server-issued HTTP-only cookies
+  // NEVER use client-supplied headers (x-table-id, x-session-id) as they permit trivial rate-limit bypass.
+  const trustedCookieSession =
+    request.cookies.get('rp_customer_session')?.value ||
     request.cookies.get('rp_table_session')?.value ||
-    request.headers.get('x-table-id') ||
-    request.headers.get('x-session-id') ||
     ''
 
   // Determine rate limits and isolated bucket key based on action type
@@ -117,15 +116,18 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
   let maxRequests = 120
   let category = 'general'
   const windowMs = 60_000 // 1 minute
+  let allowSessionPartition = true
 
   if (pathname.startsWith('/api/auth/login') || pathname.startsWith('/api/auth/reset-password') || pathname.startsWith('/api/auth/change-password')) {
-    // Admin login, password reset, and change-password brute-force defense
+    // Admin login, password reset, and change-password brute-force defense (strictly bound to IP)
     maxRequests = 10
     category = 'admin-auth'
+    allowSessionPartition = false
   } else if (pathname.startsWith('/api/auth/')) {
     // General auth actions (session check, logout)
     maxRequests = 60
     category = 'auth-general'
+    allowSessionPartition = false
   } else if (pathname.includes('/orders') && method === 'POST') {
     // Order creation: 300/min per IP to support 100+ concurrent diners on shared Wi-Fi
     maxRequests = 300
@@ -138,6 +140,7 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
     // Loyalty auth/claim attempts: 60/min
     maxRequests = 60
     category = 'loyalty-auth'
+    allowSessionPartition = false
   } else if (pathname.startsWith('/api/business/')) {
     // Business dashboard routes: max 600 per minute
     maxRequests = 600
@@ -157,7 +160,7 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
     category = 'public-general'
   }
 
-  const sessionSuffix = sessionToken ? `:${sessionToken.slice(0, 16)}` : ''
+  const sessionSuffix = (allowSessionPartition && trustedCookieSession) ? `:${trustedCookieSession.slice(-16)}` : ''
   const memoryKey = `${ip}${sessionSuffix}:${category}`
 
   const limiter = getUpstashLimiter()

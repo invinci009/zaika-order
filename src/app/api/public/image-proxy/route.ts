@@ -77,13 +77,34 @@ export async function GET(request: NextRequest) {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-    const res = await fetch(targetUrl, {
+    let res = await fetch(targetUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
         Accept: 'image/avif,image/webp,image/apng,image/*;q=0.8',
       },
       signal: controller.signal,
+      redirect: 'manual',
     })
+
+    // SSRF defense: validate redirect targets against allowlist before following
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.headers.get('location')
+      if (loc) {
+        const redirected = new URL(loc, targetUrl)
+        if (redirected.protocol !== 'https:' || !isAllowedHost(redirected.hostname)) {
+          clearTimeout(timeoutId)
+          return NextResponse.json({ error: 'Image redirect destination not permitted' }, { status: 403 })
+        }
+        res = await fetch(redirected.toString(), {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            Accept: 'image/avif,image/webp,image/apng,image/*;q=0.8',
+          },
+          signal: controller.signal,
+          redirect: 'error',
+        })
+      }
+    }
     clearTimeout(timeoutId)
 
     if (!res.ok) {
@@ -93,7 +114,7 @@ export async function GET(request: NextRequest) {
         const altController = new AbortController()
         const altTimeout = setTimeout(() => altController.abort(), 10000)
 
-        const altRes = await fetch(
+        let altRes = await fetch(
           `https://drive.google.com/uc?export=view&id=${encodeURIComponent(cleanId)}`,
           {
             headers: {
@@ -101,8 +122,25 @@ export async function GET(request: NextRequest) {
               Accept: 'image/*,*/*',
             },
             signal: altController.signal,
+            redirect: 'manual',
           }
         )
+        if (altRes.status >= 300 && altRes.status < 400) {
+          const loc = altRes.headers.get('location')
+          if (loc) {
+            const redirected = new URL(loc, 'https://drive.google.com')
+            if (redirected.protocol === 'https:' && isAllowedHost(redirected.hostname)) {
+              altRes = await fetch(redirected.toString(), {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                  Accept: 'image/*,*/*',
+                },
+                signal: altController.signal,
+                redirect: 'error',
+              })
+            }
+          }
+        }
         clearTimeout(altTimeout)
 
         if (altRes.ok) {

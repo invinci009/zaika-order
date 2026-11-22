@@ -135,13 +135,14 @@ export async function POST(request: NextRequest) {
           )
         }
       }
-      const token = await createCustomerSessionToken({ customerId: phone, name: account.name, verified: true })
+      const isFullyVerified = Boolean(account.verified || (account.passwordHash && account.passwordSalt))
+      const token = await createCustomerSessionToken({ customerId: phone, name: account.name, verified: isFullyVerified })
       await updateCustomerLogin(phone)
 
       const [snapshot, cfg, orders] = await Promise.all([
         getCustomerLoyaltySnapshot(phone),
         getLoyaltyConfig(),
-        getOrdersByPhone(phone, 30).catch(() => [] as Order[]),
+        isFullyVerified ? getOrdersByPhone(phone, 30).catch(() => [] as Order[]) : Promise.resolve([] as Order[]),
       ])
 
       const formattedOrders = orders.map((o) => ({

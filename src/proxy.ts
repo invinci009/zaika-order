@@ -35,10 +35,14 @@ export async function proxy(request: NextRequest) {
     if (rateLimitResponse) return rateLimitResponse
   }
 
-  // 3. Firebase Auth session check for dashboard routes
+  // 3. Firebase Auth session check for dashboard & business routes (defense-in-depth)
   const response = NextResponse.next({ request: { headers: request.headers } })
 
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/api/dashboard')) {
+  if (
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/api/dashboard') ||
+    (pathname.startsWith('/api/business/') && !pathname.startsWith('/api/business/qr'))
+  ) {
     // Edge-safe: presence check only. Full ID-token verification happens
     // downstream in the page / route handler (Node runtime).
     const authHeader = request.headers.get('authorization')
