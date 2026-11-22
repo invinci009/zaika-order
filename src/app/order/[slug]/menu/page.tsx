@@ -37,8 +37,19 @@ import {
   UtensilsCrossed,
   Crown,
   BookOpen,
-  ChevronUp
+  ChevronUp,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
+import {
+  playAddToCartSound,
+  playRemoveFromCartSound,
+  playStewardBellSound,
+  playOrderPlacedSound,
+  playFilterClickSound,
+  isSoundEnabled,
+  toggleSound
+} from '@/lib/ordering/soundEffects';
 
 // --- FALLBACK FOOD IMAGE ---
 const FALLBACK_FOOD_IMG =
@@ -3670,7 +3681,24 @@ function MainApp() {
   const [bestsellersOnly, setBestsellersOnly] = useState(false);
   const [ratings45Only, setRatings45Only] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  // Sound Effects State
+  const [soundActive, setSoundActive] = useState<boolean>(true);
+
+  useEffect(() => {
+    setSoundActive(isSoundEnabled());
+    const handler = (e: any) => setSoundActive(e.detail?.enabled ?? true);
+    window.addEventListener('pmz-sound-toggle', handler);
+    return () => window.removeEventListener('pmz-sound-toggle', handler);
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = toggleSound();
+    setSoundActive(next);
+    showToast(next ? 'Sound Effects Enabled 🔔' : 'Sound Effects Muted 🔕');
+  };
+
   const toggleCategoryCollapse = (grp: string) => {
+    playFilterClickSound();
     setCollapsedGroups((prev) => ({ ...prev, [grp]: !prev[grp] }));
   };
 
@@ -3680,18 +3708,10 @@ function MainApp() {
   const mainScrollRef = useRef(null);
   const sentinelRef = useRef(null);
 
-  // Favorites Set (persisted)
-  const [favorites, setFavorites] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = window.localStorage.getItem('pm_zaika_favorites');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return {
-      'mutton-handi-biryani': true,
-      'paneer-tikka-shashlik': true
-    };
+  // Favorites Set (persisted safely after mount to avoid hydration mismatch)
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({
+    'mutton-handi-biryani': true,
+    'paneer-tikka-shashlik': true
   });
 
   useEffect(() => {
@@ -3702,47 +3722,8 @@ function MainApp() {
     }
   }, [favorites]);
 
-  // Cart State (persisted & safely sanitized)
-  const [cart, setCart] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = window.localStorage.getItem('pm_zaika_cart');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed === 'object') {
-            const cleanCart = {};
-            for (const [key, val] of Object.entries(parsed)) {
-              if (
-                val &&
-                typeof val === 'object' &&
-                val.dish &&
-                val.dish.id &&
-                typeof val.qty === 'number' &&
-                val.qty > 0
-              ) {
-                cleanCart[key] = val;
-              }
-            }
-            if (Object.keys(cleanCart).length > 0) {
-              return cleanCart;
-            }
-          }
-        }
-      } catch {}
-    }
-    return {
-      'mutton-handi-biryani__Full__Medium__': {
-        key: 'mutton-handi-biryani__Full__Medium__',
-        dish: MENU_ITEMS[0],
-        portion: 'Full',
-        spice: 'Medium',
-        addons: [],
-        notes: '',
-        unitPrice: 380,
-        qty: 1
-      }
-    };
-  });
+  // Cart State (clean initial state on SSR to prevent hydration mismatch)
+  const [cart, setCart] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -3753,16 +3734,7 @@ function MainApp() {
   }, [cart]);
 
   // Rewards & Coupons (persisted)
-  const [royalPoints, setRoyalPoints] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = window.localStorage.getItem('pm_zaika_royal_points');
-      if (saved) {
-        const n = parseInt(saved, 10);
-        if (!isNaN(n)) return n;
-      }
-    }
-    return 120;
-  });
+  const [royalPoints, setRoyalPoints] = useState<number>(120);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -3786,37 +3758,77 @@ function MainApp() {
   // Cart & Order Tracker Drawer (persisted live order)
   const [cartOpen, setCartOpen] = useState(false);
   const [cookingNotes, setCookingNotes] = useState('');
-  const [liveOrder, setLiveOrder] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = window.localStorage.getItem('pm_zaika_live_order');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (
-            parsed &&
-            typeof parsed === 'object' &&
-            parsed.id &&
-            typeof parsed.stage === 'number'
-          ) {
-            return parsed;
+  const [liveOrder, setLiveOrder] = useState<any>(null);
+
+  // Safely hydrate persisted state after client mount without hydration mismatch
+  useEffect(() => {
+    try {
+      const savedCart = window.localStorage.getItem('pm_zaika_cart');
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        if (parsed && typeof parsed === 'object') {
+          const cleanCart: Record<string, any> = {};
+          for (const [key, val] of Object.entries(parsed)) {
+            if (
+              val &&
+              typeof val === 'object' &&
+              (val as any).dish &&
+              (val as any).dish.id &&
+              typeof (val as any).qty === 'number' &&
+              (val as any).qty > 0
+            ) {
+              cleanCart[key] = {
+                key,
+                dish: (val as any).dish,
+                portion: (val as any).portion || 'Full',
+                spice: (val as any).spice || 'Medium',
+                addons: Array.isArray((val as any).addons) ? (val as any).addons : [],
+                notes: typeof (val as any).notes === 'string' ? (val as any).notes : '',
+                unitPrice: typeof (val as any).unitPrice === 'number' ? (val as any).unitPrice : ((val as any).dish.price || 0),
+                qty: (val as any).qty
+              };
+            }
+          }
+          if (Object.keys(cleanCart).length > 0) {
+            setCart(cleanCart);
           }
         }
-      } catch {}
-    }
-    return null;
-  });
+      }
+    } catch {}
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        if (liveOrder) {
-          window.localStorage.setItem('pm_zaika_live_order', JSON.stringify(liveOrder));
-        } else {
-          window.localStorage.removeItem('pm_zaika_live_order');
+    try {
+      const savedFav = window.localStorage.getItem('pm_zaika_favorites');
+      if (savedFav) {
+        const parsed = JSON.parse(savedFav);
+        if (parsed && typeof parsed === 'object') setFavorites(parsed);
+      }
+    } catch {}
+
+    try {
+      const savedPts = window.localStorage.getItem('pm_zaika_royal_points');
+      if (savedPts) {
+        const n = parseInt(savedPts, 10);
+        if (!isNaN(n)) setRoyalPoints(n);
+      }
+    } catch {}
+
+    try {
+      const savedLive = window.localStorage.getItem('pm_zaika_live_order');
+      if (savedLive) {
+        const parsed = JSON.parse(savedLive);
+        if (parsed && typeof parsed === 'object' && parsed.id) {
+          setLiveOrder({
+            id: parsed.id,
+            table: parsed.table || 'Table 04',
+            total: parsed.total || 0,
+            itemsCount: parsed.itemsCount || 1,
+            stage: typeof parsed.stage === 'number' ? parsed.stage : 0,
+            createdAt: parsed.createdAt || new Date().toISOString()
+          });
         }
-      } catch {}
-    }
-  }, [liveOrder]);
+      }
+    } catch {}
+  }, []);
 
   // Auto-advance live order stages smoothly (simulated kitchen flow)
   useEffect(() => {
@@ -3987,6 +3999,7 @@ function MainApp() {
   };
 
   const quickAddDish = (dish) => {
+    playAddToCartSound();
     const key = `${dish.id}__Full__Medium__`;
     setCart((prev) => {
       const existing = prev[key];
@@ -4007,6 +4020,7 @@ function MainApp() {
   };
 
   const quickDecrementDish = (dishId) => {
+    playRemoveFromCartSound();
     setCart((prev) => {
       const matchingKeys = Object.keys(prev).filter((k) => prev[k] && prev[k].dish && prev[k].dish.id === dishId);
       if (matchingKeys.length === 0) return prev;
@@ -4022,6 +4036,11 @@ function MainApp() {
   };
 
   const updateCartQty = (key, delta) => {
+    if (delta > 0) {
+      playAddToCartSound();
+    } else {
+      playRemoveFromCartSound();
+    }
     setCart((prev) => {
       const entry = prev[key];
       if (!entry) return prev;
@@ -4060,6 +4079,7 @@ function MainApp() {
 
   const confirmCustomizationAdd = () => {
     if (!customDish) return;
+    playAddToCartSound();
     const addonLabels = customAddons
       .map((id) => ADDONS.find((a) => a.id === id)?.name)
       .filter(Boolean);
@@ -4087,9 +4107,17 @@ function MainApp() {
 
   // --- BILLING & COUPON CALCULATION ---
   const cartSummary = useMemo(() => {
-    const entries = Object.values(cart || {}).filter(
-      (e) => e && e.dish && e.dish.id && typeof e.qty === 'number'
+    const rawEntries = Object.values(cart || {}).filter(
+      (e) => e && typeof e === 'object' && e.dish && e.dish.id && typeof e.qty === 'number' && e.qty > 0
     );
+    const entries = rawEntries.map((e) => ({
+      ...e,
+      addons: Array.isArray(e.addons) ? e.addons : [],
+      portion: e.portion || 'Full',
+      spice: e.spice || 'Medium',
+      unitPrice: typeof e.unitPrice === 'number' && !isNaN(e.unitPrice) ? e.unitPrice : (e.dish.price || 0),
+      qty: e.qty || 1
+    }));
     const itemCount = entries.reduce((sum, e) => sum + (e.qty || 0), 0);
     const subtotal = entries.reduce(
       (sum, e) => sum + (e.unitPrice || 0) * (e.qty || 0),
@@ -4146,6 +4174,7 @@ function MainApp() {
   };
 
   const handlePlaceOrder = async () => {
+    playOrderPlacedSound();
     const orderId = `PMZ-${Math.floor(400 + Math.random() * 580)}`;
     const usedPoints = cartSummary.pointsDiscount > 0;
     if (usedPoints) {
@@ -4173,8 +4202,8 @@ function MainApp() {
         body: JSON.stringify({
           slug,
           tableLabel: selectedTable,
-          type: 'steward',
-          notes: `New Order #${orderId} (${newOrder.itemsCount} items, ₹${newOrder.total})`
+          type: 'assistance',
+          note: `New Order #${orderId} (${newOrder.itemsCount} items, ₹${newOrder.total})`
         })
       });
     } catch {}
@@ -4190,7 +4219,8 @@ function MainApp() {
     }
   };
 
-  const handleRingSteward = async () => {
+  const handleRingSteward = async (optionalNote?: string) => {
+    playStewardBellSound();
     setStewardAlerted(true);
     showToast(`Steward notified for ${selectedTable}`);
     try {
@@ -4200,7 +4230,8 @@ function MainApp() {
         body: JSON.stringify({
           slug,
           tableLabel: selectedTable,
-          type: 'steward'
+          type: 'steward',
+          note: optionalNote || `Steward called to table ${selectedTable}`
         })
       });
     } catch {}
@@ -4373,6 +4404,21 @@ function MainApp() {
                     <span className="absolute -top-1 -right-1 w-[16px] h-[16px] rounded-full bg-[#f59e0b] text-[#140b20] text-[9px] font-black flex items-center justify-center border-2 border-[#0c0615] tnum">
                       {stewardAlerted ? '✓' : '1'}
                     </span>
+                  </button>
+
+                  {/* Sound FX Toggle */}
+                  <button
+                    type="button"
+                    onClick={handleToggleSound}
+                    className="w-10 h-10 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center justify-center text-[#8e829c] hover:text-[#f59e0b] hover:bg-[#1c0f2e] transition-colors cursor-pointer"
+                    aria-label={soundActive ? 'Mute sound effects' : 'Enable sound effects'}
+                    title={soundActive ? 'Sound Effects Active (Tap to Mute)' : 'Sound Effects Muted (Tap to Enable)'}
+                  >
+                    {soundActive ? (
+                      <Volume2 className="w-[18px] h-[18px] text-[#f59e0b]" />
+                    ) : (
+                      <VolumeX className="w-[18px] h-[18px] text-[#8e829c]" />
+                    )}
                   </button>
 
                   {/* Bag Button */}
@@ -4866,6 +4912,7 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => {
+                      playFilterClickSound();
                       setVegOnly((v) => !v);
                       if (!vegOnly) setNonVegOnly(false);
                     }}
@@ -4884,6 +4931,7 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => {
+                      playFilterClickSound();
                       setNonVegOnly((v) => !v);
                       if (!nonVegOnly) setVegOnly(false);
                     }}
@@ -4903,7 +4951,10 @@ function MainApp() {
 
                   <button
                     type="button"
-                    onClick={() => setBestsellersOnly((v) => !v)}
+                    onClick={() => {
+                      playFilterClickSound();
+                      setBestsellersOnly((v) => !v);
+                    }}
                     className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       bestsellersOnly
                         ? 'bg-amber-950/80 border border-[#f59e0b] text-[#f59e0b] font-bold'
@@ -4915,7 +4966,10 @@ function MainApp() {
 
                   <button
                     type="button"
-                    onClick={() => setRatings45Only((v) => !v)}
+                    onClick={() => {
+                      playFilterClickSound();
+                      setRatings45Only((v) => !v);
+                    }}
                     className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       ratings45Only
                         ? 'bg-amber-950/80 border border-[#f59e0b] text-[#f59e0b] font-bold'
@@ -6041,53 +6095,62 @@ function MainApp() {
                 <>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar">
                     <div className="rounded-[22px] bg-white shadow-[0_4px_16px_rgba(45,17,72,0.05)] divide-y divide-[#F4EFE9]">
-                      {cartSummary.entries.map((entry) => (
-                        <div
-                          key={entry.key}
-                          className="p-3.5 flex items-start justify-between gap-3"
-                        >
-                          <div className="flex items-start gap-2.5 min-w-0">
-                            <div className="mt-0.5">
-                              <FssaiDot veg={entry.dish.veg} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-[13.5px] font-bold text-[#1B1026] leading-snug">
-                                {entry.dish.name}
-                              </p>
-                              <p className="text-[11px] text-[#6E6578] mt-0.5">
-                                {entry.portion} • {entry.spice}
-                                {entry.addons.length > 0
-                                  ? ` • + ${entry.addons.join(', ')}`
-                                  : ''}
-                                {entry.notes ? ` • "${entry.notes}"` : ''}
-                              </p>
-                              <p className="text-[13px] font-extrabold text-[#2D1148] mt-1 tnum">
-                                ₹{entry.unitPrice * entry.qty}
-                              </p>
-                            </div>
-                          </div>
+                      {cartSummary.entries.map((entry) => {
+                        if (!entry || !entry.dish) return null;
+                        const addonsList = Array.isArray(entry.addons) ? entry.addons : [];
+                        const unitPrice = typeof entry.unitPrice === 'number' && !isNaN(entry.unitPrice)
+                          ? entry.unitPrice
+                          : (entry.dish?.price || 0);
+                        const qty = typeof entry.qty === 'number' && entry.qty > 0 ? entry.qty : 1;
 
-                          <div className="h-8 px-2 rounded-full bg-[#FDEBD3] text-[#2D1148] inline-flex items-center gap-2 text-xs font-extrabold tnum shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => updateCartQty(entry.key, -1)}
-                              className="cursor-pointer"
-                              aria-label="Decrease"
-                            >
-                              <Minus className="w-3.5 h-3.5 stroke-[2.6]" />
-                            </button>
-                            <span>{entry.qty}</span>
-                            <button
-                              type="button"
-                              onClick={() => updateCartQty(entry.key, 1)}
-                              className="cursor-pointer"
-                              aria-label="Increase"
-                            >
-                              <Plus className="w-3.5 h-3.5 stroke-[2.6]" />
-                            </button>
+                        return (
+                          <div
+                            key={entry.key}
+                            className="p-3.5 flex items-start justify-between gap-3"
+                          >
+                            <div className="flex items-start gap-2.5 min-w-0">
+                              <div className="mt-0.5">
+                                <FssaiDot veg={entry.dish?.veg ?? true} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-[13.5px] font-bold text-[#1B1026] leading-snug">
+                                  {entry.dish?.name || 'Dish Item'}
+                                </p>
+                                <p className="text-[11px] text-[#6E6578] mt-0.5">
+                                  {entry.portion || 'Full'} • {entry.spice || 'Medium'}
+                                  {addonsList.length > 0
+                                    ? ` • + ${addonsList.join(', ')}`
+                                    : ''}
+                                  {entry.notes ? ` • "${entry.notes}"` : ''}
+                                </p>
+                                <p className="text-[13px] font-extrabold text-[#2D1148] mt-1 tnum">
+                                  ₹{unitPrice * qty}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="h-8 px-2 rounded-full bg-[#FDEBD3] text-[#2D1148] inline-flex items-center gap-2 text-xs font-extrabold tnum shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => updateCartQty(entry.key, -1)}
+                                className="cursor-pointer"
+                                aria-label="Decrease"
+                              >
+                                <Minus className="w-3.5 h-3.5 stroke-[2.6]" />
+                              </button>
+                              <span>{qty}</span>
+                              <button
+                                type="button"
+                                onClick={() => updateCartQty(entry.key, 1)}
+                                className="cursor-pointer"
+                                aria-label="Increase"
+                              >
+                                <Plus className="w-3.5 h-3.5 stroke-[2.6]" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     <input

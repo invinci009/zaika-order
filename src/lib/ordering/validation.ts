@@ -173,12 +173,17 @@ export const serviceRequestSchema = z
     slug: z.string().min(1).max(40),
     tableToken: z.string().min(1).max(200).nullable().optional(),
     tableLabel: z.string().min(1).max(40).nullable().optional(),
-    type: z.enum(['water', 'bill', 'assistance', 'cleaning', 'other']),
+    type: z.enum(['water', 'bill', 'assistance', 'cleaning', 'other', 'steward']),
     note: z.string().max(280).optional(),
+    notes: z.string().max(280).optional(),
   })
   .refine((data) => Boolean(data.tableToken || data.tableLabel), {
     message: 'Either tableToken or tableLabel must be provided',
   })
+  .transform((data) => ({
+    ...data,
+    note: data.note || data.notes || undefined,
+  }))
 
 export const serviceRequestPatchSchema = z.object({
   status: z.enum(['ACK', 'RESOLVED', 'CANCELLED']),

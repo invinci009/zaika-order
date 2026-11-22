@@ -59,18 +59,18 @@ export default function GlobalError({ error, reset }: ErrorProps) {
                 }
                 reset()
               }}
-              className="flex-1 h-11 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/20 active:scale-[0.98] transition cursor-pointer"
+              className="flex-1 h-11 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.98] transition cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Try Again</span>
             </button>
 
             <Link
-              href="/dashboard"
+              href="/order/pm-zaika"
               className="flex-1 h-11 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-200 font-medium text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition"
             >
               <Home className="w-4 h-4" />
-              <span>Dashboard</span>
+              <span>Restaurant Menu</span>
             </Link>
           </div>
         </div>

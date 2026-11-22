@@ -429,7 +429,7 @@ export default function SpecialMenuPage() {
             <div className="w-14 h-14 mx-auto rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center backdrop-blur-sm">
               <Crown className="w-7 h-7 text-yellow-300 fill-yellow-400/30" />
             </div>
-            <h2 className="font-heading font-black text-2xl tracking-tight">
+            <h2 className="font-heading font-onstage font-black text-2xl tracking-tight">
               Mehman Nawazi
             </h2>
             <p className="text-sm text-emerald-100/90 font-medium">

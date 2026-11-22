@@ -314,6 +314,7 @@ export const SERVICE_REQUEST_HINDI = {
   water: 'पीने का पानी मांगा गया है।',
   bill: 'बिल मांगा गया है।',
   assistance: 'वेटर को बुलाया गया है।',
+  steward: 'वेटर को बुलाया गया है।',
   cleaning: 'टेबल साफ करने के लिए बुलाया गया है।',
   other: 'चम्मच और प्लेट मांगी गई है।',
 }
@@ -322,6 +323,7 @@ export const SERVICE_REQUEST_ENGLISH_LABELS = {
   water: 'Drinking Water',
   bill: 'Request Bill',
   assistance: 'Waiter Call',
+  steward: 'Call Steward',
   cleaning: 'Clean Table',
   other: 'Cutlery / Plates',
 }
