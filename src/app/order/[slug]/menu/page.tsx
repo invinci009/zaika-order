@@ -4,6 +4,18 @@
 
 import React, { useState, useMemo, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
+import Link from 'next/link';
+import {
+  loadCart,
+  saveCart,
+  clearCart,
+  getActiveOrderSession,
+  saveActiveOrderSession,
+  type CartLine,
+  type CartSelection,
+  type ActiveSession,
+} from '@/lib/ordering/cart';
+import { formatTableDisplay, isParcelLabel } from '@/lib/ordering/rules.mjs';
 import {
   Menu as MenuIcon,
   Bell,
@@ -15,7 +27,6 @@ import {
   Star,
   Plus,
   Minus,
-  Home,
   LayoutGrid,
   Tag,
   User,
@@ -39,7 +50,8 @@ import {
   BookOpen,
   ChevronUp,
   Volume2,
-  VolumeX
+  VolumeX,
+  Package
 } from 'lucide-react';
 import {
   playAddToCartSound,
@@ -106,7 +118,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with veg sweet corn and fragrant seasonings.",
-    image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/veg-sweet-corn.jpg"
   },
   {
     id: "sweet-corn-non-veg",
@@ -123,7 +135,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with sweet corn (non veg) and fragrant seasonings.",
-    image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/sweet-corn-chicken-soup.jpg"
   },
   {
     id: "hot-n-sour-veg",
@@ -140,7 +152,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with hot n sour (veg) and fragrant seasonings.",
-    image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/hot-n-sour-veg.jpg"
   },
   {
     id: "hot-n-sour-non-veg",
@@ -157,7 +169,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with hot n sour (non veg) and fragrant seasonings.",
-    image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/hot-n-sour-non-veg.jpg"
   },
   {
     id: "veg-manchow",
@@ -174,7 +186,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with veg manchow and fragrant seasonings.",
-    image: "https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/veg-manchow.avif"
   },
   {
     id: "chicken-manchow-soup",
@@ -191,7 +203,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with chicken manchow  and fragrant seasonings.",
-    image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/chicken-manchow-soup.jpg"
   },
   {
     id: "mushroom-soup",
@@ -208,7 +220,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with mushroom  and fragrant seasonings.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/mushroom-soup.avif"
   },
   {
     id: "chicken-mushroom-soup",
@@ -225,7 +237,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with chicken mushroom  and fragrant seasonings.",
-    image: "https://images.unsplash.com/photo-1588566565463-180a5b2090f2?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/chicken-mushroom-soup.jpg"
   },
   {
     id: "mix-veg-manchurian-dry",
@@ -259,7 +271,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika french fry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/french-fry.avif"
   },
   {
     id: "penuts-masala",
@@ -276,7 +288,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika penuts masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/peanuts-masala.jpg"
   },
   {
     id: "paneer-chili-dry",
@@ -2197,7 +2209,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/plain-naan.jpg"
   },
   {
     id: "butter-naan",
@@ -2214,7 +2226,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/butter-naan.jpg"
   },
   {
     id: "garlic-naan",
@@ -2231,7 +2243,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/garlic-naan.jpg"
   },
   {
     id: "ginger-naan",
@@ -2248,7 +2260,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/butter-naan.jpg"
   },
   {
     id: "paneer-stuff-naan",
@@ -2265,7 +2277,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/kulcha-naan.jpg"
   },
   {
     id: "paneer-garlic-naan",
@@ -2282,7 +2294,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/paneer-garlic-naan.avif"
   },
   {
     id: "paneer-ginger-naan",
@@ -2299,7 +2311,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/paneer-garlic-naan.avif"
   },
   {
     id: "veg-stuff-naan",
@@ -2316,7 +2328,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/kulcha-naan.jpg"
   },
   {
     id: "kulcha",
@@ -2333,7 +2345,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/kulcha-naan.jpg"
   },
   {
     id: "paneer-kulcha",
@@ -2350,7 +2362,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/kulcha-naan.jpg"
   },
   {
     id: "veg-stuff-kulcha",
@@ -2367,7 +2379,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/kulcha-naan.jpg"
   },
   {
     id: "chicken-stuff-naan",
@@ -2384,7 +2396,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/plain-naan.jpg"
   },
   {
     id: "chicken-garlic-naan",
@@ -2401,7 +2413,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80"
+    image: "/menu/garlic-naan.jpg"
   },
   {
     id: "chicken-ginger-naan",
@@ -2418,7 +2430,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/plain-naan.jpg"
   },
   {
     id: "chicken-stuff-kulcha",
@@ -2435,7 +2447,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/kulcha-naan.jpg"
   },
   {
     id: "plain-roti",
@@ -2452,7 +2464,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/plain-naan.jpg"
   },
   {
     id: "butter-roti",
@@ -2469,7 +2481,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/butter-naan.jpg"
   },
   {
     id: "lactha-butter-pratha",
@@ -3115,7 +3127,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Party Pack \u2014 1 kg fresh tandoori baby naans.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/menu/butter-naan.jpg"
   },
   {
     id: "special-chicken-biryani-handi-45",
@@ -3187,43 +3199,6 @@ const MENU_ITEMS = [
   }
 ];
 
-const HERO_SLIDES = [
-  {
-    id: 'slide-1',
-    headlineTop: 'MUTTON HANDI',
-    headlineBottom: 'ROYAL BIRYANI.',
-    accent: 'Zaika-e-Shahi',
-    subtext: 'Sealed clay-pot Awadhi biryani infused with saffron.',
-    cta: 'Order Now',
-    targetDishId: 'mutton-handi-biryani',
-    image:
-      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80'
-  },
-  {
-    id: 'slide-2',
-    headlineTop: 'ROYAL TANDOOR',
-    headlineBottom: 'SMOKY PLATTER.',
-    accent: 'Live Charcoal',
-    subtext: 'Malai tikka & paneer shashlik straight from clay ovens.',
-    cta: 'Try Tandoor',
-    targetDishId: 'paneer-tikka-shashlik',
-    image:
-      'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80'
-  },
-  {
-    id: 'slide-3',
-    headlineTop: "CHEF'S KEBABS",
-    headlineBottom: '& FLAKY ROLLS.',
-    accent: 'Patna Favorite',
-    subtext: 'Juicy seekh kebabs & double-egg rolls served hot.',
-    cta: 'Explore Rolls',
-    targetDishId: 'double-egg-chicken-roll',
-    image:
-      'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=500&q=80'
-  }
-];
-
-
 // --- 9 CIRCULAR CATEGORIES ---
 const CATEGORIES = [
   {
@@ -3259,14 +3234,12 @@ const CATEGORIES = [
   {
     id: 'Soups',
     label: 'Soups',
-    image:
-      'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=240&q=80'
+    image: '/menu/veg-sweet-corn.jpg'
   },
   {
     id: 'Breads',
     label: 'Breads',
-    image:
-      'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=240&q=80'
+    image: '/menu/garlic-naan.jpg'
   },
   {
     id: 'Chinese',
@@ -3346,7 +3319,9 @@ const TABLES = [
   'Table 10',
   'Table 11',
   'Table 12',
-  'Takeaway'
+  'Table 13',
+  'Table 14',
+  'Table 15'
 ];
 
 const FEEDBACK_QUESTIONS = [
@@ -3694,9 +3669,10 @@ function MainApp() {
   const searchParams = useSearchParams();
   const params = useParams();
   const slug = (params?.slug as string) || 'pm-zaika';
+  const token = searchParams?.get('token') || '';
 
-  // Navigation Tab: 'home' | 'menu' | 'offers' | 'hub'
-  const [activeTab, setActiveTab] = useState('home');
+  // Navigation Tab: direct Menu-first experience ('menu' | 'offers' | 'hub')
+  const [activeTab, setActiveTab] = useState<'menu' | 'offers' | 'hub'>('menu');
 
   // Toast Notification
   const [toast, setToast] = useState(null);
@@ -3707,35 +3683,122 @@ function MainApp() {
     }, 2600);
   };
 
-  // Derive initial table from URL query param (?table=02 or ?table=Table%2002)
-  const initialTable = useMemo(() => {
+  // Derive initial Order Mode ('DINE_IN' | 'PARCEL') & Table Number from URL / sessionStorage
+  const initialDining = useMemo(() => {
+    const modeParam = searchParams?.get('mode') || searchParams?.get('orderType');
     const raw = searchParams?.get('table');
-    if (!raw) return 'Table 04';
-    const trimmed = raw.trim();
-    if (/^takeaway$/i.test(trimmed)) return 'Takeaway';
-    if (/^table\s*\d+/i.test(trimmed)) {
-      const num = trimmed.replace(/\D/g, '').padStart(2, '0');
-      return `Table ${num}`;
+    if (modeParam && /parcel/i.test(modeParam)) {
+      return { mode: 'PARCEL' as const, table: 'Parcel', confirmed: true };
     }
-    if (/^\d+$/.test(trimmed)) {
-      return `Table ${trimmed.padStart(2, '0')}`;
+    if (raw) {
+      const trimmed = raw.trim();
+      if (isParcelLabel(trimmed)) {
+        return { mode: 'PARCEL' as const, table: 'Parcel', confirmed: true };
+      }
+      if (/^table\s*\d+/i.test(trimmed)) {
+        const num = trimmed.replace(/\D/g, '').padStart(2, '0');
+        return { mode: 'DINE_IN' as const, table: `Table ${num}`, confirmed: true };
+      }
+      if (/^\d+$/.test(trimmed)) {
+        return { mode: 'DINE_IN' as const, table: `Table ${trimmed.padStart(2, '0')}`, confirmed: true };
+      }
+      return { mode: 'DINE_IN' as const, table: trimmed, confirmed: true };
     }
-    return trimmed;
+    return { mode: 'DINE_IN' as const, table: '', confirmed: false };
   }, [searchParams]);
 
-  // Table & Steward State
-  const [selectedTable, setSelectedTable] = useState(initialTable);
+  // Order Mode ('DINE_IN' | 'PARCEL'), Table Number & Steward State
+  const [orderType, setOrderType] = useState<'DINE_IN' | 'PARCEL'>(initialDining.mode);
+  const [selectedTable, setSelectedTable] = useState<string>(initialDining.table);
+  const [customTableInput, setCustomTableInput] = useState('');
   const [tableModalOpen, setTableModalOpen] = useState(false);
+  const [pendingPlaceAfterTable, setPendingPlaceAfterTable] = useState(false);
   const [stewardAlerted, setStewardAlerted] = useState(false);
+  const [availableTables, setAvailableTables] = useState<Array<{ id: string; label: string; state?: string }>>([]);
+  const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
 
   useEffect(() => {
-    if (initialTable) {
-      setSelectedTable(initialTable);
+    setActiveSession(getActiveOrderSession(slug));
+    // Restore previous Table / Parcel selection for this session if URL didn't provide one
+    if (!initialDining.confirmed && typeof window !== 'undefined') {
+      try {
+        const savedMode = sessionStorage.getItem(`pmz_order_mode_${slug}`);
+        const savedTable = sessionStorage.getItem(`rp_table_${slug}`);
+        if (savedMode === 'PARCEL' || (savedTable && isParcelLabel(savedTable))) {
+          setOrderType('PARCEL');
+          setSelectedTable('Parcel');
+        } else if (savedTable) {
+          setOrderType('DINE_IN');
+          setSelectedTable(savedTable);
+        }
+      } catch {}
     }
-  }, [initialTable]);
+  }, [slug, initialDining.confirmed]);
 
-  // Hero Carousel State
-  const [heroIndex, setHeroIndex] = useState(0);
+  const applyDiningChoice = (mode: 'DINE_IN' | 'PARCEL', tableVal: string, closeSheet = true) => {
+    setOrderType(mode);
+    const nextTable = mode === 'PARCEL' ? 'Parcel' : tableVal;
+    setSelectedTable(nextTable);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem(`pmz_order_mode_${slug}`, mode);
+        if (nextTable) {
+          sessionStorage.setItem(`rp_table_${slug}`, nextTable);
+        }
+        const url = new URL(window.location.href);
+        if (mode === 'PARCEL') {
+          url.searchParams.set('table', 'parcel');
+          url.searchParams.set('mode', 'parcel');
+        } else if (nextTable) {
+          const num = nextTable.replace(/\D/g, '');
+          url.searchParams.set('table', num ? num.padStart(2, '0') : nextTable.toLowerCase());
+          url.searchParams.delete('mode');
+        }
+        window.history.replaceState({}, '', url.toString());
+      } catch {}
+    }
+    if (closeSheet) {
+      setTableModalOpen(false);
+    }
+    showToast(mode === 'PARCEL' ? '📦 Parcel (Takeaway) selected' : `🍽️ Selected ${formatTableDisplay(nextTable)}`);
+  };
+
+  useEffect(() => {
+    const q = new URLSearchParams();
+    q.set('slug', slug);
+    if (token) q.set('token', token);
+    const tbl = searchParams.get('table');
+    if (tbl) q.set('table', tbl);
+
+    fetch(`/api/public/order-menu?${q.toString()}`)
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = await res.json().catch(() => ({}));
+        if (Array.isArray(data.tables) && data.tables.length > 0) {
+          setAvailableTables(data.tables);
+        }
+        if (data.table?.label) {
+          if (isParcelLabel(data.table.label)) {
+            setOrderType('PARCEL');
+            setSelectedTable('Parcel');
+          } else {
+            const formatted = /^\d+$/.test(data.table.label)
+              ? `Table ${data.table.label.padStart(2, '0')}`
+              : data.table.label;
+            setOrderType('DINE_IN');
+            setSelectedTable(formatted);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [slug, token, searchParams]);
+
+  useEffect(() => {
+    if (initialDining.confirmed) {
+      setOrderType(initialDining.mode);
+      setSelectedTable(initialDining.table);
+    }
+  }, [initialDining]);
 
   // Search, Category & Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -3843,8 +3906,27 @@ function MainApp() {
       try {
         window.localStorage.setItem('pm_zaika_cart', JSON.stringify(cart));
       } catch { }
+
+      // Also sync to standard CartLine[] format used by Badshah checkout system
+      try {
+        const cartLines: CartLine[] = Object.values(cart)
+          .filter((c: any) => c && c.dish && c.dish.id && c.qty > 0)
+          .map((c: any) => {
+            const selections: CartSelection[] = [];
+            if (c.portion === 'Half') {
+              selections.push({ groupId: 'portion', optionId: 'half' });
+            }
+            return {
+              key: c.key || `${c.dish.id}__${c.portion || 'Full'}`,
+              itemId: c.dish.id,
+              quantity: c.qty,
+              selections,
+            };
+          });
+        saveCart(slug, cartLines, selectedTable);
+      } catch {}
     }
-  }, [cart]);
+  }, [cart, slug, selectedTable]);
 
   // ─── LOYALTY / PHONE-LOGIN STATE ───────────────────────────────────────────
   // Persisted customer session (from phone login)
@@ -4053,15 +4135,6 @@ function MainApp() {
   // Copy Phone Feedback
   const [phoneCopied, setPhoneCopied] = useState(false);
 
-  // Auto-advance hero carousel gently every 5.5s when on Home
-  useEffect(() => {
-    if (activeTab !== 'home') return;
-    const timer = setInterval(() => {
-      setHeroIndex((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 5500);
-    return () => clearInterval(timer);
-  }, [activeTab]);
-
   // Progressive scroll rendering: load subsequent sections as user scrolls down
   const handleMainScroll = (e) => {
     if (activeTab !== 'menu') return;
@@ -4151,31 +4224,23 @@ function MainApp() {
     return true;
   };
 
-  const homeDishes = useMemo(() => {
-    const filtered = MENU_ITEMS.filter((d) => matchesFilters(d, true));
-    if (selectedCategory === 'All' && !searchQuery.trim() && activeFilterCount === 0) {
-      return filtered.filter((d) => d.popular);
-    }
-    return filtered;
-  }, [searchQuery, selectedCategory, vegOnly, nonVegOnly, under250, bestsellersOnly, ratings45Only]);
-
   const menuGroupedDishes = useMemo(() => {
     const groups: Record<string, typeof MENU_ITEMS> = {};
     MENU_GROUPS.forEach((grp) => {
       groups[grp] = MENU_ITEMS.filter(
-        (d) => d.menuGroup === grp && matchesFilters(d, false)
+        (d) => d.menuGroup === grp && matchesFilters(d, true)
       );
     });
     return groups;
-  }, [searchQuery, vegOnly, nonVegOnly, under250, bestsellersOnly, ratings45Only]);
+  }, [searchQuery, selectedCategory, vegOnly, nonVegOnly, under250, bestsellersOnly, ratings45Only]);
 
   const totalMenuResults = useMemo(
     () => Object.values(menuGroupedDishes).reduce((acc, arr) => acc + arr.length, 0),
     [menuGroupedDishes]
   );
 
-  // Progressive Scroll rendering bounds: expand all during search or dietary filtering
-  const isFilteredOrSearching = Boolean(searchQuery.trim()) || activeFilterCount > 0;
+  // Progressive Scroll rendering bounds: expand all during search, category selection, or dietary filtering
+  const isFilteredOrSearching = Boolean(searchQuery.trim()) || selectedCategory !== 'All' || activeFilterCount > 0;
   const effectiveVisibleCount = isFilteredOrSearching ? MENU_GROUPS.length : visibleGroupCount;
   const displayedMenuGroups = useMemo(
     () => MENU_GROUPS.slice(0, effectiveVisibleCount),
@@ -4357,53 +4422,153 @@ function MainApp() {
     }
   };
 
-  // Actual order execution (called after loyalty modal or directly if already logged in)
-  const executePlaceOrder = async () => {
-    playOrderPlacedSound();
-    const orderId = `PMZ-${Math.floor(400 + Math.random() * 580)}`;
-    const usedPoints = cartSummary.pointsDiscount > 0;
-    if (usedPoints && loyaltySnapshot) {
-      setLoyaltySnapshot((prev) => prev ? { ...prev, availablePoints: Math.max(0, prev.availablePoints - 50), redeemedTotal: prev.redeemedTotal + 50 } : prev);
-      setRedeemPoints(false);
-    }
-    const newOrder = {
-      id: orderId,
-      table: selectedTable,
-      total: cartSummary.grandTotal,
-      itemsCount: cartSummary.itemCount,
-      stage: 0,
-      createdAt: new Date().toISOString(),
-      customerPhone: loyaltyCustomer?.phone || null,
-      customerName: loyaltyCustomer?.name || null,
-    };
-    setLiveOrder(newOrder);
-    setCart({});
-    setCookingNotes('');
-    setCartOpen(false);
-    showToast(`Order #${orderId} placed for ${selectedTable}!`);
+  const [submittingOrder, setSubmittingOrder] = useState(false);
 
-    // Non-blocking background notification to kitchen service queue
+  // Authoritative order execution (creates real order in Firestore via POST /api/public/orders)
+  const executePlaceOrder = async () => {
+    const effectivePhone = (loyaltyCustomer?.phone || loyaltyCustomer?.customerId || loyaltyPhone || '').replace(/\D/g, '').slice(-10);
+    const effectiveName = loyaltyCustomer?.name || loyaltyName || 'Royal Guest';
+
+    if (!effectivePhone || effectivePhone.length !== 10) {
+      setLoyaltyPendingOrder(true);
+      setLoyaltyModalOpen(true);
+      setLoyaltyStep('phone');
+      setLoyaltyError('Please enter your mobile number before placing the order.');
+      return;
+    }
+
+    const orderItems = Object.values(cart)
+      .filter((c: any) => c && c.dish && c.dish.id && c.qty > 0)
+      .map((c: any) => ({
+        itemId: c.dish.id,
+        quantity: c.qty,
+        selections: c.portion === 'Half' ? [{ groupId: 'portion', optionId: 'half' }] : [],
+      }));
+
+    if (orderItems.length === 0) {
+      showToast('Your order bag is empty');
+      return;
+    }
+
+    setSubmittingOrder(true);
+    playOrderPlacedSound();
+
+    let idemKey = '';
+    if (typeof window !== 'undefined') {
+      try {
+        idemKey = sessionStorage.getItem(`rp_idem_${slug}`) || '';
+        if (!idemKey) {
+          idemKey = crypto.randomUUID();
+          sessionStorage.setItem(`rp_idem_${slug}`, idemKey);
+        }
+      } catch {
+        idemKey = 'idem_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+      }
+    }
+
+    const currentSession = getActiveOrderSession(slug);
+    let existingOrderId: string | undefined;
+    let activeOrderAccessToken: string | undefined;
+    const effectiveTableLabel = orderType === 'PARCEL' ? 'Parcel' : selectedTable.trim();
+    if (orderType === 'DINE_IN' && currentSession && currentSession.tableLabel === effectiveTableLabel) {
+      existingOrderId = currentSession.orderId;
+      activeOrderAccessToken = currentSession.accessToken;
+    }
+
+    const clientTotalPaise = Math.round(cartSummary.grandTotal * 100);
+    const clientRedeemDiscountPaise = cartSummary.pointsDiscount > 0 ? Math.round(cartSummary.pointsDiscount * 100) : undefined;
+
     try {
-      await fetch('/api/public/service-requests', {
+      const res = await fetch('/api/public/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug,
-          tableLabel: selectedTable,
-          type: 'assistance',
-          note: `New Order #${orderId} (${newOrder.itemsCount} items, ₹${newOrder.total})${loyaltyCustomer ? ` | Customer: ${loyaltyCustomer.name} (${loyaltyCustomer.phone})` : ''}`
-        })
+          orderType,
+          tableToken: orderType === 'PARCEL' ? null : (token || undefined),
+          tableLabel: effectiveTableLabel || undefined,
+          customerName: effectiveName,
+          customerPhone: effectivePhone,
+          notes: cookingNotes.trim() || undefined,
+          idempotencyKey: idemKey,
+          clientTotalPaise,
+          clientRedeemDiscountPaise,
+          confirmUpdatedTotal: true,
+          existingOrderId,
+          activeOrderAccessToken,
+          items: orderItems,
+        }),
       });
-    } catch { }
 
-    // Award points on backend (non-blocking)
-    if (loyaltyCustomer && loyaltySnapshot !== null) {
-      // Optimistically add points earned (1 point per order by default)
-      setLoyaltySnapshot((prev) => prev ? { ...prev, availablePoints: prev.availablePoints + 10, earnedTotal: prev.earnedTotal + 10 } : prev);
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        showToast(data.error || 'Could not place order');
+        setSubmittingOrder(false);
+        return;
+      }
+
+      // Order created in Firestore!
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.removeItem(`rp_idem_${slug}`);
+          localStorage.setItem(`rp_order_${data.orderId}`, data.accessToken);
+          localStorage.setItem('rp_customer_name', effectiveName);
+          localStorage.setItem('rp_customer_phone', effectivePhone);
+        } catch {}
+      }
+
+      clearCart(slug, selectedTable);
+      setCart({});
+      setCookingNotes('');
+
+      const savedTableLabel = data.tableLabel || effectiveTableLabel || 'Parcel';
+      const newSession: ActiveSession = {
+        orderId: data.orderId,
+        orderNumber: data.orderNumber || data.id,
+        accessToken: data.accessToken,
+        orderType: data.orderType || orderType,
+        tableLabel: savedTableLabel,
+        customerPhone: effectivePhone,
+        customerName: effectiveName,
+        createdAt: new Date().toISOString(),
+      };
+      saveActiveOrderSession(slug, newSession);
+      setActiveSession(newSession);
+
+      showToast(
+        orderType === 'PARCEL'
+          ? `Parcel Order #${data.orderNumber || data.orderId} sent to kitchen!`
+          : `Order #${data.orderNumber || data.orderId} placed for ${formatTableDisplay(savedTableLabel)}!`
+      );
+      setCartOpen(false);
+
+      if (loyaltySnapshot) {
+        setLoyaltySnapshot((prev) => prev ? { ...prev, availablePoints: prev.availablePoints + 10, earnedTotal: prev.earnedTotal + 10 } : prev);
+      }
+
+      // Redirect to real-time confirmation / live kitchen status tracker
+      const confirmationParams = new URLSearchParams();
+      confirmationParams.set('accessToken', data.accessToken);
+      if (token && orderType !== 'PARCEL') confirmationParams.set('token', token);
+      if (savedTableLabel) confirmationParams.set('table', savedTableLabel);
+      confirmationParams.set('orderType', orderType);
+      window.location.href = `/order/${slug}/confirmation/${data.orderId}?${confirmationParams.toString()}`;
+    } catch (err: any) {
+      showToast(err.message || 'Error placing order');
+    } finally {
+      setSubmittingOrder(false);
     }
   };
 
   const handlePlaceOrder = () => {
+    const hasTableOrParcel = orderType === 'PARCEL' || Boolean(selectedTable && selectedTable.trim());
+    if (!hasTableOrParcel) {
+      setPendingPlaceAfterTable(true);
+      setTableModalOpen(true);
+      showToast('Please select your Table Number or Parcel first');
+      return;
+    }
     if (!loyaltyCustomer) {
       // Show loyalty login modal first
       setLoyaltyModalOpen(true);
@@ -4426,18 +4591,19 @@ function MainApp() {
   };
 
   const handleRingSteward = async (optionalNote?: string) => {
+    const targetLoc = orderType === 'PARCEL' ? 'Parcel' : (selectedTable || 'Counter');
     playStewardBellSound();
     setStewardAlerted(true);
-    showToast(`Steward notified for ${selectedTable}`);
+    showToast(orderType === 'PARCEL' ? 'Counter staff notified for Parcel' : `Steward notified for ${formatTableDisplay(targetLoc)}`);
     try {
       await fetch('/api/public/service-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug,
-          tableLabel: selectedTable,
+          tableLabel: targetLoc,
           type: 'steward',
-          note: optionalNote || `Steward called to table ${selectedTable}`
+          note: optionalNote || (orderType === 'PARCEL' ? 'Parcel customer assistance requested' : `Steward called to ${formatTableDisplay(targetLoc)}`)
         })
       });
     } catch { }
@@ -4449,6 +4615,7 @@ function MainApp() {
       showToast('Please describe your concern');
       return;
     }
+    const targetLoc = orderType === 'PARCEL' ? 'Parcel' : (selectedTable || 'Counter');
     setComplaintSubmitting(true);
     try {
       await fetch('/api/public/complaints', {
@@ -4456,11 +4623,11 @@ function MainApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug,
-          name: `Guest at ${selectedTable}`,
+          name: `Guest (${targetLoc})`,
           phone: complaintPhone.trim() || '9876543210',
           complaint: complaintNote.trim(),
           category: complaintCategory,
-          tableNumber: selectedTable
+          tableNumber: targetLoc
         })
       });
     } catch { }
@@ -4468,7 +4635,7 @@ function MainApp() {
     setComplaintOpen(false);
     setComplaintNote('');
     setComplaintPhone('');
-    showToast(`Manager alerted for ${selectedTable}. Priority support assigned.`);
+    showToast(`Manager alerted for ${targetLoc}. Priority support assigned.`);
   };
 
   const handleCopyPhone = () => {
@@ -4492,8 +4659,6 @@ function MainApp() {
     if (type === 'emerald') return 'bg-[#1A7F5A] text-white';
     return 'bg-[#3B155E] text-white';
   };
-
-  const activeSlide = HERO_SLIDES[heroIndex];
 
   return (
     <div className="min-h-screen w-full bg-[#07030b] text-white flex justify-center sm:py-5 font-jakarta antialiased selection:bg-[#f59e0b]/20 selection:text-[#f59e0b]">
@@ -4537,274 +4702,280 @@ function MainApp() {
           className="flex-1 overflow-y-auto no-scrollbar pb-28"
         >
           {/* ---------------------------------------------------------------
-              TAB 1: HOME (TACO BELL CLEAN D2C RHYTHM — PM ZAIKA IDENTITY)
+              TAB 1 (DIRECT LANDING): FULL CATEGORIZED ROYAL MENU
              --------------------------------------------------------------- */}
-          {activeTab === 'home' && (
-            <div className="px-4 pt-4 space-y-5">
-              {/* 1. Top App Header */}
-              <header className="flex items-center justify-between gap-2.5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <button
-                    type="button"
-                    onClick={() => setTableModalOpen(true)}
-                    className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-[#f59e0b]/60 shadow-md shadow-amber-500/10 hover:border-[#f59e0b] transition-all cursor-pointer shrink-0 bg-black/80 p-0.5"
-                    aria-label="Switch dining table or view restaurant info"
-                    title="PM Zaika Restaurant • Select Table"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/logo.png"
-                      alt="PM Zaika Restaurant"
-                      className="w-full h-full object-contain rounded-full"
-                    />
-                  </button>
-
-                  <div className="min-w-0">
+          {activeTab === 'menu' && (
+            <div className="pb-10">
+              {/* 1. Top Luxury App Header + Live Order Mode Bar */}
+              <div className="px-4 pt-4 pb-3 space-y-3">
+                <header className="flex items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <button
                       type="button"
                       onClick={() => setTableModalOpen(true)}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#8e829c] hover:text-white cursor-pointer tnum"
+                      className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#f59e0b]/70 shadow-lg shadow-amber-500/15 hover:border-[#f59e0b] transition-all cursor-pointer shrink-0 bg-black/90 p-0.5"
+                      aria-label="Switch dining table or parcel mode"
+                      title="PM Zaika Restaurant • Choose Table No. or Parcel"
                     >
-                      <span>
-                        {selectedTable} •{' '}
-                        {selectedTable === 'Takeaway' ? 'Pickup' : 'Dine-In'}
-                      </span>
-                      <ChevronDown className="w-3.5 h-3.5 text-[#E89223]" />
+                      <img
+                        src="/logo.png"
+                        alt="PM Zaika Restaurant"
+                        className="w-full h-full object-contain rounded-full"
+                      />
                     </button>
-                    <h1 className="text-[21px] font-black tracking-tight text-white leading-none mt-0.5">
-                      PM ZAIKA
-                    </h1>
-                    <p className="text-[11px] font-medium text-[#8e829c] mt-0.5 truncate">
-                      Indian • Chinese • Tandoor • Rolls
-                    </p>
+
+                    <div className="min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => setTableModalOpen(true)}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold cursor-pointer transition-colors tnum border ${
+                          orderType === 'PARCEL'
+                            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                            : selectedTable
+                            ? 'bg-[#f59e0b]/15 border-[#f59e0b]/40 text-[#fcd34d]'
+                            : 'bg-rose-500/15 border-rose-500/40 text-rose-300 animate-pulse'
+                        }`}
+                      >
+                        {orderType === 'PARCEL' ? (
+                          <Package className="w-3 h-3" />
+                        ) : (
+                          <MapPin className="w-3 h-3" />
+                        )}
+                        <span>
+                          {orderType === 'PARCEL'
+                            ? 'Parcel • Takeaway'
+                            : selectedTable
+                            ? `${formatTableDisplay(selectedTable)} • Dine-In`
+                            : 'Tap to Pick Table / Parcel'}
+                        </span>
+                        <ChevronDown className="w-3 h-3" />
+                      </button>
+                      <h1 className="text-[20px] font-black tracking-tight text-white leading-none mt-1">
+                        PM ZAIKA
+                      </h1>
+                    </div>
                   </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Rewards Points */}
+                    <button
+                      type="button"
+                      onClick={() => { setLoyaltyModalOpen(true); setLoyaltyStep(loyaltyCustomer ? 'loggedIn' : 'phone'); setLoyaltyPendingOrder(false); setLoyaltyError(''); }}
+                      className="h-9 px-2 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center gap-1 text-white hover:bg-[#1c0f2e] transition-colors cursor-pointer"
+                      title="Royal Loyalty Points"
+                      aria-label="Royal Points"
+                    >
+                      <Crown className="w-3.5 h-3.5 text-[#E89223]" />
+                      <span className="text-[11px] font-black text-white tnum">{royalPoints}</span>
+                      <span className="text-[9px] font-bold text-[#f59e0b]">PTS</span>
+                    </button>
+
+                    {/* Steward Bell */}
+                    <button
+                      type="button"
+                      onClick={() => handleRingSteward()}
+                      className={`relative w-9 h-9 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer ${stewardAlerted
+                        ? 'bg-[#f59e0b] text-[#140b20]'
+                        : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
+                        }`}
+                      aria-label="Notify Steward"
+                      title="Call Steward / Staff"
+                    >
+                      <Bell className="w-[17px] h-[17px]" />
+                      <span className="absolute -top-1 -right-1 w-[15px] h-[15px] rounded-full bg-[#f59e0b] text-[#140b20] text-[9px] font-black flex items-center justify-center border-2 border-[#0c0615] tnum">
+                        {stewardAlerted ? '✓' : '1'}
+                      </span>
+                    </button>
+
+                    {/* Sound FX Toggle */}
+                    <button
+                      type="button"
+                      onClick={handleToggleSound}
+                      className="w-9 h-9 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center justify-center text-[#8e829c] hover:text-[#f59e0b] hover:bg-[#1c0f2e] transition-colors cursor-pointer"
+                      aria-label={soundActive ? 'Mute sound effects' : 'Enable sound effects'}
+                      title={soundActive ? 'Sound Effects Active' : 'Sound Effects Muted'}
+                    >
+                      {soundActive ? (
+                        <Volume2 className="w-[17px] h-[17px] text-[#f59e0b]" />
+                      ) : (
+                        <VolumeX className="w-[17px] h-[17px] text-[#8e829c]" />
+                      )}
+                    </button>
+
+                    {/* Bag Button */}
+                    <button
+                      type="button"
+                      onClick={() => setCartOpen(true)}
+                      className="relative w-9 h-9 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center justify-center text-white hover:bg-[#1c0f2e] transition-colors cursor-pointer"
+                      aria-label="Open Order Bag"
+                    >
+                      <ShoppingBag className="w-[17px] h-[17px]" />
+                      {cartSummary.itemCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#f59e0b] text-[#140b20] text-[9px] font-black flex items-center justify-center border-2 border-[#0c0615] tnum">
+                          {cartSummary.itemCount}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </header>
+
+                {/* Quick 2-Way Order Mode Strip: Dine-In Table No. vs Parcel */}
+                <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playFilterClickSound();
+                      setTableModalOpen(true);
+                    }}
+                    className={`h-10 px-3 rounded-xl flex items-center justify-between gap-2 text-xs font-bold transition-all cursor-pointer ${
+                      orderType === 'DINE_IN'
+                        ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-[#140b20] shadow-md font-black'
+                        : 'bg-transparent text-[#8e829c] hover:text-white hover:bg-[#1c0f2e]'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5 truncate">
+                      <UtensilsCrossed className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">
+                        {orderType === 'DINE_IN' && selectedTable
+                          ? formatTableDisplay(selectedTable)
+                          : 'Dine-In (Table)'}
+                      </span>
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-80" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playFilterClickSound();
+                      applyDiningChoice('PARCEL', 'Parcel', true);
+                    }}
+                    className={`h-10 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
+                      orderType === 'PARCEL'
+                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-[#07030b] shadow-md font-black'
+                        : 'bg-transparent text-[#8e829c] hover:text-white hover:bg-[#1c0f2e]'
+                    }`}
+                  >
+                    <Package className="w-3.5 h-3.5 shrink-0" />
+                    <span>Parcel (Pack)</span>
+                  </button>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  {/* Rewards Points — tap to open loyalty modal */}
-                  <button
-                    type="button"
-                    onClick={() => { setLoyaltyModalOpen(true); setLoyaltyStep(loyaltyCustomer ? 'loggedIn' : 'phone'); setLoyaltyPendingOrder(false); setLoyaltyError(''); }}
-                    className="h-10 px-2.5 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center gap-1.5 text-white hover:bg-[#1c0f2e] transition-colors cursor-pointer"
-                    title="Royal Loyalty Points"
-                    aria-label="Royal Points"
-                  >
-                    <Crown className="w-3.5 h-3.5 text-[#E89223]" />
-                    <span className="text-[11px] font-black text-white tnum">{royalPoints}</span>
-                    <span className="text-[9px] font-bold text-[#f59e0b]">PTS</span>
-                  </button>
-
-                  {/* Steward Bell */}
-                  <button
-                    type="button"
-                    onClick={() => handleRingSteward()}
-                    className={`relative w-10 h-10 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer ${stewardAlerted
-                      ? 'bg-[#f59e0b] text-[#140b20]'
-                      : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
-                      }`}
-                    aria-label="Notify Steward"
-                    title="Call Steward to Table"
-                  >
-                    <Bell className="w-[18px] h-[18px]" />
-                    <span className="absolute -top-1 -right-1 w-[16px] h-[16px] rounded-full bg-[#f59e0b] text-[#140b20] text-[9px] font-black flex items-center justify-center border-2 border-[#0c0615] tnum">
-                      {stewardAlerted ? '✓' : '1'}
-                    </span>
-                  </button>
-
-                  {/* Sound FX Toggle */}
-                  <button
-                    type="button"
-                    onClick={handleToggleSound}
-                    className="w-10 h-10 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center justify-center text-[#8e829c] hover:text-[#f59e0b] hover:bg-[#1c0f2e] transition-colors cursor-pointer"
-                    aria-label={soundActive ? 'Mute sound effects' : 'Enable sound effects'}
-                    title={soundActive ? 'Sound Effects Active (Tap to Mute)' : 'Sound Effects Muted (Tap to Enable)'}
-                  >
-                    {soundActive ? (
-                      <Volume2 className="w-[18px] h-[18px] text-[#f59e0b]" />
-                    ) : (
-                      <VolumeX className="w-[18px] h-[18px] text-[#8e829c]" />
-                    )}
-                  </button>
-
-                  {/* Bag Button */}
+                {/* Live Kitchen Order Banner (when an order is active) */}
+                {activeSession ? (
+                  <div className="w-full p-3 rounded-[20px] bg-gradient-to-r from-[#1b0a2b] via-[#2d1148] to-[#1b0a2b] border border-[#f59e0b]/40 shadow-[0_8px_20px_rgba(245,158,11,0.15)] flex items-center justify-between gap-3 animate-in fade-in duration-300">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-[#f59e0b]/20 border border-[#f59e0b]/30 flex items-center justify-center shrink-0">
+                        <ChefHat className="w-4 h-4 text-[#f59e0b] animate-pulse" />
+                      </div>
+                      <div className="text-left min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#f59e0b] opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#f59e0b]"></span>
+                          </span>
+                          <p className="text-xs font-black text-white truncate tnum">
+                            Order #{activeSession.orderNumber} in Kitchen
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-[#FDEBD3] truncate mt-0.5">
+                          {activeSession.orderType === 'PARCEL' || isParcelLabel(activeSession.tableLabel)
+                            ? '📦 Parcel Order • Live Kitchen Tracking'
+                            : `${formatTableDisplay(activeSession.tableLabel)} • Live Kitchen Tracking`}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/order/${slug}/confirmation/${activeSession.orderId}?accessToken=${encodeURIComponent(activeSession.accessToken || '')}${activeSession.tableLabel ? `&table=${encodeURIComponent(activeSession.tableLabel)}` : ''}`}
+                      className="px-3 py-1.5 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-[#07030b] text-[11px] font-black shrink-0 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Track</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                ) : liveOrder ? (
                   <button
                     type="button"
                     onClick={() => setCartOpen(true)}
-                    className="relative w-10 h-10 rounded-2xl bg-[#140b20] border border-[#2b1942] shadow-md flex items-center justify-center text-white hover:bg-[#1c0f2e] transition-colors cursor-pointer"
-                    aria-label="Open Order Bag"
+                    className="w-full p-3 rounded-[20px] bg-[#2D1148] text-white flex items-center justify-between shadow-[0_10px_24px_rgba(45,17,72,0.2)] cursor-pointer"
                   >
-                    <ShoppingBag className="w-[18px] h-[18px]" />
-                    {cartSummary.itemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#f59e0b] text-[#140b20] text-[9px] font-black flex items-center justify-center border-2 border-[#0c0615] tnum">
-                        {cartSummary.itemCount}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-[#E89223]/20 flex items-center justify-center shrink-0">
+                        <ChefHat className="w-4 h-4 text-[#E89223]" />
+                      </div>
+                      <div className="text-left min-w-0">
+                        <p className="text-xs font-bold truncate tnum">
+                          Order #{liveOrder.id} • {liveOrder.table}
+                        </p>
+                        <p className="text-[11px] text-[#FDEBD3]">
+                          {liveOrder.stage === 0 ? 'Preparing in Tandoor' : liveOrder.stage === 1 ? 'Plating' : 'Ready to Serve'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold text-[#E89223] inline-flex items-center gap-0.5 shrink-0">
+                      Track <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </button>
+                ) : null}
+              </div>
+
+              {/* Sticky Search, Category Strip & Filter Header */}
+              <div className="sticky top-0 z-20 bg-[#0c0615]/95 backdrop-blur-md px-4 pt-2.5 pb-3 border-b border-[#2b1942] shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                {/* Search Input + Advanced Filters */}
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 text-[#796d8a] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search biryani, paneer, soup, rolls..."
+                      className="w-full h-10 rounded-xl bg-[#180e28] border border-[#2e1d44] text-white placeholder-[#796d8a] pl-9 pr-8 text-xs font-medium focus:outline-none focus:border-[#f59e0b] transition-colors"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#796d8a] hover:text-white cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFilterSheetOpen(true)}
+                    className={`relative w-10 h-10 rounded-xl border border-[#2b1942] flex items-center justify-center transition-colors cursor-pointer shrink-0 ${activeFilterCount > 0
+                      ? 'bg-[#f59e0b] text-[#140b20]'
+                      : 'bg-[#180e28] text-white hover:bg-[#201036]'
+                      }`}
+                    aria-label="Open Dish Filters"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    {activeFilterCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E89223] text-white text-[9px] font-bold flex items-center justify-center tnum">
+                        {activeFilterCount}
                       </span>
                     )}
                   </button>
                 </div>
-              </header>
 
-              {/* Live Order Mini Banner (if an order is active) */}
-              {liveOrder && (
-                <button
-                  type="button"
-                  onClick={() => setCartOpen(true)}
-                  className="w-full p-3 rounded-[20px] bg-[#2D1148] text-white flex items-center justify-between shadow-[0_10px_24px_rgba(45,17,72,0.2)] cursor-pointer"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#E89223]/20 flex items-center justify-center shrink-0">
-                      <ChefHat className="w-5 h-5 text-[#E89223]" />
-                    </div>
-                    <div className="text-left min-w-0">
-                      <p className="text-xs font-bold truncate tnum">
-                        Order #{liveOrder.id} • {liveOrder.table}
-                      </p>
-                      <p className="text-[11px] text-[#FDEBD3]">
-                        {liveOrder.stage === 0
-                          ? 'Preparing in Tandoor'
-                          : liveOrder.stage === 1
-                            ? 'Plating'
-                            : 'Serving to Table'}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-bold text-[#E89223] inline-flex items-center gap-0.5 shrink-0">
-                    Track <ChevronRight className="w-3.5 h-3.5" />
-                  </span>
-                </button>
-              )}
-
-              {/* 2. Search Bar + Filter Squircle */}
-              <div className="flex items-center gap-2.5">
-                <div className="relative flex-1">
-                  <Search className="w-[18px] h-[18px] text-[#7D7388] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search biryani, tandoor, rolls..."
-                    className="w-full h-12 rounded-2xl bg-[#140b20] border border-[#2b1942] pl-11 pr-9 text-[13.5px] font-medium text-white placeholder-[#796d8a] focus:outline-none focus:border-[#7241a3] transition-colors"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C8396] hover:text-[#1B1026] cursor-pointer"
-                      aria-label="Clear search"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setFilterSheetOpen(true)}
-                  className={`relative w-12 h-12 rounded-2xl border border-[#2b1942] shadow-md flex items-center justify-center transition-colors cursor-pointer shrink-0 ${activeFilterCount > 0
-                    ? 'bg-[#f59e0b] text-[#140b20]'
-                    : 'bg-[#140b20] text-white hover:bg-[#1c0f2e]'
-                    }`}
-                  aria-label="Open Dish Filters"
-                >
-                  <SlidersHorizontal className="w-[18px] h-[18px]" />
-                  {activeFilterCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full bg-[#E89223] text-white text-[10px] font-bold flex items-center justify-center tnum">
-                      {activeFilterCount}
-                    </span>
-                  )}
-                </button>
-              </div>
-
-              {/* 3. Hero Promo Banner Carousel */}
-              <section className="rounded-[26px] bg-gradient-to-br from-[#220B38] via-[#341254] to-[#1B082D] overflow-hidden relative min-h-[206px] shadow-[0_14px_30px_rgba(45,17,72,0.22)]">
-                <div className="relative z-10 flex items-center min-h-[206px]">
-                  {/* Left Column (56%) */}
-                  <div className="w-[56%] pl-5 pr-2 pt-5 pb-9 flex flex-col justify-between z-10">
-                    <div>
-                      <h2 className="text-[18px] font-extrabold text-white leading-[1.1] tracking-tight uppercase">
-                        {activeSlide.headlineTop}
-                        <br />
-                        {activeSlide.headlineBottom}
-                      </h2>
-                      <p className="font-editorial italic font-bold text-[21px] text-[#F3B046] leading-tight mt-1">
-                        {activeSlide.accent}
-                      </p>
-                      <GoldHairline className="my-2 max-w-[136px]" />
-                      <p className="text-[11px] font-medium text-white/80 leading-snug">
-                        {activeSlide.subtext}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const target = MENU_ITEMS.find(
-                          (d) => d.id === activeSlide.targetDishId
-                        );
-                        if (target) openCustomization(target);
-                      }}
-                      className="mt-3.5 w-fit h-9 pl-4 pr-1.5 rounded-full bg-[#E89223] hover:bg-[#D48016] text-white text-[12px] font-bold inline-flex items-center gap-2 shadow-[0_6px_16px_rgba(232,146,35,0.35)] transition-colors cursor-pointer"
-                    >
-                      <span>{activeSlide.cta}</span>
-                      <span className="w-6 h-6 rounded-full bg-white text-[#2D1148] flex items-center justify-center">
-                        <ArrowRight className="w-3.5 h-3.5 stroke-[2.6]" />
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* Right Column (44%) */}
-                  <div className="w-[44%] pr-3.5 py-4 flex items-center justify-center relative">
-                    <div className="relative w-[144px] h-[144px] flex items-center justify-center">
-                      <ArchitecturalMandalaSvg
-                        className="absolute inset-0 w-full h-full opacity-55"
-                        strokeColor="#E8D2F5"
-                        accentColor="#F3C669"
-                        strokeWidth={1.25}
-                      />
-                      <div className="w-[100px] h-[100px] rounded-full p-[3px] bg-gradient-to-tr from-[#E89223] via-[#F7D794] to-[#6E3B9E] shadow-[0_10px_24px_rgba(12,4,22,0.55)] relative z-10">
-                        <img
-                          src={activeSlide.image}
-                          alt={activeSlide.accent}
-                          onError={(e) => {
-                            e.currentTarget.src = FALLBACK_FOOD_IMG;
-                          }}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Clickable Slide Dot Indicators */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
-                  {HERO_SLIDES.map((s, idx) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => setHeroIndex(idx)}
-                      aria-label={`Go to slide ${idx + 1}`}
-                      className={`h-1.5 rounded-full transition-all cursor-pointer ${idx === heroIndex
-                        ? 'w-5 bg-[#E89223]'
-                        : 'w-1.5 bg-white/40 hover:bg-white/65'
-                        }`}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* 4. Circular Category Strip (7 Items) */}
-              <section>
-                <div className="flex items-start gap-3.5 overflow-x-auto no-scrollbar -mx-4 px-4 py-1">
+                {/* Circular Category Quick Strip */}
+                <div className="flex items-start gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pt-2.5 pb-1">
                   {CATEGORIES.map((cat) => {
                     const isActive = selectedCategory === cat.id;
                     return (
                       <button
                         key={cat.id}
                         type="button"
-                        onClick={() => setSelectedCategory(cat.id)}
-                        className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group"
+                        onClick={() => {
+                          playFilterClickSound();
+                          setSelectedCategory(cat.id);
+                        }}
+                        className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group"
                       >
                         <div
-                          className={`w-[64px] h-[64px] rounded-full p-1 transition-all ${isActive
+                          className={`w-[50px] h-[50px] rounded-full p-0.5 transition-all ${isActive
                             ? 'bg-[#180e28] ring-2 ring-[#f59e0b]'
                             : 'bg-[#140b20] border border-[#2b1942] group-hover:border-[#7241a3]'
                             }`}
@@ -4820,7 +4991,7 @@ function MainApp() {
                           />
                         </div>
                         <span
-                          className={`text-[11.5px] leading-none ${isActive
+                          className={`text-[10.5px] leading-none ${isActive
                             ? 'font-bold text-[#f59e0b]'
                             : 'font-semibold text-[#8e829c]'
                             }`}
@@ -4831,284 +5002,9 @@ function MainApp() {
                     );
                   })}
                 </div>
-              </section>
-
-              {/* Architectural Mandala Hairline Divider */}
-              <ArchitecturalMandalaDivider className="-my-1" />
-
-              {/* 5. Popular Picks Horizontal Scrollable Card Row */}
-              <section>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-[18px] font-extrabold text-white tracking-tight">
-                    {selectedCategory === 'All' && !searchQuery.trim()
-                      ? 'Popular Picks'
-                      : selectedCategory !== 'All'
-                        ? `${selectedCategory} Specials`
-                        : 'Search Results'}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('menu');
-                      setVisibleGroupCount(MENU_GROUPS.length);
-                      if (selectedCategory !== 'All') {
-                        setTimeout(() => {
-                          const matchedGroup = MENU_GROUPS.find((g) =>
-                            g.toLowerCase().includes(selectedCategory.toLowerCase())
-                          );
-                          if (matchedGroup) {
-                            const targetId = `section-${matchedGroup.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-                            document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }
-                        }, 120);
-                      }
-                    }}
-                    className="text-[13px] font-bold text-[#f59e0b] hover:text-[#fbbf24] inline-flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>View All</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {homeDishes.length === 0 ? (
-                  <div className="p-6 rounded-[22px] bg-white shadow-[0_6px_24px_rgba(45,17,72,0.06)] text-center">
-                    <p className="text-sm font-bold text-[#1B1026]">
-                      No matching dishes found
-                    </p>
-                    <p className="text-xs text-[#6E6578] mt-1">
-                      Try clearing your search or category filter.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchQuery('');
-                        setSelectedCategory('All');
-                        setVegOnly(false);
-                        setNonVegOnly(false);
-                        setUnder250(false);
-                        setBestsellersOnly(false);
-                      }}
-                      className="mt-3 h-8 px-4 rounded-full bg-[#2D1148] text-white text-xs font-bold cursor-pointer"
-                    >
-                      Reset Filters
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex gap-3.5 overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
-                    {homeDishes.map((dish) => {
-                      const qty = getDishQty(dish.id);
-                      const isFav = !!favorites[dish.id];
-                      return (
-                        <article
-                          key={dish.id}
-                          onClick={() => openCustomization(dish)}
-                          className="w-[168px] shrink-0 bg-[#140b20] border border-[#2b1942] rounded-[22px] p-3 shadow-lg flex flex-col justify-between cursor-pointer hover:border-[#7241a3] transition-colors"
-                        >
-                          <div>
-                            <div className="flex items-center justify-between gap-1 mb-2">
-                              {dish.badge ? (
-                                <span
-                                  className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wide uppercase ${badgeStyle(
-                                    dish.badgeType
-                                  )}`}
-                                >
-                                  {dish.badge}
-                                </span>
-                              ) : (
-                                <FssaiDot veg={dish.veg} />
-                              )}
-                              <button
-                                type="button"
-                                onClick={(e) => toggleFavorite(dish.id, e)}
-                                className="w-7 h-7 rounded-full hover:bg-[#FAF5F0] flex items-center justify-center cursor-pointer"
-                                aria-label="Favorite dish"
-                              >
-                                <Heart
-                                  className={`w-4 h-4 transition-colors ${isFav
-                                    ? 'fill-[#E84C6F] text-[#E84C6F]'
-                                    : 'text-[#B2A9BC]'
-                                    }`}
-                                />
-                              </button>
-                            </div>
-
-                            <div className="relative mb-2.5">
-                              <img
-                                src={dish.image}
-                                alt={dish.name}
-                                onError={(e) => {
-                                  e.currentTarget.src = FALLBACK_FOOD_IMG;
-                                }}
-                                className="h-[96px] w-full rounded-[14px] object-cover"
-                                loading="lazy"
-                              />
-                            </div>
-
-                            <h3 className="text-[14px] font-bold text-white truncate leading-snug">
-                              {dish.name}
-                            </h3>
-                            <p className="text-[11px] text-[#8e829c] line-clamp-1 mt-0.5">
-                              {dish.description}
-                            </p>
-
-                            <div className="flex items-center justify-between mt-1.5">
-                              <div className="flex items-center gap-1 text-[11px] font-bold text-[#1B1026] tnum">
-                                <Star className="w-3.5 h-3.5 fill-[#E89223] text-[#E89223]" />
-                                <span>{dish.rating}</span>
-                                <span className="text-[#8C8396] font-medium">
-                                  ({dish.ratingCount})
-                                </span>
-                              </div>
-                              <FssaiDot veg={dish.veg} />
-                            </div>
-                          </div>
-
-                          <div
-                            onClick={(e) => e.stopPropagation()}
-                            className="mt-3 pt-1 flex items-center justify-between"
-                          >
-                            <span className="text-[15px] font-black text-white tnum">
-                              ₹{dish.price}
-                            </span>
-
-                            {qty === 0 ? (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  dish.customizable
-                                    ? openCustomization(dish)
-                                    : quickAddDish(dish)
-                                }
-                                className="w-8 h-8 rounded-full bg-[#140b20] border border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b] hover:text-[#140b20] flex items-center justify-center shadow-lg cursor-pointer transition-colors"
-                                aria-label={`Add ${dish.name}`}
-                              >
-                                <Plus className="w-4 h-4 stroke-[2.8]" />
-                              </button>
-                            ) : (
-                              <div className="h-8 px-1.5 rounded-full bg-[#140b20] border border-[#f59e0b] text-[#f59e0b] inline-flex items-center gap-2 text-xs font-black tnum shadow-lg">
-                                <button
-                                  type="button"
-                                  onClick={() => quickDecrementDish(dish.id)}
-                                  className="p-0.5 cursor-pointer"
-                                  aria-label="Decrease quantity"
-                                >
-                                  <Minus className="w-3.5 h-3.5 stroke-[2.8]" />
-                                </button>
-                                <span>{qty}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => quickAddDish(dish)}
-                                  className="p-0.5 cursor-pointer"
-                                  aria-label="Increase quantity"
-                                >
-                                  <Plus className="w-3.5 h-3.5 stroke-[2.8]" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-
-              {/* 6. Exclusive Offer Banner */}
-              <section className="rounded-[22px] bg-gradient-to-r from-[#F2E9FA] to-[#EAE0F6] p-4 flex items-center justify-between gap-2 relative overflow-hidden">
-                <div className="z-10 max-w-[60%]">
-                  <span className="block text-[10px] font-bold tracking-wider text-[#5B2A86] uppercase">
-                    EXCLUSIVE OFFER
-                  </span>
-                  <h3 className="text-[20px] font-extrabold text-[#2D1148] leading-tight mt-0.5">
-                    UP TO 25% OFF
-                  </h3>
-                  <p className="text-[11px] font-medium text-[#5F546B] mb-3 mt-0.5">
-                    On Royal Combos &amp; Biryani
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleApplyCouponCode('ZAIKA25');
-                      setActiveTab('offers');
-                    }}
-                    className="h-8 pl-3.5 pr-1.5 rounded-full bg-[#2D1148] hover:bg-[#461B6E] text-white text-[11px] font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
-                  >
-                    <span>Claim ZAIKA25</span>
-                    <span className="w-5 h-5 rounded-full bg-white text-[#2D1148] flex items-center justify-center">
-                      <ArrowRight className="w-3.5 h-3.5 stroke-[2.6]" />
-                    </span>
-                  </button>
-                </div>
-
-                <div className="relative z-10 flex items-center justify-center shrink-0">
-                  <div className="w-[82px] h-[82px] rounded-full bg-[#2D1148] text-white flex flex-col items-center justify-center shadow-[0_8px_20px_rgba(45,17,72,0.25)] border-4 border-white/70">
-                    <span className="text-[20px] font-extrabold leading-none tnum">25%</span>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-[#F3B046] mt-0.5">
-                      OFF
-                    </span>
-                  </div>
-                </div>
-              </section>
-
-              {/* 7. Quick Guest Feedback Nudge */}
-              <section className="rounded-[22px] bg-[#140b20] border border-[#2b1942] p-3.5 shadow-md flex items-center justify-between gap-3 text-white">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-[#FDEBD3] flex items-center justify-center shrink-0">
-                    <Star className="w-4 h-4 fill-[#E89223] text-[#E89223]" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[12.5px] font-bold text-white leading-snug">
-                      Dining at PM Zaika?
-                    </p>
-                    <p className="text-[11px] text-[#8e829c] truncate">
-                      Share 30-sec feedback &amp; earn 50 pts
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFeedbackDone(false);
-                    setFeedbackOpen(true);
-                  }}
-                  className="shrink-0 h-8 px-4 rounded-full bg-[#f59e0b] text-[#140b20] text-xs font-black cursor-pointer transition-colors shadow-md"
-                >
-                  Rate Now
-                </button>
-              </section>
-            </div>
-          )}
-
-          {/* ---------------------------------------------------------------
-              TAB 2: FULL CATEGORIZED MENU
-             --------------------------------------------------------------- */}
-          {activeTab === 'menu' && (
-            <div className="pb-10">
-              {/* Sticky Search & Filter Header matching client reference screenshot */}
-              <div className="sticky top-0 z-20 bg-[#0c0615]/95 backdrop-blur-md px-4 pt-3.5 pb-3 border-b border-[#2b1942] shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
-                {/* Search Input */}
-                <div className="relative">
-                  <Search className="w-4 h-4 text-[#796d8a] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search for biryani, paneer, soup, rolls..."
-                    className="w-full h-11 rounded-xl sm:rounded-2xl bg-[#180e28] border border-[#2e1d44] text-white placeholder-[#796d8a] pl-10 pr-9 text-xs sm:text-[13px] font-medium focus:outline-none focus:border-[#7241a3] transition-colors"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#796d8a] hover:text-white cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
 
                 {/* 4 Filter Chips row: Veg Only, Non-Veg, Bestseller, Ratings 4.5+ */}
-                <div className="flex items-center gap-2 mt-2.5 overflow-x-auto no-scrollbar">
+                <div className="flex items-center gap-2 mt-2 overflow-x-auto no-scrollbar">
                   <button
                     type="button"
                     onClick={() => {
@@ -5369,6 +5265,7 @@ function MainApp() {
                       type="button"
                       onClick={() => {
                         setSearchQuery('');
+                        setSelectedCategory('All');
                         setVegOnly(false);
                         setNonVegOnly(false);
                         setBestsellersOnly(false);
@@ -5401,7 +5298,7 @@ function MainApp() {
 
               <RoyalPassCard
                 royalPoints={royalPoints}
-                selectedTable={selectedTable}
+                selectedTable={orderType === 'PARCEL' ? 'Parcel' : (selectedTable || 'Select Table')}
                 onRedeem={handleRedeemRoyalPoints}
                 loyaltyCustomer={loyaltyCustomer}
                 loyaltySnapshot={loyaltySnapshot}
@@ -5476,19 +5373,19 @@ function MainApp() {
                   <p className="text-[11.5px] font-medium text-[#8e829c] mt-0.5">
                     Indian • Chinese • Tandoor • Rolls
                   </p>
-                  <div className="mt-1.5 inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[#1B1026] tnum">
-                    <span className="inline-flex items-center gap-0.5 text-[#D48016]">
-                      4.8 <Star className="w-3.5 h-3.5 fill-[#E89223] text-[#E89223]" />
+                  <div className="mt-1.5 inline-flex items-center gap-1.5 text-[11.5px] font-bold tnum">
+                    <span className="inline-flex items-center gap-0.5 text-[#f59e0b]">
+                      4.8 <Star className="w-3.5 h-3.5 fill-[#f59e0b] text-[#f59e0b]" />
                     </span>
-                    <span className="text-[#C7BFD0]">•</span>
-                    <span className="text-[#461B6E]">1.2K+ ratings</span>
+                    <span className="text-[#8e829c]">•</span>
+                    <span className="text-[#cfc5db]">1.2K+ ratings</span>
                   </div>
                 </div>
               </section>
 
               <RoyalPassCard
                 royalPoints={royalPoints}
-                selectedTable={selectedTable}
+                selectedTable={orderType === 'PARCEL' ? 'Parcel' : (selectedTable || 'Select Table')}
                 onRedeem={handleRedeemRoyalPoints}
                 loyaltyCustomer={loyaltyCustomer}
                 loyaltySnapshot={loyaltySnapshot}
@@ -5634,31 +5531,12 @@ function MainApp() {
         </main>
 
         {/* =================================================================
-            BOTTOM 5-TAB NAVIGATION (DARK OBSIDIAN GLASS WITH GOLD ACCENTS)
+            BOTTOM 4-TAB NAVIGATION (MENU DIRECT — NO HOME TAB)
            ================================================================= */}
         <nav
           aria-label="Primary Navigation"
-          className="absolute bottom-0 left-0 right-0 z-30 h-[74px] bg-[#0c0615]/95 backdrop-blur-md rounded-t-[26px] border-t border-[#2b1942] shadow-[0_-8px_30px_rgba(0,0,0,0.6)] px-3 grid grid-cols-5 items-center"
+          className="absolute bottom-0 left-0 right-0 z-30 h-[74px] bg-[#0c0615]/95 backdrop-blur-md rounded-t-[26px] border-t border-[#2b1942] shadow-[0_-8px_30px_rgba(0,0,0,0.6)] px-3 grid grid-cols-4 items-center"
         >
-          <button
-            type="button"
-            onClick={() => setActiveTab('home')}
-            className="flex flex-col items-center justify-center gap-1 cursor-pointer"
-          >
-            <Home
-              className={`w-[21px] h-[21px] transition-colors ${activeTab === 'home' ? 'text-[#f59e0b] stroke-[2.4]' : 'text-[#8e829c]'
-                }`}
-            />
-            <span
-              className={`text-[10.5px] ${activeTab === 'home'
-                ? 'font-extrabold text-[#f59e0b]'
-                : 'font-semibold text-[#8e829c]'
-                }`}
-            >
-              Home
-            </span>
-          </button>
-
           <button
             type="button"
             onClick={() => setActiveTab('menu')}
@@ -5677,31 +5555,6 @@ function MainApp() {
               Menu
             </span>
           </button>
-
-          <div className="flex flex-col items-center justify-center relative">
-            <div className="relative -mt-7 w-[74px] h-[74px] flex items-center justify-center">
-              <ArchitecturalMandalaSvg
-                className="absolute inset-0 w-full h-full opacity-60"
-                strokeColor="#7241a3"
-                accentColor="#f59e0b"
-                strokeWidth={1.5}
-              />
-              <button
-                type="button"
-                onClick={() => setCartOpen(true)}
-                className="w-[62px] h-[62px] rounded-full bg-[#180c29] hover:bg-[#201036] text-[#f59e0b] shadow-[0_10px_24px_rgba(0,0,0,0.7)] border-2 border-[#f59e0b] flex flex-col items-center justify-center cursor-pointer transition-transform active:scale-95 relative z-10"
-                aria-label="Open Cart & Order"
-              >
-                <ShoppingBag className="w-[20px] h-[20px]" />
-                <span className="text-[9.5px] font-bold mt-0.5 leading-none">Order</span>
-                {cartSummary.itemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-[20px] px-1 rounded-full bg-[#f59e0b] text-[#0c0615] text-[10px] font-extrabold flex items-center justify-center border-2 border-[#0c0615] tnum">
-                    {cartSummary.itemCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
 
           <button
             type="button"
@@ -5740,6 +5593,25 @@ function MainApp() {
               Hub
             </span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
+            className="relative flex flex-col items-center justify-center gap-1 cursor-pointer group"
+            aria-label="Open Cart & Order"
+          >
+            <div className="relative w-10 h-9 rounded-2xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] text-[#140b20] flex items-center justify-center shadow-[0_4px_14px_rgba(245,158,11,0.35)] group-active:scale-95 transition-transform">
+              <ShoppingBag className="w-[18px] h-[18px] stroke-[2.4]" />
+              {cartSummary.itemCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[19px] h-[19px] px-1 rounded-full bg-white text-[#140b20] text-[10px] font-black flex items-center justify-center border-2 border-[#0c0615] tnum shadow">
+                  {cartSummary.itemCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10.5px] font-extrabold text-[#f59e0b]">
+              Order {cartSummary.grandTotal > 0 ? `• ₹${cartSummary.grandTotal}` : ''}
+            </span>
+          </button>
         </nav>
 
         {/* Floating 📖 MENU Quick-Jump Button on Menu tab */}
@@ -5755,63 +5627,187 @@ function MainApp() {
           </button>
         )}
 
-        {/* MODAL 1: TABLE SELECTOR */}
+        {/* MODAL 1: DINE-IN TABLE NUMBER & PARCEL SELECTOR */}
         {tableModalOpen && (
           <div
-            onClick={() => setTableModalOpen(false)}
+            onClick={() => {
+              setTableModalOpen(false);
+              setPendingPlaceAfterTable(false);
+            }}
             className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-[#140b20] border-t border-[#2b1942] p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 text-white"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#140b20] border-t border-[#2b1942] p-5 shadow-2xl animate-in slide-in-from-bottom duration-200 text-white space-y-4"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[#2b1942]">
                 <div>
                   <h3 className="text-[16px] font-extrabold text-white">
-                    Select Dining Table
+                    Choose Order Type &amp; Table
                   </h3>
                   <p className="text-xs text-[#8e829c]">
-                    Choose your table number or takeaway pickup
+                    Select Dine-In Table Number or Parcel (Takeaway)
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setTableModalOpen(false)}
+                  onClick={() => {
+                    setTableModalOpen(false);
+                    setPendingPlaceAfterTable(false);
+                  }}
                   className="w-8 h-8 rounded-full bg-[#180e28] flex items-center justify-center text-[#8e829c] hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2.5 mt-4 max-h-[270px] overflow-y-auto no-scrollbar">
-                {TABLES.map((tbl) => (
-                  <button
-                    key={tbl}
-                    type="button"
-                    onClick={() => {
-                      setSelectedTable(tbl);
-                      try {
-                        const url = new URL(window.location.href);
-                        if (tbl === 'Takeaway') {
-                          url.searchParams.set('table', 'takeaway');
+              {/* Order Mode Selector Cards */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setOrderType('DINE_IN')}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                    orderType === 'DINE_IN'
+                      ? 'bg-amber-500/15 border-[#f59e0b] ring-1 ring-[#f59e0b]/40 text-white'
+                      : 'bg-[#180e28] border-[#2b1942] text-[#8e829c] hover:text-white'
+                  }`}
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${orderType === 'DINE_IN' ? 'bg-[#f59e0b] text-[#140b20]' : 'bg-[#140b20] text-[#8e829c]'}`}>
+                    <UtensilsCrossed className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-black block leading-tight">Dine-In</span>
+                    <span className="text-[10px] opacity-80">Table Number</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    applyDiningChoice('PARCEL', 'Parcel', true);
+                    if (pendingPlaceAfterTable) {
+                      setPendingPlaceAfterTable(false);
+                      setTimeout(() => {
+                        if (!loyaltyCustomer) {
+                          setLoyaltyModalOpen(true);
+                          setLoyaltyPendingOrder(true);
+                          setLoyaltyStep('phone');
+                          setLoyaltyError('');
                         } else {
-                          const num = tbl.replace(/\D/g, '');
-                          url.searchParams.set('table', num ? num.padStart(2, '0') : tbl.toLowerCase());
+                          executePlaceOrder();
                         }
-                        window.history.replaceState({}, '', url.toString());
-                      } catch { }
-                      setTableModalOpen(false);
-                      showToast(`Switched to ${tbl}`);
-                    }}
-                    className={`py-2.5 rounded-2xl text-xs font-bold tnum cursor-pointer transition-colors ${selectedTable === tbl
-                      ? 'bg-[#f59e0b] text-[#140b20] font-black shadow-lg'
-                      : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036]'
-                      }`}
-                  >
-                    {tbl}
-                  </button>
-                ))}
+                      }, 150);
+                    }
+                  }}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                    orderType === 'PARCEL'
+                      ? 'bg-emerald-500/20 border-emerald-500 ring-1 ring-emerald-500/40 text-white'
+                      : 'bg-[#180e28] border-[#2b1942] text-[#8e829c] hover:text-white'
+                  }`}
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${orderType === 'PARCEL' ? 'bg-emerald-500 text-[#07030b]' : 'bg-[#140b20] text-[#8e829c]'}`}>
+                    <Package className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-black block leading-tight">Parcel</span>
+                    <span className="text-[10px] opacity-80">Pack &amp; Pickup</span>
+                  </div>
+                </button>
               </div>
+
+              {/* Table Grid & Custom Table No. Input */}
+              {orderType === 'DINE_IN' && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-2 max-h-[210px] overflow-y-auto no-scrollbar">
+                    {(availableTables.length > 0
+                      ? availableTables.map((t) => ({
+                          label: /^\d+$/.test(t.label) ? `Table ${t.label.padStart(2, '0')}` : t.label,
+                          raw: t.label,
+                          state: t.state || 'available',
+                        }))
+                      : TABLES.map((lbl) => ({ label: lbl, raw: lbl, state: 'available' }))
+                    ).map((tbl) => {
+                      const isOwnActive = activeSession?.tableLabel === tbl.raw || activeSession?.tableLabel === tbl.label;
+                      const isBlocked = (tbl.state === 'occupied' || tbl.state === 'cleaning') && !isOwnActive;
+                      const isSelected = selectedTable === tbl.label || selectedTable === tbl.raw;
+
+                      return (
+                        <button
+                          key={tbl.label}
+                          type="button"
+                          disabled={isBlocked}
+                          onClick={() => {
+                            applyDiningChoice('DINE_IN', tbl.label, true);
+                            if (pendingPlaceAfterTable) {
+                              setPendingPlaceAfterTable(false);
+                              setTimeout(() => {
+                                if (!loyaltyCustomer) {
+                                  setLoyaltyModalOpen(true);
+                                  setLoyaltyPendingOrder(true);
+                                  setLoyaltyStep('phone');
+                                  setLoyaltyError('');
+                                } else {
+                                  executePlaceOrder();
+                                }
+                              }, 150);
+                            }
+                          }}
+                          className={`py-2.5 rounded-2xl text-xs font-bold tnum transition-colors flex items-center justify-center gap-1 ${
+                            isBlocked
+                              ? 'bg-[#180e28]/60 border border-[#2b1942] text-[#6E6578] opacity-50 cursor-not-allowed'
+                              : isSelected
+                              ? 'bg-[#f59e0b] text-[#140b20] font-black shadow-lg cursor-pointer'
+                              : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036] cursor-pointer'
+                          }`}
+                        >
+                          <span>{tbl.label}</span>
+                          {tbl.state === 'occupied' && !isOwnActive && (
+                            <span className="text-[9px] text-[#f59e0b]">●</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom Table Number Input */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-[#2b1942]">
+                    <input
+                      type="text"
+                      value={customTableInput}
+                      onChange={(e) => setCustomTableInput(e.target.value)}
+                      placeholder="Custom Table No. (e.g. 16, VIP)"
+                      maxLength={20}
+                      className="flex-1 h-10 px-3.5 rounded-xl bg-[#180e28] border border-[#2b1942] focus:border-[#f59e0b] text-xs text-white placeholder-[#796d8a] outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const clean = customTableInput.trim();
+                        if (!clean) return;
+                        const formatted = /^\d+$/.test(clean) ? `Table ${clean.padStart(2, '0')}` : clean;
+                        setCustomTableInput('');
+                        applyDiningChoice('DINE_IN', formatted, true);
+                        if (pendingPlaceAfterTable) {
+                          setPendingPlaceAfterTable(false);
+                          setTimeout(() => {
+                            if (!loyaltyCustomer) {
+                              setLoyaltyModalOpen(true);
+                              setLoyaltyPendingOrder(true);
+                              setLoyaltyStep('phone');
+                              setLoyaltyError('');
+                            } else {
+                              executePlaceOrder();
+                            }
+                          }, 150);
+                        }
+                      }}
+                      className="h-10 px-4 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] text-xs font-black cursor-pointer transition-colors"
+                    >
+                      Set Table
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -6101,11 +6097,11 @@ function MainApp() {
         {cartOpen && (
           <div
             onClick={() => setCartOpen(false)}
-            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center"
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-end justify-center"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-[430px] rounded-t-[28px] bg-[#0c0615] border-t border-[#2b1942] max-h-[90%] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200"
+              className="w-full max-w-[430px] rounded-t-[28px] bg-[#0c0615] border-t border-[#2b1942] max-h-[92%] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200 text-white"
             >
               <div className="px-5 py-4 bg-[#140b20] border-b border-[#2b1942] flex items-center justify-between">
                 <div>
@@ -6117,13 +6113,23 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => setTableModalOpen(true)}
-                    className="text-[11.5px] font-bold text-[#f59e0b] inline-flex items-center gap-1 mt-0.5 cursor-pointer tnum"
+                    className={`text-[11.5px] font-bold inline-flex items-center gap-1 mt-0.5 cursor-pointer tnum ${
+                      orderType === 'PARCEL' ? 'text-emerald-400' : 'text-[#f59e0b]'
+                    }`}
                   >
+                    {orderType === 'PARCEL' ? (
+                      <Package className="w-3.5 h-3.5" />
+                    ) : (
+                      <MapPin className="w-3.5 h-3.5" />
+                    )}
                     <span>
-                      {selectedTable} •{' '}
-                      {selectedTable === 'Takeaway' ? 'Pickup' : 'Dine-In'}
+                      {orderType === 'PARCEL'
+                        ? 'Parcel • Takeaway Pack'
+                        : selectedTable
+                        ? `${formatTableDisplay(selectedTable)} • Dine-In`
+                        : 'Select Table Number or Parcel'}
                     </span>
-                    <ChevronDown className="w-3.5 h-3.5 text-[#E89223]" />
+                    <ChevronDown className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 <button
@@ -6178,7 +6184,7 @@ function MainApp() {
                     </p>
                   </div>
 
-                  <div className="rounded-[22px] bg-white p-4 shadow-[0_6px_20px_rgba(45,17,72,0.05)] space-y-4">
+                  <div className="rounded-[22px] bg-[#140b20] border border-[#2b1942] p-4 shadow-lg space-y-4">
                     {[
                       {
                         step: 0,
@@ -6192,7 +6198,7 @@ function MainApp() {
                       },
                       {
                         step: 2,
-                        title: 'Serving to Table',
+                        title: 'Ready & Serving',
                         desc: `On its way hot to ${liveOrder.table}`
                       }
                     ].map((st) => {
@@ -6202,8 +6208,8 @@ function MainApp() {
                         <div key={st.step} className="flex items-start gap-3">
                           <div
                             className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${done
-                              ? 'bg-[#E89223] text-white'
-                              : 'bg-[#FAF5F0] text-[#B2A9BC]'
+                              ? 'bg-[#f59e0b] text-[#140b20]'
+                              : 'bg-[#180e28] text-[#8e829c]'
                               }`}
                           >
                             {done ? (
@@ -6215,15 +6221,15 @@ function MainApp() {
                           <div>
                             <p
                               className={`text-[13.5px] font-bold ${current
-                                ? 'text-[#2D1148]'
+                                ? 'text-[#f59e0b]'
                                 : done
-                                  ? 'text-[#1B1026]'
-                                  : 'text-[#9B92A6]'
+                                  ? 'text-white'
+                                  : 'text-[#8e829c]'
                                 }`}
                             >
                               {st.title}
                             </p>
-                            <p className="text-[11.5px] text-[#6E6578]">{st.desc}</p>
+                            <p className="text-[11.5px] text-[#8e829c]">{st.desc}</p>
                           </div>
                         </div>
                       );
@@ -6238,7 +6244,7 @@ function MainApp() {
                           setLiveOrder(null);
                           showToast('Order completed. Ready for new orders!');
                         }}
-                        className="h-11 rounded-full bg-[#15803D] hover:bg-[#166534] text-white text-xs font-extrabold cursor-pointer transition-colors"
+                        className="h-11 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold cursor-pointer transition-colors"
                       >
                         Start New Order
                       </button>
@@ -6246,7 +6252,7 @@ function MainApp() {
                       <button
                         type="button"
                         onClick={() => handleRingSteward('Table Assistance / Order Status')}
-                        className="h-11 rounded-full bg-white border border-[#2D1148]/15 text-[#2D1148] hover:bg-[#FAF5F0] text-xs font-extrabold cursor-pointer transition-colors"
+                        className="h-11 rounded-full bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036] text-xs font-extrabold cursor-pointer transition-colors"
                       >
                         Call Steward
                       </button>
@@ -6257,7 +6263,7 @@ function MainApp() {
                         setCartOpen(false);
                         setActiveTab('menu');
                       }}
-                      className="h-11 rounded-full bg-[#2D1148] text-white text-xs font-extrabold cursor-pointer"
+                      className="h-11 rounded-full bg-[#f59e0b] text-[#140b20] text-xs font-black cursor-pointer"
                     >
                       Order More
                     </button>
@@ -6265,13 +6271,13 @@ function MainApp() {
                 </div>
               ) : cartSummary.itemCount === 0 ? (
                 <div className="p-8 text-center space-y-3">
-                  <div className="w-14 h-14 rounded-2xl bg-[#F2EAF8] flex items-center justify-center mx-auto">
-                    <UtensilsCrossed className="w-6 h-6 text-[#2D1148]" />
+                  <div className="w-14 h-14 rounded-2xl bg-[#180e28] border border-[#2b1942] flex items-center justify-center mx-auto">
+                    <UtensilsCrossed className="w-6 h-6 text-[#f59e0b]" />
                   </div>
-                  <h4 className="text-[16px] font-extrabold text-[#1B1026]">
+                  <h4 className="text-[16px] font-extrabold text-white">
                     Your order bag is empty
                   </h4>
-                  <p className="text-xs text-[#6E6578] max-w-[240px] mx-auto">
+                  <p className="text-xs text-[#8e829c] max-w-[240px] mx-auto">
                     Explore our royal biryanis, smoky tandoor kebabs, and fresh rolls.
                   </p>
                   <button
@@ -6280,7 +6286,7 @@ function MainApp() {
                       setCartOpen(false);
                       setActiveTab('menu');
                     }}
-                    className="mt-2 h-10 px-6 rounded-full bg-[#E89223] text-white text-xs font-extrabold cursor-pointer"
+                    className="mt-2 h-10 px-6 rounded-full bg-[#f59e0b] text-[#140b20] text-xs font-black cursor-pointer"
                   >
                     Browse Menu
                   </button>
@@ -6288,7 +6294,60 @@ function MainApp() {
               ) : (
                 <>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar">
-                    <div className="rounded-[22px] bg-white shadow-[0_4px_16px_rgba(45,17,72,0.05)] divide-y divide-[#F4EFE9]">
+                    {/* Dine-In (Table No.) / Parcel Quick Selector Card in Bag */}
+                    <div className="rounded-[20px] bg-[#140b20] border border-[#2b1942] p-3 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#8e829c]">
+                          Order Mode &amp; Location
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setTableModalOpen(true)}
+                          className="text-[11px] font-bold text-[#f59e0b] hover:underline cursor-pointer"
+                        >
+                          {orderType === 'DINE_IN' && selectedTable ? 'Change Table' : 'All Tables'}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (orderType === 'PARCEL' || !selectedTable) {
+                              setTableModalOpen(true);
+                            } else {
+                              setOrderType('DINE_IN');
+                            }
+                          }}
+                          className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                            orderType === 'DINE_IN'
+                              ? 'bg-[#f59e0b]/20 border-[#f59e0b] text-[#fcd34d]'
+                              : 'bg-[#180e28] border-[#2b1942] text-[#8e829c] hover:text-white'
+                          }`}
+                        >
+                          <UtensilsCrossed className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">
+                            {orderType === 'DINE_IN' && selectedTable
+                              ? formatTableDisplay(selectedTable)
+                              : 'Pick Table No.'}
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => applyDiningChoice('PARCEL', 'Parcel', false)}
+                          className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                            orderType === 'PARCEL'
+                              ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                              : 'bg-[#180e28] border-[#2b1942] text-[#8e829c] hover:text-white'
+                          }`}
+                        >
+                          <Package className="w-3.5 h-3.5 shrink-0" />
+                          <span>Parcel</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[22px] bg-[#140b20] border border-[#2b1942] shadow-md divide-y divide-[#221334]">
                       {cartSummary.entries.map((entry) => (
                         <div
                           key={entry.key}
@@ -6299,36 +6358,36 @@ function MainApp() {
                               <FssaiDot veg={entry.dish.veg} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-[13.5px] font-bold text-[#1B1026] leading-snug">
+                              <p className="text-[13.5px] font-bold text-white leading-snug">
                                 {entry.dish.name}
                               </p>
-                              <p className="text-[11px] text-[#6E6578] mt-0.5">
+                              <p className="text-[11px] text-[#8e829c] mt-0.5">
                                 {entry.portion} • {entry.spice}
                                 {entry.addons.length > 0
                                   ? ` • + ${entry.addons.join(', ')}`
                                   : ''}
                                 {entry.notes ? ` • "${entry.notes}"` : ''}
                               </p>
-                              <p className="text-[13px] font-extrabold text-[#2D1148] mt-1 tnum">
+                              <p className="text-[13px] font-extrabold text-[#f59e0b] mt-1 tnum">
                                 ₹{entry.unitPrice * entry.qty}
                               </p>
                             </div>
                           </div>
 
-                          <div className="h-8 px-2 rounded-full bg-[#FDEBD3] text-[#2D1148] inline-flex items-center gap-2 text-xs font-extrabold tnum shrink-0">
+                          <div className="h-8 px-2 rounded-full bg-[#180e28] border border-[#f59e0b]/40 text-[#f59e0b] inline-flex items-center gap-2 text-xs font-extrabold tnum shrink-0">
                             <button
                               type="button"
                               onClick={() => updateCartQty(entry.key, -1)}
-                              className="cursor-pointer"
+                              className="cursor-pointer hover:text-white"
                               aria-label="Decrease"
                             >
                               <Minus className="w-3.5 h-3.5 stroke-[2.6]" />
                             </button>
-                            <span>{entry.qty}</span>
+                            <span className="text-white">{entry.qty}</span>
                             <button
                               type="button"
                               onClick={() => updateCartQty(entry.key, 1)}
-                              className="cursor-pointer"
+                              className="cursor-pointer hover:text-white"
                               aria-label="Increase"
                             >
                               <Plus className="w-3.5 h-3.5 stroke-[2.6]" />
@@ -6343,32 +6402,32 @@ function MainApp() {
                       value={cookingNotes}
                       onChange={(e) => setCookingNotes(e.target.value)}
                       placeholder="Add cooking instructions (less spicy, extra chutney)..."
-                      className="w-full h-11 px-4 rounded-2xl bg-white shadow-sm text-xs font-medium text-[#1B1026] placeholder-[#948B9E] focus:outline-none focus:ring-2 focus:ring-[#E89223]/40"
+                      className="w-full h-11 px-4 rounded-2xl bg-[#140b20] border border-[#2b1942] text-xs font-medium text-white placeholder-[#796d8a] focus:outline-none focus:border-[#f59e0b]"
                     />
 
-                    <div className="rounded-[20px] bg-white p-3.5 shadow-sm space-y-2.5">
+                    <div className="rounded-[20px] bg-[#140b20] border border-[#2b1942] p-3.5 space-y-2.5">
                       <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-[#461B6E] shrink-0" />
+                        <Tag className="w-4 h-4 text-[#f59e0b] shrink-0" />
                         <input
                           type="text"
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                           placeholder="Enter code (e.g. ZAIKA25)"
-                          className="flex-1 text-xs font-bold text-[#1B1026] placeholder-[#9B92A6] uppercase focus:outline-none"
+                          className="flex-1 bg-transparent text-xs font-bold text-white placeholder-[#796d8a] uppercase focus:outline-none"
                         />
                         <button
                           type="button"
                           onClick={() =>
                             handleApplyCouponCode(couponInput || 'ZAIKA25')
                           }
-                          className="h-8 px-3.5 rounded-full bg-[#2D1148] text-white text-[11px] font-bold cursor-pointer"
+                          className="h-8 px-3.5 rounded-full bg-[#f59e0b] text-[#140b20] text-[11px] font-black cursor-pointer"
                         >
                           Apply
                         </button>
                       </div>
                       {appliedCouponCode && (
-                        <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[#F4EFE9]">
-                          <span className="font-bold text-[#15803D]">
+                        <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[#2b1942]">
+                          <span className="font-bold text-emerald-400">
                             {cartSummary.couponDiscount > 0
                               ? `${appliedCouponCode} applied — Saving ₹${cartSummary.couponDiscount}`
                               : `${appliedCouponCode} saved (add more to meet min order)`}
@@ -6376,7 +6435,7 @@ function MainApp() {
                           <button
                             type="button"
                             onClick={() => setAppliedCouponCode(null)}
-                            className="text-[#DC2626] font-bold cursor-pointer"
+                            className="text-rose-400 font-bold cursor-pointer"
                           >
                             Remove
                           </button>
@@ -6404,79 +6463,104 @@ function MainApp() {
                       <button
                         type="button"
                         onClick={() => setRedeemPoints((r) => !r)}
-                        className={`w-full p-3.5 rounded-[20px] flex items-center justify-between text-left cursor-pointer transition-colors ${redeemPoints
-                          ? 'bg-[#F2EAF8] ring-1 ring-[#3B155E]'
-                          : 'bg-white shadow-sm'
+                        className={`w-full p-3.5 rounded-[20px] flex items-center justify-between text-left cursor-pointer transition-colors border ${redeemPoints
+                          ? 'bg-[#281440] border-[#f59e0b]'
+                          : 'bg-[#140b20] border-[#2b1942]'
                           }`}
                       >
                         <div className="flex items-center gap-2.5">
-                          <Award className="w-4 h-4 text-[#E89223]" />
+                          <Award className="w-4 h-4 text-[#f59e0b]" />
                           <div>
-                            <p className="text-xs font-bold text-[#1B1026]">
+                            <p className="text-xs font-bold text-white">
                               Redeem 50 Royal Points (₹50 OFF)
                             </p>
-                            <p className="text-[10.5px] text-[#6E6578] tnum">
+                            <p className="text-[10.5px] text-[#8e829c] tnum">
                               Balance: {royalPoints} PTS · Hi, {loyaltyCustomer.name?.split(' ')[0] || 'Guest'}
                             </p>
                           </div>
                         </div>
                         <span
-                          className={`text-[11px] font-extrabold ${redeemPoints ? 'text-[#2D1148]' : 'text-[#E89223]'
+                          className={`text-[11px] font-extrabold ${redeemPoints ? 'text-emerald-400' : 'text-[#f59e0b]'
                             }`}
                         >
                           {redeemPoints ? 'Applied ✓' : 'Use'}
                         </span>
                       </button>
                     ) : loyaltyCustomer ? (
-                      <div className="w-full p-3.5 rounded-[20px] bg-[#f8f4ff] flex items-center gap-2.5">
-                        <Award className="w-4 h-4 text-[#E89223] shrink-0" />
+                      <div className="w-full p-3.5 rounded-[20px] bg-[#140b20] border border-[#2b1942] flex items-center gap-2.5">
+                        <Award className="w-4 h-4 text-[#f59e0b] shrink-0" />
                         <div>
-                          <p className="text-[11px] font-bold text-[#1B1026]">Hi, {loyaltyCustomer.name?.split(' ')[0] || 'Guest'} · {royalPoints} Royal Points</p>
-                          <p className="text-[10px] text-[#6E6578]">Earn more to unlock ₹50 reward</p>
+                          <p className="text-[11px] font-bold text-white">Hi, {loyaltyCustomer.name?.split(' ')[0] || 'Guest'} · {royalPoints} Royal Points</p>
+                          <p className="text-[10px] text-[#8e829c]">Earn more to unlock ₹50 reward</p>
                         </div>
                       </div>
                     ) : null}
 
-                    <div className="rounded-[22px] bg-white p-4 shadow-sm space-y-2 text-xs tnum">
-                      <div className="flex justify-between text-[#6E6578]">
+                    <div className="rounded-[22px] bg-[#140b20] border border-[#2b1942] p-4 space-y-2 text-xs tnum">
+                      <div className="flex justify-between text-[#8e829c]">
                         <span>Subtotal</span>
-                        <span className="font-semibold text-[#1B1026]">
+                        <span className="font-semibold text-white">
                           ₹{cartSummary.subtotal}
                         </span>
                       </div>
                       {cartSummary.couponDiscount > 0 && (
-                        <div className="flex justify-between text-[#15803D] font-bold">
+                        <div className="flex justify-between text-emerald-400 font-bold">
                           <span>Coupon ({appliedCouponCode})</span>
                           <span>-₹{cartSummary.couponDiscount}</span>
                         </div>
                       )}
                       {cartSummary.pointsDiscount > 0 && (
-                        <div className="flex justify-between text-[#15803D] font-bold">
+                        <div className="flex justify-between text-emerald-400 font-bold">
                           <span>Royal Rewards Credit</span>
                           <span>-₹{cartSummary.pointsDiscount}</span>
                         </div>
                       )}
-                      <div className="flex justify-between text-[#6E6578]">
+                      <div className="flex justify-between text-[#8e829c]">
                         <span>GST (5%)</span>
-                        <span className="font-semibold text-[#1B1026]">
+                        <span className="font-semibold text-white">
                           ₹{cartSummary.gst}
                         </span>
                       </div>
-                      <div className="flex justify-between text-[15px] font-black text-white pt-2.5 border-t border-[#EFE8DF]">
+                      <div className="flex justify-between text-[15px] font-black text-white pt-2.5 border-t border-[#2b1942]">
                         <span>Grand Total</span>
-                        <span className="text-[#2D1148]">₹{cartSummary.grandTotal}</span>
+                        <span className="text-[#f59e0b]">₹{cartSummary.grandTotal}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 bg-[#140b20] border-t border-[#2b1942]">
+                  <div className="p-4 bg-[#140b20] border-t border-[#2b1942] space-y-2">
                     <button
                       type="button"
+                      disabled={submittingOrder}
                       onClick={handlePlaceOrder}
-                      className="w-full h-12 rounded-full bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] font-black text-[14px] font-extrabold shadow-[0_10px_24px_rgba(45,17,72,0.28)] cursor-pointer transition-colors tnum"
+                      className="w-full h-12 rounded-full bg-[#f59e0b] hover:bg-[#d97706] disabled:opacity-50 text-[#140b20] font-black text-[14px] shadow-[0_10px_24px_rgba(245,158,11,0.28)] cursor-pointer transition-colors tnum flex items-center justify-center gap-2"
                     >
-                      Place Table Order • ₹{cartSummary.grandTotal}
+                      {submittingOrder ? (
+                        <>
+                          <ChefHat className="w-4 h-4 animate-spin text-[#140b20]" />
+                          <span>Sending to Kitchen...</span>
+                        </>
+                      ) : orderType === 'PARCEL' ? (
+                        <>
+                          <Package className="w-4 h-4 text-[#140b20]" />
+                          <span>Place Parcel Order • ₹{cartSummary.grandTotal}</span>
+                        </>
+                      ) : selectedTable ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-[#140b20]" />
+                          <span>Place {formatTableDisplay(selectedTable)} Order • ₹{cartSummary.grandTotal}</span>
+                        </>
+                      ) : (
+                        <span>Select Table / Parcel &amp; Order • ₹{cartSummary.grandTotal}</span>
+                      )}
                     </button>
+                    <Link
+                      href={`/order/${slug}/checkout?table=${encodeURIComponent(orderType === 'PARCEL' ? 'Parcel' : selectedTable)}&orderType=${orderType}${token && orderType !== 'PARCEL' ? `&token=${encodeURIComponent(token)}` : ''}`}
+                      onClick={() => setCartOpen(false)}
+                      className="w-full py-2 text-center text-[12px] font-bold text-[#f59e0b]/80 hover:text-[#f59e0b] transition-colors block"
+                    >
+                      Or proceed to detailed checkout &amp; rewards review →
+                    </Link>
                   </div>
                 </>
               )}

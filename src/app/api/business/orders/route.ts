@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOrders, getActiveOrders, getOrdersByFulfilment, getTables, normalizeTableLabel, getActiveOrdersEtag, computeOrdersEtag, type FulfilmentStatus, type Order } from '@/lib/firebase/ordering'
+import { isParcelLabel } from '@/lib/ordering/rules.mjs'
 import { getSessionFromRequest } from '@/lib/firebase/auth'
 
 export const dynamic = 'force-dynamic'
@@ -82,6 +83,7 @@ export async function GET(request: NextRequest) {
       orders.map((o) => ({
         id: o.id,
         orderNumber: o.orderNumber,
+        orderType: o.orderType || (isParcelLabel(o.tableLabel) ? 'PARCEL' : 'DINE_IN'),
         tableId: o.tableId,
         tableLabel: o.tableLabel,
         customerName: o.customerName,

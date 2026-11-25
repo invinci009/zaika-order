@@ -51,7 +51,7 @@ export function BrandIdentity({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
-            alt="Biryani Badshah"
+            alt="PM Zaika Restaurant"
             className="w-full h-full object-contain"
           />
         </div>
@@ -63,7 +63,7 @@ export function BrandIdentity({
             titleSizes[variant]
           } ${isDark ? 'text-white' : 'text-stone-900'}`}
         >
-          BIRYANI BADSHAH
+          PM ZAIKA RESTAURANT
         </span>
         {showTagline && (
           <span

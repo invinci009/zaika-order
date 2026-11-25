@@ -25,7 +25,7 @@ import {
 import { getCustomerSession } from '@/lib/loyalty/session'
 import { hashToken, generateOrderAccessToken } from '@/lib/ordering/tokens'
 import { orderCreateSchema, normalizePhoneServerSide } from '@/lib/ordering/validation'
-import { computeQuote } from '@/lib/ordering/rules.mjs'
+import { computeQuote, isParcelLabel } from '@/lib/ordering/rules.mjs'
 
 // POST /api/public/orders — server-authoritative order creation.
 // Validates restaurant, table token, phone, items, options; rechecks
@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
           {
             orderId: existing.id,
             orderNumber: existing.orderNumber,
+            orderType: existing.orderType || (isParcelLabel(existing.tableLabel) ? 'PARCEL' : 'DINE_IN'),
             totalPaise: existing.totalPaise,
             tableLabel: existing.tableLabel,
             duplicate: true,
@@ -109,28 +110,42 @@ export async function POST(request: NextRequest) {
         )
       }
 
-    // 3. Table resolution (token or table label)
+    // 3. Order mode (Dine-In vs Parcel) & Table resolution
+    const isParcelOrder =
+      input.orderType === 'PARCEL' || (Boolean(input.tableLabel) && isParcelLabel(input.tableLabel))
+    const resolvedOrderType: 'DINE_IN' | 'PARCEL' = isParcelOrder ? 'PARCEL' : 'DINE_IN'
+
     let tableId: string | null = null
     let tableLabel: string | null = null
     let canonicalTable: DiningTable | null = null
+
     if (input.tableToken) {
       const resolved = await resolveTableToken(hashToken(input.tableToken))
       if (!resolved) return NextResponse.json({ error: 'Table code expired or revoked' }, { status: 410 })
-      tableId = resolved.table.id
-      tableLabel = resolved.table.label
-      canonicalTable = resolved.table
+      if (!isParcelOrder) {
+        tableId = resolved.table.id
+        tableLabel = resolved.table.label
+        canonicalTable = resolved.table
+      }
     } else {
       const orderingCfg = await getOrderingConfig().catch(() => null)
-      if (orderingCfg && !orderingCfg.generalOrderingEnabled && !input.tableLabel) {
+      if (orderingCfg && !orderingCfg.generalOrderingEnabled && !input.tableLabel && !isParcelOrder) {
         return NextResponse.json({ error: 'Please scan your table QR to order' }, { status: 403 })
-      }
-      if (input.tableLabel) {
-        tableLabel = input.tableLabel.trim()
       }
     }
 
-    // Resolve canonical table if tableLabel was provided without a token
-    if (!tableId && tableLabel) {
+    if (isParcelOrder) {
+      // Parcel orders never reserve/collide with dining tables
+      tableId = null
+      canonicalTable = null
+      const trimmedLabel = input.tableLabel?.trim() || ''
+      tableLabel = trimmedLabel && isParcelLabel(trimmedLabel) ? 'Parcel' : trimmedLabel ? `Parcel (${trimmedLabel})` : 'Parcel'
+    } else if (!tableLabel && input.tableLabel) {
+      tableLabel = input.tableLabel.trim()
+    }
+
+    // Resolve canonical table if Dine-In tableLabel was provided without a token
+    if (!isParcelOrder && !tableId && tableLabel) {
       const tables = await getTables(true).catch(() => [])
       const matched = tables.find(
         (t) => normalizeTableLabel(t.label) === normalizeTableLabel(tableLabel!)
@@ -361,6 +376,7 @@ export async function POST(request: NextRequest) {
       order = await createOrder({
         restaurantId: 'default',
         orderNumber,
+        orderType: resolvedOrderType,
         tableId,
         tableLabel,
         customerName: name.slice(0, 100),
@@ -422,6 +438,7 @@ export async function POST(request: NextRequest) {
       {
         orderId: order.id,
         orderNumber: order.orderNumber,
+        orderType: order.orderType || resolvedOrderType,
         totalPaise: order.totalPaise,
         tableLabel,
         accessToken,

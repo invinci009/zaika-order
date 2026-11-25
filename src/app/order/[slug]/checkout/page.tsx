@@ -24,8 +24,10 @@ import {
   Plus,
   Minus,
   Trash2,
+  Package,
+  UtensilsCrossed,
 } from 'lucide-react'
-import { formatPaise, isValidIndianPhone, formatTableDisplay, maskPhone } from '@/lib/ordering/rules.mjs'
+import { formatPaise, isValidIndianPhone, formatTableDisplay, isParcelLabel, maskPhone } from '@/lib/ordering/rules.mjs'
 import { loadCart, saveCart, clearCart, getActiveOrderSession, saveActiveOrderSession, type CartLine, type ActiveSession } from '@/lib/ordering/cart'
 
 const QUICK_NOTES = [
@@ -80,7 +82,10 @@ export default function CheckoutPage() {
   const [menu, setMenu] = useState<QuoteItem[]>([])
   const [taxRateBps, setTaxRateBps] = useState(500)
   const [chargePaise, setChargePaise] = useState(0)
-  const [tableLabel, setTableLabel] = useState<string | null>(tableParam || null)
+  const initialIsParcel = isParcelLabel(tableParam) || searchParams.get('orderType') === 'PARCEL' || searchParams.get('mode') === 'parcel'
+  const [orderType, setOrderType] = useState<'DINE_IN' | 'PARCEL'>(initialIsParcel ? 'PARCEL' : 'DINE_IN')
+  const [tableLabel, setTableLabel] = useState<string | null>(initialIsParcel ? 'Parcel' : tableParam || null)
+  const [customTableInput, setCustomTableInput] = useState('')
   const [tablePickerOpen, setTablePickerOpen] = useState(false)
   const [availableTables, setAvailableTables] = useState<Array<{ id: string; label: string; state?: string }>>([])
   const [activeSession, setActiveSession] = useState<ActiveSession | null>(null)
@@ -203,7 +208,13 @@ export default function CheckoutPage() {
             resolvedTable = sessionStorage.getItem(`rp_table_${slug}`) || null
           } catch {}
         }
-        setTableLabel(resolvedTable)
+        if (resolvedTable && isParcelLabel(resolvedTable)) {
+          setOrderType('PARCEL')
+          setTableLabel('Parcel')
+        } else if (resolvedTable) {
+          setOrderType('DINE_IN')
+          setTableLabel(resolvedTable)
+        }
         if (resolvedTable) {
           const tableCart = loadCart(slug, resolvedTable)
           setCart(tableCart)
@@ -304,7 +315,8 @@ export default function CheckoutPage() {
 
   const payableTotal = Math.max(0, preview.total - loyaltyDiscountPaise)
   const effectiveName = name.trim() || loyaltySession?.name || 'VIP Guest'
-  const canSubmit = (phoneValid || !!loyaltySession) && cart.length > 0 && !submitting && !authLoading
+  const effectiveTableSelected = orderType === 'PARCEL' || Boolean(tableLabel && tableLabel.trim())
+  const canSubmit = (phoneValid || !!loyaltySession) && cart.length > 0 && effectiveTableSelected && !submitting && !authLoading
 
   // Debounced auto-login when a 10-digit mobile number is entered
   useEffect(() => {
@@ -342,18 +354,21 @@ export default function CheckoutPage() {
       // Check if this is an add-on order for the diner's active table
       let existingOrderId: string | undefined
       let activeOrderAccessToken: string | undefined
-      if (activeSession && activeSession.tableLabel === tableLabel) {
+      if (orderType === 'DINE_IN' && activeSession && activeSession.tableLabel === tableLabel) {
         existingOrderId = activeSession.orderId
         activeOrderAccessToken = activeSession.accessToken
       }
+
+      const finalTableLabel = orderType === 'PARCEL' ? 'Parcel' : (tableLabel || undefined)
 
       const res = await fetch('/api/public/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug,
-          tableToken: token || null,
-          tableLabel: tableLabel || undefined,
+          orderType,
+          tableToken: orderType === 'PARCEL' ? null : (token || null),
+          tableLabel: finalTableLabel,
           customerName: effectiveName,
           customerPhone: (phone.trim() || loyaltySession?.customerId || '').replace(/\D/g, '').slice(-10),
           notes: notes.trim() || undefined,
@@ -412,7 +427,8 @@ export default function CheckoutPage() {
         orderId: data.orderId,
         orderNumber: data.orderNumber,
         accessToken: data.accessToken,
-        tableLabel: data.tableLabel || tableLabel,
+        orderType: data.orderType || orderType,
+        tableLabel: data.tableLabel || tableLabel || 'Parcel',
         customerPhone: phone.trim(),
         customerName: name.trim(),
         createdAt: new Date().toISOString(),
@@ -442,39 +458,39 @@ export default function CheckoutPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="text-center space-y-3 text-stone-500">
-          <Loader2 className="w-8 h-8 mx-auto animate-spin text-amber-600" />
-          <p className="text-sm font-medium">Preparing checkout…</p>
+      <div className="min-h-screen bg-[#07030b] flex items-center justify-center">
+        <div className="text-center space-y-3 text-[#9B92A6]">
+          <Loader2 className="w-8 h-8 mx-auto animate-spin text-[#f59e0b]" />
+          <p className="text-sm font-bold text-white">Preparing royal checkout…</p>
         </div>
       </div>
     )
   }
   if (error) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
-        <div className="max-w-sm text-center p-8 rounded-3xl bg-white border border-stone-200 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+      <div className="min-h-screen bg-[#07030b] flex items-center justify-center p-4">
+        <div className="max-w-sm text-center p-8 rounded-3xl bg-[#140b20] border border-[#2b1942] shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#f59e0b]/10 border border-[#f59e0b]/30 text-[#f59e0b] flex items-center justify-center">
             <AlertTriangle className="w-8 h-8" />
           </div>
-          <p className="text-sm text-stone-600">{error}</p>
-          <Link href={menuHref} className="text-sm text-amber-700 font-bold underline">Back to menu</Link>
+          <p className="text-sm text-[#9B92A6]">{error}</p>
+          <Link href={menuHref} className="text-sm text-[#f59e0b] font-bold underline">Back to menu</Link>
         </div>
       </div>
     )
   }
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
-        <div className="max-w-sm text-center p-8 rounded-3xl bg-white border border-stone-200 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+      <div className="min-h-screen bg-[#07030b] flex items-center justify-center p-4">
+        <div className="max-w-sm text-center p-8 rounded-3xl bg-[#140b20] border border-[#2b1942] shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#f59e0b]/10 border border-[#f59e0b]/30 text-[#f59e0b] flex items-center justify-center">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h2 className="font-extrabold text-lg text-stone-900">Your Tray is Empty</h2>
-          <p className="text-xs text-stone-500 leading-relaxed">
+          <h2 className="font-extrabold text-lg text-white">Your Tray is Empty</h2>
+          <p className="text-xs text-[#9B92A6] leading-relaxed">
             {tableLabel ? `Choose delicious Biryani & Mughlai specialties for ${formatTableDisplay(tableLabel)}.` : 'Select your favorite dishes to begin your order.'}
           </p>
-          <Link href={menuHref} className="inline-block px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold shadow-md shadow-amber-600/20 transition-colors">
+          <Link href={menuHref} className="inline-block px-5 py-2.5 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-[#140b20] text-sm font-black shadow-lg shadow-amber-500/20 transition-colors">
             Browse Menu
           </Link>
         </div>
@@ -483,35 +499,37 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-stone-900 pb-10">
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-stone-200 px-3 py-2.5">
+    <div className="min-h-screen bg-[#07030b] text-[#f5f5f5] pb-10">
+      <header className="sticky top-0 z-20 bg-[#0c0615]/95 backdrop-blur border-b border-[#2b1942] px-3 py-2.5">
         <div className="flex items-center gap-2.5 max-w-lg mx-auto">
-          <Link href={menuHref} className="p-2 rounded-lg hover:bg-stone-100 transition-colors" aria-label="Back to menu">
+          <Link href={menuHref} className="p-2 rounded-xl hover:bg-[#1f1133] text-[#9B92A6] hover:text-white transition-colors" aria-label="Back to menu">
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <div className="w-8 h-8 rounded-full overflow-hidden border border-[#f59e0b]/50 bg-black/80 shrink-0 p-0.5 shadow-xs">
+          <div className="w-9 h-9 rounded-full overflow-hidden border border-[#f59e0b]/60 bg-black/80 shrink-0 p-0.5 shadow-xs">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="PM Zaika Restaurant" className="w-full h-full object-contain rounded-full" />
           </div>
           <div>
             <div className="flex items-center gap-1.5 leading-none">
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-amber-300">
+              <span className="font-heading font-black text-xs uppercase tracking-wider text-[#f59e0b]">
                 PM ZAIKA
               </span>
-              <span className="text-xs text-stone-400 font-bold">•</span>
-              <span className="font-heading font-bold text-xs text-stone-700">
+              <span className="text-xs text-[#524960] font-bold">•</span>
+              <span className="font-heading font-bold text-xs text-white">
                 Checkout{tableLabel ? ` (${formatTableDisplay(tableLabel)})` : ''}
               </span>
             </div>
-            <span className="font-script text-[10px] text-emerald-800 leading-none mt-0.5 block">A Family Restaurant</span>
+            <span className="font-script text-[11px] text-amber-200/80 leading-none mt-0.5 block">Royal Awadhi Dining</span>
           </div>
         </div>
       </header>
 
       <main className="max-w-lg mx-auto px-3 py-4 space-y-4">
         {/* Order Summary */}
-        <section className="p-5 rounded-2xl bg-white border border-stone-200 shadow-sm space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <h2 className="text-sm font-extrabold flex items-center gap-1.5"><Receipt className="w-4 h-4 text-amber-600" /> Order Summary</h2>
+        <section className="p-5 rounded-3xl bg-[#140b20] border border-[#2b1942] shadow-xl space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <h2 className="text-sm font-extrabold flex items-center gap-1.5 text-white">
+            <Receipt className="w-4 h-4 text-[#f59e0b]" /> Order Summary
+          </h2>
           {preview.lines.map(({ line, item, lineTotal }) => {
             const chosenOptions = line.selections
               .map((s) => item.options.find((g) => g.id === s.groupId)?.choices.find((c) => c.id === s.optionId)?.name)
@@ -522,32 +540,32 @@ export default function CheckoutPage() {
               <div key={line.key} className="space-y-1 py-1 first:pt-0">
                 <div className="flex justify-between items-center text-sm gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-stone-900 font-bold truncate">{item.name}</p>
+                    <p className="text-white font-bold truncate">{item.name}</p>
                     {chosenOptions && (
-                      <p className="text-[11px] text-stone-500 font-normal truncate">{chosenOptions}</p>
+                      <p className="text-[11px] text-[#9B92A6] font-normal truncate">{chosenOptions}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className="inline-flex items-center rounded-lg border border-stone-200 bg-stone-50 p-0.5 shadow-2xs">
+                    <div className="inline-flex items-center rounded-xl border border-[#2b1942] bg-[#0c0615] p-0.5 shadow-2xs">
                       <button
                         type="button"
                         onClick={() => updateLineQty(line.key, -1)}
-                        className="w-6 h-6 rounded flex items-center justify-center hover:bg-stone-200 text-stone-700 font-black text-xs cursor-pointer active:scale-90 transition-all"
+                        className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-[#2b1942] text-[#9B92A6] hover:text-white font-black text-xs cursor-pointer active:scale-90 transition-all"
                         aria-label="Decrease quantity"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="w-6 text-center text-xs font-black text-stone-900">{line.quantity}</span>
+                      <span className="w-6 text-center text-xs font-black text-white">{line.quantity}</span>
                       <button
                         type="button"
                         onClick={() => updateLineQty(line.key, 1)}
-                        className="w-6 h-6 rounded flex items-center justify-center hover:bg-stone-200 text-stone-700 font-black text-xs cursor-pointer active:scale-90 transition-all"
+                        className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-[#2b1942] text-[#9B92A6] hover:text-white font-black text-xs cursor-pointer active:scale-90 transition-all"
                         aria-label="Increase quantity"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
-                    <span className="font-extrabold text-sm shrink-0 text-stone-900 min-w-14 text-right">
+                    <span className="font-extrabold text-sm shrink-0 text-[#f59e0b] min-w-14 text-right">
                       {formatPaise(lineTotal)}
                     </span>
                   </div>
@@ -556,46 +574,46 @@ export default function CheckoutPage() {
             )
           })}
           {selectedReward && (selectedReward.type === 'FREE_ITEM' || selectedReward.type === 'CUSTOM') && (
-            <div className="py-2.5 px-3 rounded-xl bg-emerald-50/90 border border-emerald-200/90 flex justify-between items-center text-sm shadow-2xs">
+            <div className="py-2.5 px-3 rounded-2xl bg-[#1b2b1a] border border-emerald-500/40 flex justify-between items-center text-sm shadow-2xs">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                   <Gift className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-extrabold text-emerald-950 truncate flex items-center gap-1.5">
+                  <p className="font-extrabold text-emerald-300 truncate flex items-center gap-1.5">
                     <span>1 × {selectedReward.name}</span>
                     <span className="text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-emerald-600 text-white shrink-0">
                       Free Gift
                     </span>
                   </p>
-                  <p className="text-[11px] text-emerald-700 font-medium">VIP Reward Included</p>
+                  <p className="text-[11px] text-emerald-400/80 font-medium">Royal Reward Included</p>
                 </div>
               </div>
-              <span className="font-black text-emerald-700 text-xs shrink-0">FREE</span>
+              <span className="font-black text-emerald-400 text-xs shrink-0">FREE</span>
             </div>
           )}
-          <div className="border-t border-stone-100 pt-3 space-y-1.5 text-sm">
-            <div className="flex justify-between text-stone-600"><span>Subtotal</span><span>{formatPaise(preview.subtotal)}</span></div>
-            <div className="flex justify-between text-stone-600"><span>Tax ({(taxRateBps / 100).toFixed(1)}%)</span><span>{formatPaise(preview.tax)}</span></div>
-            {preview.charge > 0 && <div className="flex justify-between text-stone-600"><span>Charges</span><span>{formatPaise(preview.charge)}</span></div>}
+          <div className="border-t border-[#2b1942] pt-3 space-y-1.5 text-sm">
+            <div className="flex justify-between text-[#9B92A6]"><span>Subtotal</span><span className="text-white">{formatPaise(preview.subtotal)}</span></div>
+            <div className="flex justify-between text-[#9B92A6]"><span>Tax ({(taxRateBps / 100).toFixed(1)}%)</span><span className="text-white">{formatPaise(preview.tax)}</span></div>
+            {preview.charge > 0 && <div className="flex justify-between text-[#9B92A6]"><span>Charges</span><span className="text-white">{formatPaise(preview.charge)}</span></div>}
             {loyaltyDiscountPaise > 0 && (
-              <div className="flex justify-between items-center text-emerald-800 font-bold bg-emerald-50/90 px-2.5 py-1.5 rounded-xl border border-emerald-200">
+              <div className="flex justify-between items-center text-emerald-300 font-bold bg-[#142918] px-2.5 py-1.5 rounded-xl border border-emerald-500/40">
                 <span className="flex items-center gap-1.5 text-xs">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600/30" />
-                  <span>VIP Reward: {selectedReward?.name}</span>
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/30" />
+                  <span>Royal Perk: {selectedReward?.name}</span>
                 </span>
-                <span className="text-xs font-black">−{formatPaise(loyaltyDiscountPaise)}</span>
+                <span className="text-xs font-black text-emerald-400">−{formatPaise(loyaltyDiscountPaise)}</span>
               </div>
             )}
             <div className="flex justify-between items-baseline font-extrabold text-lg pt-1">
-              <span>Total Payable</span>
+              <span className="text-white">Total Payable</span>
               <div className="text-right">
                 {loyaltyDiscountPaise > 0 && (
-                  <span className="text-xs text-stone-400 line-through mr-2 font-semibold">
+                  <span className="text-xs text-[#9B92A6] line-through mr-2 font-semibold">
                     {formatPaise(preview.total)}
                   </span>
                 )}
-                <span className="text-amber-700 font-black">{formatPaise(payableTotal)}</span>
+                <span className="text-[#f59e0b] font-black">{formatPaise(payableTotal)}</span>
               </div>
             </div>
           </div>
@@ -603,43 +621,43 @@ export default function CheckoutPage() {
 
         {/* Price conflict */}
         {priceConflict && (
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-sm space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            <p className="font-extrabold text-amber-900 flex items-center gap-1.5"><AlertTriangle className="w-4 h-4" /> Prices changed</p>
-            <p className="text-amber-800">Updated total is {formatPaise(priceConflict.quote.totalPaise)}. Confirm to place the order at the new total.</p>
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-[#f59e0b]/40 text-sm space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <p className="font-extrabold text-[#f59e0b] flex items-center gap-1.5"><AlertTriangle className="w-4 h-4" /> Prices changed</p>
+            <p className="text-white">Updated total is {formatPaise(priceConflict.quote.totalPaise)}. Confirm to place the order at the new total.</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setPriceConflict(null)} className="flex-1 h-10 rounded-xl border border-amber-400 text-amber-900 font-bold text-sm cursor-pointer hover:bg-amber-100 transition-colors">Review</button>
-              <button type="button" onClick={() => { setPriceConflict(null); placeOrder(true) }} className="flex-1 h-10 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm cursor-pointer transition-colors">Confirm &amp; Order</button>
+              <button type="button" onClick={() => setPriceConflict(null)} className="flex-1 h-10 rounded-xl border border-[#2b1942] text-[#9B92A6] hover:text-white font-bold text-sm cursor-pointer hover:bg-[#201036] transition-colors">Review</button>
+              <button type="button" onClick={() => { setPriceConflict(null); placeOrder(true) }} className="flex-1 h-10 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-[#07030b] font-bold text-sm cursor-pointer transition-colors">Confirm &amp; Order</button>
             </div>
           </div>
         )}
 
         {/* VIP Customer Identification & Login Gate */}
         {!loyaltySession ? (
-          <section className="p-5 rounded-3xl bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 text-white border border-amber-500/40 shadow-xl shadow-amber-950/20 space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-300 relative overflow-hidden">
-            <div className="absolute -right-4 -top-4 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+          <section className="p-5 rounded-3xl bg-gradient-to-br from-[#140b20] via-[#1f1033] to-[#140b20] text-white border border-[#f59e0b]/40 shadow-xl space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-300 relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-28 h-28 bg-[#f59e0b]/10 rounded-full blur-2xl pointer-events-none" />
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-amber-300 uppercase tracking-widest flex items-center gap-1.5">
-                <Crown className="w-3.5 h-3.5 text-amber-400" /> Diner Identification
+              <span className="text-[11px] font-black text-[#f59e0b] uppercase tracking-widest flex items-center gap-1.5">
+                <Crown className="w-3.5 h-3.5 text-[#f59e0b]" /> Diner Identification
               </span>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1">
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/30 flex items-center gap-1">
                 <Sparkles className="w-2.5 h-2.5" /> Zero Password
               </span>
             </div>
 
             <div>
               <h2 className="text-base font-black text-white">Log in with Mobile Number</h2>
-              <p className="text-xs text-stone-300 mt-0.5 leading-relaxed">
-                Connect your mobile to earn Badshah VIP points, unlock instant discounts, and place your order.
+              <p className="text-xs text-[#9B92A6] mt-0.5 leading-relaxed">
+                Connect your mobile to earn PM Zaika Royal points, unlock instant discounts, and place your order.
               </p>
             </div>
 
             <div className="space-y-3 pt-1">
               <div className="space-y-1">
                 <label htmlFor="co-phone" className="text-xs font-bold text-amber-100 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-amber-400" /> Mobile Number *
+                  <Phone className="w-3.5 h-3.5 text-[#f59e0b]" /> Mobile Number *
                 </label>
-                <div className={`flex items-center rounded-xl bg-stone-800/80 border transition-all overflow-hidden ${authLoading ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-amber-500/30 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/20'}`}>
-                  <span className="px-3.5 text-xs font-extrabold text-amber-300 border-r border-amber-500/30 bg-stone-900/50 h-11 flex items-center">
+                <div className={`flex items-center rounded-2xl bg-[#0c0615] border transition-all overflow-hidden ${authLoading ? 'border-[#f59e0b] ring-2 ring-amber-400/30' : 'border-[#2b1942] focus-within:border-[#f59e0b] focus-within:ring-2 focus-within:ring-amber-400/20'}`}>
+                  <span className="px-3.5 text-xs font-extrabold text-[#f59e0b] border-r border-[#2b1942] bg-[#140b20] h-11 flex items-center">
                     +91
                   </span>
                   <input
@@ -650,10 +668,10 @@ export default function CheckoutPage() {
                     inputMode="numeric"
                     autoComplete="tel-national"
                     placeholder="10-digit mobile number"
-                    className="w-full h-11 px-3.5 bg-transparent text-white placeholder-stone-400 text-sm focus:outline-none"
+                    className="w-full h-11 px-3.5 bg-transparent text-white placeholder-[#6E6578] text-sm focus:outline-none"
                   />
                   {authLoading && (
-                    <span className="pr-3 text-amber-400 flex items-center">
+                    <span className="pr-3 text-[#f59e0b] flex items-center">
                       <Loader2 className="w-4 h-4 animate-spin" />
                     </span>
                   )}
@@ -663,14 +681,14 @@ export default function CheckoutPage() {
                 )}
                 {phoneValid && !authLoading && (
                   <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Auto-logging in with VIP account…
+                    <CheckCircle2 className="w-3 h-3" /> Auto-logging in with Royal Club account…
                   </p>
                 )}
               </div>
 
               <div className="space-y-1">
                 <label htmlFor="co-name" className="text-xs font-bold text-amber-100 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-amber-400" /> Your Name (optional)
+                  <User className="w-3.5 h-3.5 text-[#f59e0b]" /> Your Name (optional)
                 </label>
                 <input
                   id="co-name"
@@ -678,12 +696,12 @@ export default function CheckoutPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aman Kumar"
                   maxLength={100}
-                  className="w-full h-11 px-3.5 rounded-xl bg-stone-800/80 border border-amber-500/30 text-white placeholder-stone-400 text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all"
+                  className="w-full h-11 px-3.5 rounded-2xl bg-[#0c0615] border border-[#2b1942] text-white placeholder-[#6E6578] text-sm focus:outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-amber-400/20 transition-all"
                 />
               </div>
 
               {authError && (
-                <div className="p-3 rounded-xl bg-rose-950/70 border border-rose-500/50 text-rose-200 text-xs flex gap-2">
+                <div className="p-3 rounded-2xl bg-rose-950/70 border border-rose-500/50 text-rose-200 text-xs flex gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
                   <span>{authError}</span>
                 </div>
@@ -693,28 +711,28 @@ export default function CheckoutPage() {
                 type="button"
                 onClick={() => loginCustomer()}
                 disabled={!phoneValid || authLoading}
-                className="w-full h-11 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-600 hover:to-amber-500 text-stone-950 font-black shadow-md shadow-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center gap-2 text-xs"
+                className="w-full h-12 rounded-2xl bg-[#f59e0b] hover:bg-[#d97706] text-[#07030b] font-black shadow-lg shadow-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center gap-2 text-xs"
               >
                 {authLoading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Verifying VIP Account…</>
+                  <><Loader2 className="w-4 h-4 animate-spin text-[#07030b]" /> Verifying Royal Account…</>
                 ) : (
-                  <><Sparkles className="w-4 h-4" /> 1-Tap Login &amp; Check Points</>
+                  <><Sparkles className="w-4 h-4 text-[#07030b]" /> 1-Tap Login &amp; Check Points</>
                 )}
               </button>
             </div>
           </section>
         ) : (
           /* VIP Member Status Card */
-          <section className="p-5 rounded-3xl bg-gradient-to-br from-[#0d3b1e] via-[#1a6234] to-[#0a2e16] text-white border border-amber-400/40 shadow-xl shadow-emerald-950/20 space-y-3.5 animate-in fade-in slide-in-from-bottom-3 duration-300 relative overflow-hidden">
+          <section className="p-5 rounded-3xl bg-gradient-to-br from-[#1b0a2b] via-[#2d1148] to-[#1b0a2b] text-white border border-[#f59e0b]/50 shadow-xl space-y-3.5 animate-in fade-in slide-in-from-bottom-3 duration-300 relative overflow-hidden">
             <Sparkles className="absolute -right-3 -top-3 w-28 h-28 text-white/10 pointer-events-none" />
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-amber-200 uppercase tracking-widest flex items-center gap-1.5">
-                <Crown className="w-3.5 h-3.5 text-amber-300 fill-amber-300/40" /> Badshah VIP Member
+              <span className="text-[11px] font-black text-[#f59e0b] uppercase tracking-widest flex items-center gap-1.5">
+                <Crown className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]/40" /> Royal Club Member
               </span>
               <button
                 type="button"
                 onClick={logoutCustomer}
-                className="text-[11px] font-bold text-amber-200 hover:text-white underline cursor-pointer flex items-center gap-1 transition-colors"
+                className="text-[11px] font-bold text-[#f59e0b] hover:text-white underline cursor-pointer flex items-center gap-1 transition-colors"
               >
                 <LogOut className="w-3 h-3" /> Switch
               </button>
@@ -722,8 +740,8 @@ export default function CheckoutPage() {
 
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <h2 className="text-base font-black text-white truncate">{name || loyaltySession.name || 'VIP Guest'}</h2>
-                <p className="text-xs text-amber-200 font-medium mt-0.5">
+                <h2 className="text-base font-black text-white truncate">{name || loyaltySession.name || 'Royal Guest'}</h2>
+                <p className="text-xs text-amber-200/90 font-medium mt-0.5">
                   +91 {maskPhone(loyaltySession.customerId)}
                 </p>
               </div>
@@ -737,10 +755,10 @@ export default function CheckoutPage() {
 
             <div className="flex items-center justify-between text-xs pt-2 border-t border-white/15 text-amber-100/90">
               <span className="text-[11px] flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-300" />
+                <Sparkles className="w-3 h-3 text-[#f59e0b]" />
                 <b className="text-white">+{loyaltySession.pointsPerOrder} pts</b> guaranteed on this order
               </span>
-              <span className="text-[10px] font-bold text-amber-200 bg-black/20 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-[#f59e0b] bg-black/40 px-2 py-0.5 rounded-full border border-[#f59e0b]/30">
                 Points credited on order
               </span>
             </div>
@@ -749,19 +767,19 @@ export default function CheckoutPage() {
 
         {/* Loyalty Rewards Redemption Drawer (When logged in) */}
         {loyaltyEnabled && loyaltySession && rewardOptions.length > 0 && (
-          <section className="p-5 rounded-2xl bg-white border border-stone-200 shadow-sm space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          <section className="p-5 rounded-3xl bg-[#140b20] border border-[#2b1942] shadow-xl space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-extrabold flex items-center gap-1.5 text-stone-900">
-                <Gift className="w-4 h-4 text-amber-600" /> Redeem Reward on This Meal
+              <h2 className="text-sm font-extrabold flex items-center gap-1.5 text-white">
+                <Gift className="w-4 h-4 text-[#f59e0b]" /> Redeem Reward on This Meal
               </h2>
               {rewardOptions.filter((r) => r.redeemable && loyaltySession.snapshot.availablePoints >= r.pointsCost).length > 0 && (
-                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   {rewardOptions.filter((r) => r.redeemable && loyaltySession.snapshot.availablePoints >= r.pointsCost).length} unlocked
                 </span>
               )}
             </div>
 
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-0.5">
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-0.5 no-scrollbar">
               {rewardOptions.map((r) => {
                 const enough = loyaltySession.snapshot.availablePoints >= r.pointsCost
                 const isSelected = selectedRewardId === r.id
@@ -780,40 +798,40 @@ export default function CheckoutPage() {
                     }}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer ${
                       disabled
-                        ? 'border-stone-200 bg-stone-50/70 opacity-60 cursor-not-allowed'
+                        ? 'border-[#2b1942] bg-[#0c0615]/50 opacity-50 cursor-not-allowed'
                         : isSelected
-                        ? 'border-emerald-500 bg-gradient-to-r from-emerald-50/90 via-amber-50/40 to-emerald-50/90 ring-2 ring-emerald-500/30 shadow-xs'
+                        ? 'border-[#f59e0b] bg-gradient-to-r from-[#24143a] via-[#1a0c2c] to-[#24143a] ring-2 ring-amber-400/30 shadow-xs'
                         : enough
-                        ? 'border-amber-200 bg-white hover:border-amber-400 hover:bg-amber-50/30'
-                        : 'border-stone-200 bg-white hover:border-stone-300'
+                        ? 'border-[#2b1942] bg-[#0c0615] hover:border-[#f59e0b]/50 hover:bg-[#1a0f2b]'
+                        : 'border-[#2b1942] bg-[#0c0615]'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-xs font-black truncate text-stone-900">{r.name}</p>
+                          <p className="text-xs font-black truncate text-white">{r.name}</p>
                           {isSelected && (
                             <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-emerald-600 text-white flex items-center gap-0.5 shrink-0">
                               <CheckCircle2 className="w-2.5 h-2.5" /> Applied
                             </span>
                           )}
                         </div>
-                        {r.description && <p className="text-[10px] text-stone-500 line-clamp-1 mt-0.5">{r.description}</p>}
+                        {r.description && <p className="text-[10px] text-[#9B92A6] line-clamp-1 mt-0.5">{r.description}</p>}
                       </div>
                       <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 border ${
                         isSelected
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                           : enough && !disabled
-                          ? 'bg-amber-100 text-amber-900 border-amber-300'
-                          : 'bg-stone-100 text-stone-400 border-stone-200'
+                          ? 'bg-[#f59e0b]/20 text-[#f59e0b] border-[#f59e0b]/40'
+                          : 'bg-[#180e28] text-[#9B92A6] border-[#2b1942]'
                       }`}>
                         {r.pointsCost} pts
                       </span>
                     </div>
 
-                    <div className="mt-2 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
+                    <div className="mt-2 pt-2 border-t border-[#2b1942] flex items-center justify-between text-[11px]">
                       {disabled ? (
-                        <p className="text-[10px] font-bold text-stone-400">
+                        <p className="text-[10px] font-bold text-[#6E6578]">
                           {r.eligibility === 'OUT_OF_STOCK'
                             ? 'Sold out'
                             : r.eligibility === 'REWARD_EXPIRED'
@@ -825,13 +843,13 @@ export default function CheckoutPage() {
                             : 'Unavailable'}
                         </p>
                       ) : !enough ? (
-                        <p className="text-[10px] font-bold text-amber-800 flex items-center gap-1">
+                        <p className="text-[10px] font-bold text-[#f59e0b] flex items-center gap-1">
                           <span>Need {r.pointsCost - loyaltySession.snapshot.availablePoints} more pts</span>
                         </p>
                       ) : isSelected ? (
                         <div className="flex items-center justify-between w-full">
-                          <span className="text-[10px] font-black text-emerald-700 flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-emerald-600" />
+                          <span className="text-[10px] font-black text-emerald-400 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-emerald-400" />
                             Saves {formatPaise(discountEst)} on this order
                           </span>
                           <button
@@ -840,17 +858,17 @@ export default function CheckoutPage() {
                               e.stopPropagation()
                               setSelectedRewardId(null)
                             }}
-                            className="text-[10px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                            className="text-[10px] font-bold text-rose-400 hover:text-rose-300 underline cursor-pointer"
                           >
                             Remove
                           </button>
                         </div>
                       ) : (
                         <div className="flex items-center justify-between w-full">
-                          <span className="text-[10px] font-extrabold text-emerald-700">
+                          <span className="text-[10px] font-extrabold text-emerald-400">
                             Save {formatPaise(discountEst)} with {r.pointsCost} pts
                           </span>
-                          <span className="text-[10px] font-bold text-amber-700 flex items-center gap-0.5">
+                          <span className="text-[10px] font-bold text-[#f59e0b] flex items-center gap-0.5">
                             Apply <ChevronRight className="w-3 h-3" />
                           </span>
                         </div>
@@ -862,12 +880,12 @@ export default function CheckoutPage() {
             </div>
 
             {selectedReward && (
-              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-300/60 text-[11px] text-stone-700 flex items-center justify-between">
+              <div className="p-2.5 rounded-2xl bg-[#1a0f2b] border border-[#f59e0b]/40 text-[11px] text-[#f5f5f5] flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                  <Star className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]" />
                   <span>Using <b>{selectedReward.pointsCost} pts</b> on this meal</span>
                 </span>
-                <span className="text-emerald-800 font-extrabold">
+                <span className="text-emerald-400 font-extrabold">
                   {loyaltySession.snapshot.availablePoints - selectedReward.pointsCost} pts remain
                 </span>
               </div>
@@ -876,9 +894,9 @@ export default function CheckoutPage() {
         )}
 
         {/* Dining Preferences & Table Selection */}
-        <section className="p-5 rounded-2xl bg-white border border-stone-200 shadow-sm space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-300">
+        <section className="p-5 rounded-3xl bg-[#140b20] border border-[#2b1942] shadow-xl space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-300">
           <div className="space-y-2">
-            <label htmlFor="co-notes" className="text-xs font-bold text-stone-700">Order Note (optional)</label>
+            <label htmlFor="co-notes" className="text-xs font-bold text-white">Order Note (optional)</label>
             <textarea
               id="co-notes"
               value={notes}
@@ -886,7 +904,7 @@ export default function CheckoutPage() {
               placeholder="Less spicy, extra raita, no onion…"
               maxLength={280}
               rows={2}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 resize-none transition-all"
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#0c0615] border border-[#2b1942] text-white placeholder-[#6E6578] text-sm focus:outline-none focus:border-[#f59e0b] focus:ring-2 focus:ring-amber-400/20 resize-none transition-all"
             />
             <div className="flex flex-wrap gap-1.5 pt-0.5">
               {QUICK_NOTES.map((qn) => (
@@ -901,7 +919,7 @@ export default function CheckoutPage() {
                       return `${trimmed}, ${qn}`
                     })
                   }}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-900 border border-stone-200/80 transition-colors cursor-pointer active:scale-95"
+                  className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#0c0615] hover:bg-[#201036] text-[#9B92A6] hover:text-[#f59e0b] border border-[#2b1942] transition-colors cursor-pointer active:scale-95"
                 >
                   {qn}
                 </button>
@@ -909,178 +927,265 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Table selection for main QR orders */}
-          {!token && (
-            <div className="space-y-2 pt-3 border-t border-stone-100">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Delivering To</span>
-                </label>
-                {tableLabel && !tablePickerOpen && (
-                  <button
-                    type="button"
-                    onClick={() => setTablePickerOpen(true)}
-                    className="text-[11px] font-bold text-amber-700 hover:text-amber-900 underline cursor-pointer"
-                  >
-                    Change Table
-                  </button>
-                )}
-              </div>
+          {/* Dine-In (Table Number) vs Parcel Selection */}
+          <div className="space-y-3 pt-3 border-t border-[#2b1942]">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#f59e0b]" />
+                <span>Order Type &amp; Table Number *</span>
+              </label>
+              {tableLabel && !tablePickerOpen && orderType === 'DINE_IN' && !token && (
+                <button
+                  type="button"
+                  onClick={() => setTablePickerOpen(true)}
+                  className="text-[11px] font-bold text-[#f59e0b] hover:text-[#fbbf24] underline cursor-pointer"
+                >
+                  Change Table
+                </button>
+              )}
+            </div>
 
-              {tableLabel && !tablePickerOpen ? (
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-yellow-500/10 border border-amber-300/60">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-800 flex items-center justify-center font-black shrink-0">
-                      <MapPin className="w-4 h-4 text-amber-700" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-amber-950 flex items-center gap-1.5">
-                        <span>{formatTableDisplay(tableLabel)}</span>
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                      </p>
-                      <p className="text-[10px] text-amber-800">Fresh dishes will be served right to your seat</p>
-                    </div>
+            {/* 2-Way Order Mode Segmented Toggle */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setOrderType('DINE_IN')
+                  if (tableLabel === 'Parcel' || tableLabel === 'Takeaway') {
+                    setTableLabel(null)
+                    setTablePickerOpen(true)
+                  }
+                }}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                  orderType === 'DINE_IN'
+                    ? 'bg-gradient-to-r from-[#24143a] to-[#1a0c2c] border-[#f59e0b] ring-1 ring-[#f59e0b]/40 text-white shadow-md'
+                    : 'bg-[#0c0615] border-[#2b1942] text-[#9B92A6] hover:border-[#f59e0b]/40 hover:text-white'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${orderType === 'DINE_IN' ? 'bg-[#f59e0b] text-[#07030b]' : 'bg-[#180e28] text-[#9B92A6]'}`}>
+                  <UtensilsCrossed className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-black leading-tight">Dine-In</p>
+                  <p className="text-[10px] opacity-80 truncate">Select Table No.</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setOrderType('PARCEL')
+                  setTableLabel('Parcel')
+                  setTablePickerOpen(false)
+                  try {
+                    sessionStorage.setItem(`rp_table_${slug}`, 'Parcel')
+                  } catch {}
+                }}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                  orderType === 'PARCEL'
+                    ? 'bg-gradient-to-r from-[#122e1b] to-[#140b20] border-emerald-500 ring-1 ring-emerald-500/40 text-white shadow-md'
+                    : 'bg-[#0c0615] border-[#2b1942] text-[#9B92A6] hover:border-emerald-500/40 hover:text-white'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${orderType === 'PARCEL' ? 'bg-emerald-500 text-[#07030b]' : 'bg-[#180e28] text-[#9B92A6]'}`}>
+                  <Package className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-black leading-tight">Parcel</p>
+                  <p className="text-[10px] opacity-80 truncate">Pack &amp; Takeaway</p>
+                </div>
+              </button>
+            </div>
+
+            {orderType === 'PARCEL' ? (
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-[#0e2618] via-[#122e1b] to-[#140b20] border border-emerald-500/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black shrink-0">
+                    <Package className="w-4 h-4 text-emerald-400" />
                   </div>
+                  <div>
+                    <p className="text-xs font-black text-white flex items-center gap-1.5">
+                      <span>Parcel Order (Takeaway)</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                    </p>
+                    <p className="text-[10px] text-emerald-200/80">Dishes will be freshly packed in spill-proof parcel boxes</p>
+                  </div>
+                </div>
+              </div>
+            ) : tableLabel && !tablePickerOpen ? (
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-[#1f1033] via-[#2d1148] to-[#1f1033] border border-[#f59e0b]/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#f59e0b]/20 text-[#f59e0b] flex items-center justify-center font-black shrink-0">
+                    <MapPin className="w-4 h-4 text-[#f59e0b]" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-white flex items-center gap-1.5">
+                      <span>{formatTableDisplay(tableLabel)}</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                    </p>
+                    <p className="text-[10px] text-[#FDEBD3]">Fresh royal dishes will be served right to your seat</p>
+                  </div>
+                </div>
+                {!token && (
                   <button
                     type="button"
                     onClick={() => setTablePickerOpen(true)}
-                    className="px-2.5 py-1 rounded-xl text-[11px] font-black bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 transition-colors shadow-2xs cursor-pointer"
+                    className="px-2.5 py-1 rounded-xl text-[11px] font-black bg-[#f59e0b] hover:bg-[#d97706] text-[#07030b] transition-colors shadow-2xs cursor-pointer"
                   >
                     Switch
                   </button>
+                )}
+              </div>
+            ) : !token ? (
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] text-[#9B92A6]">
+                    Select or enter your dining table number:
+                  </p>
+                  {tableLabel && (
+                    <button
+                      type="button"
+                      onClick={() => setTablePickerOpen(false)}
+                      className="text-[11px] font-bold text-[#9B92A6] hover:text-white underline cursor-pointer"
+                    >
+                      Done
+                    </button>
+                  )}
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] text-stone-500">
-                      Where are you seated? Select your table for food delivery:
-                    </p>
-                    {tableLabel && (
-                      <button
-                        type="button"
-                        onClick={() => setTablePickerOpen(false)}
-                        className="text-[11px] font-bold text-stone-500 hover:text-stone-800 underline cursor-pointer"
-                      >
-                        Done
-                      </button>
-                    )}
-                  </div>
 
-                  <div className="flex flex-wrap gap-2 pt-0.5">
-                    {availableTables.map((t) => {
-                      const isSelected = tableLabel === t.label
-                      const isOwnActive = activeSession?.tableLabel === t.label
-                      const isOccupied = t.state === 'occupied' && !isOwnActive
-                      const isCleaning = t.state === 'cleaning' && !isOwnActive
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                  {(availableTables.length > 0
+                    ? availableTables
+                    : Array.from({ length: 12 }, (_, idx) => ({
+                        id: `tbl-${idx + 1}`,
+                        label: `Table ${String(idx + 1).padStart(2, '0')}`,
+                        state: 'available',
+                      }))
+                  ).map((t) => {
+                    const isSelected = tableLabel === t.label
+                    const isOwnActive = activeSession?.tableLabel === t.label
+                    const isOccupied = t.state === 'occupied' && !isOwnActive
+                    const isCleaning = t.state === 'cleaning' && !isOwnActive
 
-                      if (isOccupied) {
-                        return (
-                          <button
-                            key={t.id}
-                            type="button"
-                            disabled
-                            title={`${formatTableDisplay(t.label)} is currently booked by another guest.`}
-                            className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed flex items-center gap-1 opacity-60"
-                          >
-                            <span>{formatTableDisplay(t.label)}</span>
-                            <span className="text-[10px] font-bold text-amber-700 bg-amber-100/90 px-1 py-0.2 rounded">
-                              Booked
-                            </span>
-                          </button>
-                        )
-                      }
-
-                      if (isCleaning) {
-                        return (
-                          <button
-                            key={t.id}
-                            type="button"
-                            disabled
-                            className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed flex items-center gap-1 opacity-60"
-                          >
-                            <span>{formatTableDisplay(t.label)}</span>
-                            <span className="text-[10px] font-bold text-stone-500 bg-stone-200 px-1 py-0.2 rounded">
-                              Cleaning
-                            </span>
-                          </button>
-                        )
-                      }
-
+                    if (isOccupied) {
                       return (
                         <button
                           key={t.id}
                           type="button"
-                          onClick={() => {
-                            setTableLabel(t.label)
-                            setTablePickerOpen(false)
-                            try {
-                              sessionStorage.setItem(`rp_table_${slug}`, t.label)
-                            } catch {}
-                          }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
-                            isSelected
-                              ? 'bg-amber-600 text-white shadow-sm ring-2 ring-amber-400'
-                              : isOwnActive
-                              ? 'bg-emerald-50 text-emerald-900 border border-emerald-300'
-                              : 'bg-stone-50 text-stone-800 border border-stone-200 hover:border-amber-400 hover:bg-amber-50/50'
-                          }`}
+                          disabled
+                          title={`${formatTableDisplay(t.label)} is currently booked by another guest.`}
+                          className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#140b20] text-[#6E6578] border border-[#2b1942] cursor-not-allowed flex items-center gap-1 opacity-50"
                         >
                           <span>{formatTableDisplay(t.label)}</span>
-                          {isOwnActive && !isSelected && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          )}
-                          {isSelected && <CheckCircle2 className="w-3 h-3 text-white" />}
+                          <span className="text-[10px] font-bold text-[#f59e0b] bg-[#f59e0b]/20 px-1 py-0.2 rounded">
+                            Booked
+                          </span>
                         </button>
                       )
-                    })}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTableLabel('Counter')
-                        setTablePickerOpen(false)
-                        try {
-                          sessionStorage.setItem(`rp_table_${slug}`, 'Counter')
-                        } catch {}
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
-                        tableLabel === 'Counter'
-                          ? 'bg-amber-600 text-white shadow-sm ring-2 ring-amber-400'
-                          : 'bg-stone-50 text-stone-800 border border-stone-200 hover:border-amber-400 hover:bg-amber-50/50'
-                      }`}
-                    >
-                      <span>Counter / Takeaway</span>
-                      {tableLabel === 'Counter' && <CheckCircle2 className="w-3 h-3 text-white" />}
-                    </button>
-                  </div>
+                    }
+
+                    if (isCleaning) {
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          disabled
+                          className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#140b20] text-[#6E6578] border border-[#2b1942] cursor-not-allowed flex items-center gap-1 opacity-50"
+                        >
+                          <span>{formatTableDisplay(t.label)}</span>
+                          <span className="text-[10px] font-bold text-[#9B92A6] bg-[#2b1942] px-1 py-0.2 rounded">
+                            Cleaning
+                          </span>
+                        </button>
+                      )
+                    }
+
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          setOrderType('DINE_IN')
+                          setTableLabel(t.label)
+                          setTablePickerOpen(false)
+                          try {
+                            sessionStorage.setItem(`rp_table_${slug}`, t.label)
+                          } catch {}
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
+                          isSelected
+                            ? 'bg-[#f59e0b] text-[#07030b] font-black shadow-lg shadow-amber-500/20 ring-2 ring-amber-400'
+                            : isOwnActive
+                            ? 'bg-[#2b1942] text-amber-300 border border-[#f59e0b]/50'
+                            : 'bg-[#0c0615] text-[#9B92A6] border border-[#2b1942] hover:border-[#f59e0b]/50 hover:text-white'
+                        }`}
+                      >
+                        <span>{formatTableDisplay(t.label)}</span>
+                        {isOwnActive && !isSelected && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        )}
+                        {isSelected && <CheckCircle2 className="w-3 h-3 text-[#07030b]" />}
+                      </button>
+                    )
+                  })}
                 </div>
-              )}
-            </div>
-          )}
+
+                {/* Custom Table Number Input */}
+                <div className="flex gap-2 pt-1">
+                  <input
+                    type="text"
+                    value={customTableInput}
+                    onChange={(e) => setCustomTableInput(e.target.value)}
+                    placeholder="Or enter table no. (e.g. 14, VIP)"
+                    maxLength={20}
+                    className="flex-1 h-10 px-3 rounded-xl bg-[#0c0615] border border-[#2b1942] focus:border-[#f59e0b] text-white placeholder-[#6E6578] text-xs outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const clean = customTableInput.trim()
+                      if (!clean) return
+                      const formatted = /^\d+$/.test(clean) ? `Table ${clean.padStart(2, '0')}` : clean
+                      setOrderType('DINE_IN')
+                      setTableLabel(formatted)
+                      setCustomTableInput('')
+                      setTablePickerOpen(false)
+                      try {
+                        sessionStorage.setItem(`rp_table_${slug}`, formatted)
+                      } catch {}
+                    }}
+                    className="px-4 h-10 rounded-xl bg-[#2b1942] hover:bg-[#3e245c] text-[#f59e0b] text-xs font-black cursor-pointer transition-colors"
+                  >
+                    Set Table
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </section>
 
         {submitError && (
-          <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex gap-2 animate-in fade-in duration-200">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" /> {submitError}
+          <div className="p-3.5 rounded-2xl bg-rose-950/80 border border-rose-500/60 text-rose-200 text-sm flex gap-2 animate-in fade-in duration-200">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" /> {submitError}
           </div>
         )}
 
         {/* Loyalty Guarantee Banner */}
-        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-yellow-500/10 border border-amber-300/40 flex items-center justify-between text-xs animate-in fade-in duration-300 shadow-xs">
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#140b20] via-[#1f1033] to-[#140b20] border border-[#f59e0b]/40 flex items-center justify-between text-xs animate-in fade-in duration-300 shadow-lg">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center font-black shrink-0 shadow-xs">
+            <div className="w-8 h-8 rounded-full bg-[#f59e0b] text-[#07030b] flex items-center justify-center font-black shrink-0 shadow-xs">
               <Crown className="w-4 h-4 fill-current" />
             </div>
             <div>
-              <p className="font-extrabold text-stone-900 flex items-center gap-1.5">
-                Badshah VIP Perk Guaranteed
+              <p className="font-extrabold text-white flex items-center gap-1.5">
+                PM Zaika Royal Perk Guaranteed
               </p>
-              <p className="text-[11px] text-stone-600">
-                Earn <span className="font-bold text-amber-800">+{loyaltySession?.pointsPerOrder ?? 20} VIP points</span> upon meal delivery
+              <p className="text-[11px] text-[#9B92A6]">
+                Earn <span className="font-bold text-[#f59e0b]">+{loyaltySession?.pointsPerOrder ?? 20} Royal points</span> upon meal delivery
               </p>
             </div>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 shrink-0">
+          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/40 shrink-0">
             Auto-Credit
           </span>
         </div>
@@ -1089,18 +1194,20 @@ export default function CheckoutPage() {
           type="button"
           onClick={() => placeOrder(false)}
           disabled={!canSubmit}
-          className="w-full h-14 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-700 hover:to-amber-600 text-white font-extrabold shadow-lg shadow-amber-600/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 transition-all active:scale-[0.99] animate-in fade-in slide-in-from-bottom-4 duration-300"
+          className="w-full h-14 rounded-2xl bg-[#f59e0b] hover:bg-[#d97706] text-[#07030b] font-black text-base shadow-xl shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 transition-all active:scale-[0.99] animate-in fade-in slide-in-from-bottom-4 duration-300"
         >
           {submitting ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /> Placing order…</>
+            <><Loader2 className="w-5 h-5 animate-spin text-[#07030b]" /> Placing order in kitchen…</>
+          ) : !effectiveTableSelected ? (
+            <><MapPin className="w-5 h-5 text-[#07030b]" /> Select Table No. or Parcel First</>
           ) : !loyaltySession ? (
-            <><Crown className="w-5 h-5 text-amber-200" /> Log In &amp; Confirm Order • {formatPaise(payableTotal)}</>
+            <><Crown className="w-5 h-5 text-[#07030b]" /> Log In &amp; {orderType === 'PARCEL' ? 'Place Parcel Order' : 'Confirm Order'} • {formatPaise(payableTotal)}</>
           ) : (
-            <><CheckCircle2 className="w-5 h-5" /> Confirm Order • {formatPaise(payableTotal)}</>
+            <><CheckCircle2 className="w-5 h-5 text-[#07030b]" /> {orderType === 'PARCEL' ? 'Confirm Parcel Order' : `Confirm ${formatTableDisplay(tableLabel || '')} Order`} • {formatPaise(payableTotal)}</>
           )}
         </button>
-        <p className="text-[11px] text-stone-500 text-center flex items-center justify-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Pay at counter after ordering. {contactPhone ? `Help: ${contactPhone}` : ''}
+        <p className="text-[11px] text-[#9B92A6] text-center flex items-center justify-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Pay at counter after ordering. {contactPhone ? `Help: ${contactPhone}` : ''}
         </p>
       </main>
     </div>

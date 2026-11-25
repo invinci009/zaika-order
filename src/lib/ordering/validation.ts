@@ -138,8 +138,9 @@ const orderLineSchema = z.object({
 
 export const orderCreateSchema = z.object({
   slug: z.string().min(1).max(40),
+  orderType: z.enum(['DINE_IN', 'PARCEL']).optional(),
   tableToken: z.string().min(1).max(200).nullable().optional(),
-  tableLabel: z.string().max(40).optional(),
+  tableLabel: z.string().max(40).nullable().optional(),
   customerName: z.string().min(1).max(100),
   customerPhone: phoneInputSchema,
   notes: z.string().max(280).optional(),

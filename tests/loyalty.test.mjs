@@ -199,10 +199,15 @@ describe('loyalty routes and components preservation', () => {
     assert.ok(content.includes('normalizeCustomerPhone'), 'Claim route must check phone normalization')
   })
 
-  it('loyalty hub page contains Badshah VIP card and activity tabs', () => {
+  it('loyalty hub page contains PM Zaika Royal VIP card and activity tabs', () => {
     const hubPath = join(root, 'src/app/order/[slug]/loyalty/page.tsx')
     const content = readFileSync(hubPath, 'utf8')
-    assert.ok(content.includes('Badshah VIP Club') || content.includes('Badshah VIP Member'), 'VIP club branding must be present')
+    assert.ok(
+      content.includes('PM Zaika Royal Club') ||
+        content.includes('Royal VIP Member') ||
+        content.includes('Badshah VIP Club'),
+      'VIP club branding must be present'
+    )
     assert.ok(content.includes('handleClaimPoints'), 'Direct points claim must be supported')
     assert.ok(content.includes('tier'), 'VIP member tier progression must be present')
     assert.ok(content.includes('historyTab'), 'Activity history tabs must be present')

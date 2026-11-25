@@ -11,6 +11,7 @@ import {
   getHindiServiceAnnouncement,
   SERVICE_REQUEST_ENGLISH_LABELS,
 } from '../ordering/hindiAnnouncement.mjs'
+import { formatTableDisplay, isParcelLabel } from '../ordering/rules.mjs'
 
 declare global {
   interface Window {
@@ -292,6 +293,7 @@ export interface SpeechOrderItem {
 
 export interface AnnounceOrderHindiOptions {
   tableLabel?: string | number | null
+  orderType?: 'DINE_IN' | 'PARCEL' | null
   items?: Array<SpeechOrderItem | string>
   playChimeFirst?: boolean
   rate?: number
@@ -428,6 +430,11 @@ export async function playCloudAudioTTS(
 }
 
 const HINDI_TO_ROMAN_MAP: Array<[RegExp, string]> = [
+  [/नया पार्सल ऑर्डर आया है।?/g, 'Naya parcel order aaya hai.'],
+  [/पार्सल के लिए ऑर्डर प्राप्त हुआ है।?/g, 'Parcel ke liye order prapt hua hai.'],
+  [/के लिए पार्सल ऑर्डर प्राप्त हुआ है।?/g, 'ke liye parcel order prapt hua hai.'],
+  [/पार्सल से ऑर्डर प्राप्त हुआ है।?/g, 'Parcel se order prapt hua hai.'],
+  [/पार्सल/g, 'Parcel'],
   [/नया ऑर्डर आया है।?/g, 'Naya order aaya hai.'],
   [/काउंटर से ऑर्डर प्राप्त हुआ है।?/g, 'Counter se order prapt hua hai.'],
   [/टेकअवे से ऑर्डर प्राप्त हुआ है।?/g, 'Takeaway se order prapt hua hai.'],
@@ -562,20 +569,23 @@ export async function announceOrderInHindi(
   }
 
   let tableLabel: string | number | null | undefined
+  let orderType: 'DINE_IN' | 'PARCEL' | null | undefined
   let items: Array<SpeechOrderItem | string> | undefined
   let options: AnnounceOrderHindiOptions | undefined
 
   if (tableLabelOrConfig && typeof tableLabelOrConfig === 'object') {
     tableLabel = tableLabelOrConfig.tableLabel
+    orderType = tableLabelOrConfig.orderType
     items = tableLabelOrConfig.items
     options = { ...tableLabelOrConfig, ...legacyOptions }
   } else {
     tableLabel = tableLabelOrConfig
+    orderType = legacyOptions?.orderType
     items = legacyOptions?.items
     options = legacyOptions
   }
 
-  const text = getHindiTableAnnouncement({ tableLabel, items })
+  const text = getHindiTableAnnouncement({ tableLabel, orderType, items })
 
   // Play double-tone restaurant chime before speaking
   if (options?.playChimeFirst !== false) {
@@ -637,6 +647,7 @@ export async function announceOrderInHindi(
 export function showOrderNotification(params: {
   orderNumber: string
   tableLabel?: string | null
+  orderType?: 'DINE_IN' | 'PARCEL' | null
   totalFormatted?: string
   items?: Array<SpeechOrderItem | string>
   speechAnnouncement?: string
@@ -657,10 +668,15 @@ export function showOrderNotification(params: {
     }
   }
 
-  const table = params.tableLabel ? String(params.tableLabel) : 'काउंटर'
+  const isParcel = params.orderType === 'PARCEL' || isParcelLabel(params.tableLabel)
+  const table = isParcel
+    ? 'पार्सल (Parcel)'
+    : params.tableLabel
+    ? formatTableDisplay(String(params.tableLabel))
+    : 'काउंटर'
   const speechText =
     params.speechAnnouncement ||
-    getHindiTableAnnouncement({ tableLabel: params.tableLabel, items: params.items })
+    getHindiTableAnnouncement({ tableLabel: params.tableLabel, orderType: params.orderType, items: params.items })
 
   // 1. Native Android App: Trigger native Android Heads-Up notification + item dictation
   if (window.AndroidTTS && typeof window.AndroidTTS.showOrderNotification === 'function') {
@@ -680,8 +696,10 @@ export function showOrderNotification(params: {
   // 2. Standard Browser Web Notification API (Desktop / Chrome)
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
-      const title = `🔔 नया ऑर्डर: टेबल ${table} (#${params.orderNumber})`
-      const body = `🍽️ टेबल: ${table}${params.totalFormatted ? ` • ${params.totalFormatted}` : ''}${itemsSummary ? `\n📋 ${itemsSummary}` : ''}\nकिचन डैशबोर्ड पर देखें`
+      const title = isParcel
+        ? `📦 नया पार्सल ऑर्डर (#${params.orderNumber})`
+        : `🔔 नया ऑर्डर: ${table} (#${params.orderNumber})`
+      const body = `${isParcel ? '📦 पार्सल' : `🍽️ ${table}`}${params.totalFormatted ? ` • ${params.totalFormatted}` : ''}${itemsSummary ? `\n📋 ${itemsSummary}` : ''}\nकिचन डैशबोर्ड पर देखें`
 
       const options: NotificationOptions & { renotify?: boolean } = {
         body,

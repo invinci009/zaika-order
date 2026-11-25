@@ -37,6 +37,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const updated = await updateOrder(
       id,
       {
+        orderType: body.orderType,
         tableId: body.tableId,
         tableLabel: body.tableLabel,
         customerName: body.customerName,

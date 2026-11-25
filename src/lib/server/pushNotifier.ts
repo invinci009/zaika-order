@@ -1,9 +1,10 @@
 import 'server-only'
-import { formatPaise } from '../ordering/rules.mjs'
+import { formatPaise, formatTableDisplay, isParcelLabel } from '../ordering/rules.mjs'
 
 export interface OrderPushPayload {
   orderNumber: string
   tableLabel?: string | null
+  orderType?: 'DINE_IN' | 'PARCEL' | null
   totalPaise?: number
   items?: Array<{ itemName: string; quantity: number }>
 }
@@ -25,7 +26,12 @@ export async function sendMobileOrderAlarm(order: OrderPushPayload): Promise<boo
   if (!topic) return false
 
   try {
-    const tableText = order.tableLabel ? `टेबल ${order.tableLabel}` : 'काउंटर'
+    const isParcel = order.orderType === 'PARCEL' || isParcelLabel(order.tableLabel)
+    const tableText = isParcel
+      ? '📦 पार्सल ऑर्डर (Parcel)'
+      : order.tableLabel
+      ? `🍽️ ${formatTableDisplay(order.tableLabel)}`
+      : 'काउंटर'
     const totalText = order.totalPaise !== undefined ? ` • ${formatPaise(order.totalPaise)}` : ''
     
     let itemsText = ''
@@ -34,8 +40,10 @@ export async function sendMobileOrderAlarm(order: OrderPushPayload): Promise<boo
       itemsText = `\n📋 ${line}`
     }
 
-    const title = `🚨 नया ऑर्डर आया है! (#${order.orderNumber})`
-    const body = `🍽️ ${tableText}${totalText}${itemsText}`
+    const title = isParcel
+      ? `📦 नया पार्सल ऑर्डर आया है! (#${order.orderNumber})`
+      : `🚨 नया ऑर्डर आया है! (#${order.orderNumber})`
+    const body = `${tableText}${totalText}${itemsText}`
 
     const host = process.env.NEXT_PUBLIC_APP_URL || 'https://badshah.vercel.app'
     const clickUrl = `${host}/dashboard#orders`

@@ -21,7 +21,7 @@ import {
   playRestaurantChime,
   type VoiceEngineStatus,
 } from '@/lib/client/speechAnnouncer'
-import { formatPaise } from '@/lib/ordering/rules.mjs'
+import { formatPaise, formatTableDisplay, isParcelLabel } from '@/lib/ordering/rules.mjs'
 import {
   getHindiTableAnnouncement,
   getHindiServiceAnnouncement,
@@ -32,6 +32,7 @@ import { Volume2, Bell } from 'lucide-react'
 export interface IncomingOrderInfo {
   id: string
   orderNumber: string
+  orderType?: 'DINE_IN' | 'PARCEL'
   tableId?: string | null
   tableLabel?: string | null
   customerName?: string
@@ -77,7 +78,8 @@ interface OrderAnnouncerContextType {
   dismissServiceCall: () => void
   testVoice: (
     tableLabel?: string,
-    items?: Array<{ itemName: string; quantity: number } | string>
+    items?: Array<{ itemName: string; quantity: number } | string>,
+    orderType?: 'DINE_IN' | 'PARCEL'
   ) => Promise<void>
   requestNotifications: () => Promise<void>
   announceOrderDirectly: (order: IncomingOrderInfo) => Promise<void>
@@ -195,6 +197,7 @@ export function OrderAnnouncerProvider({ children }: { children: React.ReactNode
 
         const speechText = getHindiTableAnnouncement({
           tableLabel: order.tableLabel,
+          orderType: order.orderType,
           items: order.items,
         })
 
@@ -202,6 +205,7 @@ export function OrderAnnouncerProvider({ children }: { children: React.ReactNode
         showOrderNotification({
           orderNumber: order.orderNumber,
           tableLabel: order.tableLabel,
+          orderType: order.orderType,
           totalFormatted: order.totalPaise !== undefined ? formatPaise(order.totalPaise) : undefined,
           items: order.items,
           speechAnnouncement: speechText,
@@ -214,11 +218,19 @@ export function OrderAnnouncerProvider({ children }: { children: React.ReactNode
 
         // 2. Play Hindi voice announcement
         if (isVoiceEnabled && !(typeof window !== 'undefined' && window.AndroidTTS)) {
+          const orderIsParcel = order.orderType === 'PARCEL' || isParcelLabel(order.tableLabel)
           setIsAnnouncing(true)
-          setLastAnnouncement(order.tableLabel ? `टेबल ${order.tableLabel}` : 'काउंटर')
+          setLastAnnouncement(
+            orderIsParcel
+              ? '📦 पार्सल ऑर्डर'
+              : order.tableLabel
+              ? formatTableDisplay(order.tableLabel)
+              : 'काउंटर'
+          )
           try {
             const played = await announceOrderInHindi({
               tableLabel: order.tableLabel,
+              orderType: order.orderType,
               items: order.items,
               playChimeFirst: true,
               rate: 0.95,
@@ -451,19 +463,22 @@ export function OrderAnnouncerProvider({ children }: { children: React.ReactNode
   const testVoice = useCallback(
     async (
       tableLabel = '5',
-      items?: Array<{ itemName: string; quantity: number } | string>
+      items?: Array<{ itemName: string; quantity: number } | string>,
+      orderType?: 'DINE_IN' | 'PARCEL'
     ) => {
       unlockAudio()
       setAudioUnlocked(true)
       setIsAnnouncing(true)
-      setLastAnnouncement(`टेबल नंबर ${tableLabel}`)
+      const testIsParcel = orderType === 'PARCEL' || isParcelLabel(tableLabel)
+      setLastAnnouncement(testIsParcel ? '📦 पार्सल ऑर्डर' : formatTableDisplay(tableLabel))
 
       const testOrderNum = String(Math.floor(100 + Math.random() * 900))
-      const speechText = getHindiTableAnnouncement({ tableLabel, items })
+      const speechText = getHindiTableAnnouncement({ tableLabel, orderType, items })
 
       showOrderNotification({
         orderNumber: testOrderNum,
         tableLabel,
+        orderType,
         items,
         speechAnnouncement: speechText,
       })
@@ -476,6 +491,7 @@ export function OrderAnnouncerProvider({ children }: { children: React.ReactNode
       try {
         await announceOrderInHindi({
           tableLabel,
+          orderType,
           items,
           playChimeFirst: true,
           rate: 0.95,
@@ -544,6 +560,7 @@ export function OrderAnnouncerProvider({ children }: { children: React.ReactNode
           announceOrderDirectly({
             id: fresh.id,
             orderNumber: fresh.orderNumber,
+            orderType: fresh.orderType,
             tableLabel: fresh.tableLabel,
             totalPaise: fresh.totalPaise,
             fulfilment: fresh.fulfilment,

@@ -15,7 +15,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { useOrderAnnouncer } from './OrderAnnouncerContext'
-import { formatPaise } from '@/lib/ordering/rules.mjs'
+import { formatPaise, formatTableDisplay, isParcelLabel } from '@/lib/ordering/rules.mjs'
 
 interface OrderAnnouncerBarProps {
   onNavigateToOrders?: () => void
@@ -73,6 +73,16 @@ const TEST_PRESETS = [
     table: 'Counter',
     items: [{ itemName: 'कोल्ड कॉफ़ी', quantity: 1 }],
   },
+  {
+    id: 'Parcel',
+    name: 'Parcel (पार्सल: 2 बटर नान, 1 पनीर टिक्का)',
+    table: 'Parcel',
+    orderType: 'PARCEL' as const,
+    items: [
+      { itemName: 'बटर नान', quantity: 2 },
+      { itemName: 'पनीर टिक्का', quantity: 1 },
+    ],
+  },
 ]
 
 export default function OrderAnnouncerBar({ onNavigateToOrders }: OrderAnnouncerBarProps) {
@@ -105,7 +115,8 @@ export default function OrderAnnouncerBar({ onNavigateToOrders }: OrderAnnouncer
   const currentPreset = TEST_PRESETS.find((p) => p.id === selectedPresetId) || TEST_PRESETS[0]
 
   const handleTestVoice = () => {
-    testVoice(currentPreset.table, currentPreset.items)
+    const presetOrderType = 'orderType' in currentPreset ? currentPreset.orderType : undefined
+    testVoice(currentPreset.table, currentPreset.items, presetOrderType)
   }
 
   const handleTestPhoneAlarm = async () => {
@@ -147,9 +158,18 @@ export default function OrderAnnouncerBar({ onNavigateToOrders }: OrderAnnouncer
                     </span>
                   </div>
                   <div className="text-base font-semibold text-white mt-0.5 flex items-center gap-2">
-                    <span>
-                      टेबल {activeArrival.tableLabel ? activeArrival.tableLabel : 'काउंटर'}
-                    </span>
+                    {activeArrival.orderType === 'PARCEL' || isParcelLabel(activeArrival.tableLabel) ? (
+                      <span className="text-emerald-300 font-bold">
+                        📦 पार्सल ऑर्डर (PARCEL)
+                        {activeArrival.tableLabel && !isParcelLabel(activeArrival.tableLabel)
+                          ? ` • ${formatTableDisplay(activeArrival.tableLabel)}`
+                          : ''}
+                      </span>
+                    ) : (
+                      <span>
+                        🍽️ {activeArrival.tableLabel ? formatTableDisplay(activeArrival.tableLabel) : 'काउंटर'}
+                      </span>
+                    )}
                     {activeArrival.totalPaise !== undefined && (
                       <span className="text-sm font-normal text-slate-300">
                         • {formatPaise(activeArrival.totalPaise)}

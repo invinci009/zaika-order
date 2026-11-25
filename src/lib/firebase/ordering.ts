@@ -559,6 +559,7 @@ export interface Order {
   id: string
   restaurantId: string
   orderNumber: string
+  orderType?: 'DINE_IN' | 'PARCEL'
   tableId: string | null
   tableLabel: string | null
   customerName: string
@@ -992,6 +993,7 @@ export async function createOrder(data: Omit<Order, 'id'>): Promise<Order> {
   sendMobileOrderAlarm({
     orderNumber: data.orderNumber,
     tableLabel: data.tableLabel,
+    orderType: data.orderType,
     totalPaise: data.totalPaise,
     items: data.items,
   }).catch((err) => {
@@ -1119,6 +1121,7 @@ export async function transitionOrderStatus(
 export async function updateOrder(
   orderId: string,
   updates: {
+    orderType?: 'DINE_IN' | 'PARCEL'
     tableId?: string | null
     tableLabel?: string | null
     customerName?: string
@@ -1138,6 +1141,9 @@ export async function updateOrder(
     updatedAt: serverNow(),
   }
 
+  if (updates.orderType !== undefined) {
+    cleanUpdates.orderType = updates.orderType
+  }
   if (updates.tableId !== undefined) {
     cleanUpdates.tableId = updates.tableId
     cleanUpdates.tableLabel = updates.tableLabel ?? null

@@ -11,12 +11,12 @@ import { Utensils, ArrowRight, Loader2, Sparkles, ShieldCheck, CheckCircle2 } fr
 export default function OnboardingWizard() {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const [name, setName] = useState('Biryani Badshah')
+  const [name, setName] = useState('PM Zaika Restaurant')
   const [location, setLocation] = useState('Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505')
   const [phone, setPhone] = useState('77639 49496')
   const [googleReviewUrl, setGoogleReviewUrl] = useState('')
   const [welcomeMessage, setWelcomeMessage] = useState(
-    'Thanks for dining with Biryani Badshah! We\'d love to hear about your royal experience today. For helpline & orders call 77639 49496.'
+    'Thanks for dining with PM Zaika Restaurant! We\'d love to hear about your royal experience today. For helpline & orders call 74882 60572.'
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)

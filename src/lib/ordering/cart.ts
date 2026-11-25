@@ -80,6 +80,7 @@ export interface ActiveSession {
   orderId: string
   orderNumber?: string
   accessToken?: string
+  orderType?: 'DINE_IN' | 'PARCEL'
   tableLabel: string
   customerPhone?: string
   customerName?: string

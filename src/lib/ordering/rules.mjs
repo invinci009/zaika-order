@@ -131,11 +131,25 @@ export function formatOrderNumber(seq) {
 }
 
 /**
+ * Identify whether a label or order represents a Parcel / Takeaway order.
+ */
+export function isParcelLabel(label) {
+  if (typeof label !== 'string') return false
+  const trimmed = label.trim()
+  return /^(?:parcel|takeaway|take-away|take\s*away|पार्सल|टेकअवे)(?:[\s#-].*)?$/i.test(trimmed)
+}
+
+/**
  * Format a table label cleanly, eliminating duplicate prefixes (e.g. "Table Table 6" -> "Table 6").
  */
 export function formatTableDisplay(label) {
   if (typeof label !== 'string' || !label.trim()) return 'Dining Table'
   const trimmed = label.trim()
+  if (/^(?:parcel|पार्सल)$/i.test(trimmed)) return 'Parcel'
+  const parcelSuffix = trimmed.match(/^(?:parcel|पार्सल)[-#\s]+(.+)$/i)
+  if (parcelSuffix && parcelSuffix[1]) {
+    return `Parcel (${parcelSuffix[1].trim()})`
+  }
   if (/^table\b/i.test(trimmed)) {
     const cleanNumber = trimmed.replace(/^(table\s*)+/i, '').trim()
     return cleanNumber ? `Table ${cleanNumber}` : 'Dining Table'

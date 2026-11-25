@@ -133,7 +133,23 @@ describe('Hindi Table Order Announcement Text Generation', () => {
     )
     assert.equal(
       getHindiTableAnnouncement('Parcel'),
-      'नया ऑर्डर आया है। टेकअवे से ऑर्डर प्राप्त हुआ है।'
+      'नया पार्सल ऑर्डर आया है। पार्सल के लिए ऑर्डर प्राप्त हुआ है।'
+    )
+    assert.equal(
+      getHindiTableAnnouncement({
+        tableLabel: 'Parcel',
+        orderType: 'PARCEL',
+        items: [{ itemName: 'बटर नान', quantity: 2 }],
+      }),
+      'नया पार्सल ऑर्डर आया है। पार्सल के लिए ऑर्डर प्राप्त हुआ है। ऑर्डर में है: दो बटर नान।'
+    )
+    assert.equal(
+      getHindiTableAnnouncement({
+        tableLabel: 'Table 5',
+        orderType: 'PARCEL',
+        items: [{ itemName: 'बिरयानी', quantity: 1 }],
+      }),
+      'नया पार्सल ऑर्डर आया है। टेबल नंबर पाँच के लिए पार्सल ऑर्डर प्राप्त हुआ है। ऑर्डर में है: एक बिरयानी।'
     )
     assert.equal(
       getHindiTableAnnouncement('Rooftop'),

@@ -292,7 +292,7 @@ export default function FeedbackTab({ feedbackList: initialList }: FeedbackTabPr
             const cleanDigits = (item.contactValue || '').replace(/\D/g, '')
             const intlPhone = cleanDigits.startsWith('91') ? cleanDigits : `91${cleanDigits}`
             const whatsappText = encodeURIComponent(
-              `Hello ${item.contactName || 'Guest'}, this is the Manager at Biryani Badshah regarding your complaint/feedback: `
+              `Hello ${item.contactName || 'Guest'}, this is the Manager at PM Zaika Restaurant regarding your complaint/feedback: `
             )
 
             return (

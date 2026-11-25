@@ -151,12 +151,14 @@ export function numberToHindiWords(n) {
  */
 const SPECIAL_LOCATION_MAP = [
   { match: /^(?:counter|काउंटर)$/i, phrase: 'काउंटर से ऑर्डर प्राप्त हुआ है।' },
-  { match: /^(?:takeaway|take-away|take\s*away|parcel|पार्सल|टेकअवे)$/i, phrase: 'टेकअवे से ऑर्डर प्राप्त हुआ है।' },
+  { match: /^(?:takeaway|take-away|take\s*away|टेकअवे)$/i, phrase: 'टेकअवे से ऑर्डर प्राप्त हुआ है।' },
   { match: /^(?:delivery|डिलीवरी)$/i, phrase: 'डिलीवरी के लिए ऑर्डर प्राप्त हुआ है।' },
   { match: /^(?:bar|बार)$/i, phrase: 'बार काउंटर से ऑर्डर प्राप्त हुआ है।' },
   { match: /^(?:rooftop|रूफटॉप)$/i, phrase: 'रूफटॉप टेबल से ऑर्डर प्राप्त हुआ है।' },
   { match: /^(?:garden|गार्डन)$/i, phrase: 'गार्डन टेबल से ऑर्डर प्राप्त हुआ है।' },
 ]
+
+const PARCEL_REGEX = /^(?:parcel|पार्सल)(?:[-#\s]+(.*))?$/i
 
 /**
  * Format order items into natural Hindi speech.
@@ -216,57 +218,73 @@ export function formatHindiOrderItems(items, maxToSpeak = 4) {
 }
 
 /**
- * Generate the table portion of the Hindi announcement.
+ * Extract clean table phrase without prefix ("टेबल नंबर पाँच" or "वीआईपी टेबल").
+ * Returns null if label is empty or generic Parcel/Counter.
+ */
+function extractTablePhrase(raw) {
+  if (!raw) return null
+  const vipWithNumMatch = raw.match(/^(?:table\s*)?vip[-#\s]*(\d+)$/i)
+  if (vipWithNumMatch) {
+    const num = parseInt(vipWithNumMatch[1], 10)
+    return `वीआईपी टेबल नंबर ${numberToHindiWords(num)}`
+  }
+  if (/^(?:table\s*)?vip$/i.test(raw)) {
+    return 'वीआईपी टेबल'
+  }
+  const standardNumMatch = raw.match(/^(?:table\s*|t[-#]?\s*)0*(\d+)$/i) || raw.match(/^0*(\d+)$/)
+  if (standardNumMatch) {
+    const num = parseInt(standardNumMatch[1], 10)
+    return `टेबल नंबर ${numberToHindiWords(num)}`
+  }
+  const trailingNumMatch = raw.match(/^(.+?)[-#\s]+0*(\d+)$/i)
+  if (trailingNumMatch) {
+    const sectionName = trailingNumMatch[1].trim()
+    const num = parseInt(trailingNumMatch[2], 10)
+    return `${sectionName} टेबल नंबर ${numberToHindiWords(num)}`
+  }
+  return null
+}
+
+/**
+ * Generate the table/parcel portion of the Hindi announcement.
  * @param {string|number|null|undefined} tableLabel
+ * @param {string|null|undefined} [orderType] - 'DINE_IN' | 'PARCEL'
  * @returns {string}
  */
-export function getBaseTableAnnouncement(tableLabel) {
+export function getBaseTableAnnouncement(tableLabel, orderType) {
   const prefix = 'नया ऑर्डर आया है।'
+  const raw =
+    tableLabel !== null && tableLabel !== undefined && (typeof tableLabel === 'string' || typeof tableLabel === 'number')
+      ? String(tableLabel).trim()
+      : ''
 
-  if (!tableLabel || typeof tableLabel !== 'string' && typeof tableLabel !== 'number') {
-    return `${prefix} नया ऑर्डर प्राप्त हुआ है।`
+  const parcelMatch = raw.match(PARCEL_REGEX)
+  const isParcel = orderType === 'PARCEL' || Boolean(parcelMatch)
+
+  if (isParcel) {
+    const innerLabel = parcelMatch?.[1]?.replace(/[()]/g, '').trim() || raw
+    const innerTablePhrase = !PARCEL_REGEX.test(innerLabel) ? extractTablePhrase(innerLabel) : null
+    if (innerTablePhrase) {
+      return `नया पार्सल ऑर्डर आया है। ${innerTablePhrase} के लिए पार्सल ऑर्डर प्राप्त हुआ है।`
+    }
+    return 'नया पार्सल ऑर्डर आया है। पार्सल के लिए ऑर्डर प्राप्त हुआ है।'
   }
 
-  const raw = String(tableLabel).trim()
   if (!raw) {
     return `${prefix} नया ऑर्डर प्राप्त हुआ है।`
   }
 
-  // 1. Check special non-numeric locations (Counter, Takeaway, Parcel, etc.)
+  // 1. Check special non-numeric locations (Counter, Takeaway, Delivery, etc.)
   for (const item of SPECIAL_LOCATION_MAP) {
     if (item.match.test(raw)) {
       return `${prefix} ${item.phrase}`
     }
   }
 
-  // 2. Check VIP prefix variants (e.g. "VIP", "VIP 1", "VIP-2", "Table VIP")
-  const vipWithNumMatch = raw.match(/^(?:table\s*)?vip[-#\s]*(\d+)$/i)
-  if (vipWithNumMatch) {
-    const num = parseInt(vipWithNumMatch[1], 10)
-    const hindiNum = numberToHindiWords(num)
-    return `${prefix} वीआईपी टेबल नंबर ${hindiNum} से ऑर्डर प्राप्त हुआ है।`
-  }
-
-  if (/^(?:table\s*)?vip$/i.test(raw)) {
-    return `${prefix} वीआईपी टेबल से ऑर्डर प्राप्त हुआ है।`
-  }
-
-  // 3. Check standard table patterns:
-  // e.g. "5", "12", "Table 5", "table 12", "T-5", "T12", "Table-25", "table 05"
-  const standardNumMatch = raw.match(/^(?:table\s*|t[-#]?\s*)0*(\d+)$/i) || raw.match(/^0*(\d+)$/)
-  if (standardNumMatch) {
-    const num = parseInt(standardNumMatch[1], 10)
-    const hindiNum = numberToHindiWords(num)
-    return `${prefix} टेबल नंबर ${hindiNum} से ऑर्डर प्राप्त हुआ है।`
-  }
-
-  // 4. Any label ending in a number (e.g. "Balcony 3", "Cabin 4")
-  const trailingNumMatch = raw.match(/^(.+?)[-#\s]+0*(\d+)$/i)
-  if (trailingNumMatch) {
-    const sectionName = trailingNumMatch[1].trim()
-    const num = parseInt(trailingNumMatch[2], 10)
-    const hindiNum = numberToHindiWords(num)
-    return `${prefix} ${sectionName} टेबल नंबर ${hindiNum} से ऑर्डर प्राप्त हुआ है।`
+  // 2-4. Table / VIP / Section + Number
+  const tablePhrase = extractTablePhrase(raw)
+  if (tablePhrase) {
+    return `${prefix} ${tablePhrase} से ऑर्डर प्राप्त हुआ है।`
   }
 
   // 5. General named table fallback (e.g. "Rooftop Table", "Terrace")
@@ -275,12 +293,12 @@ export function getBaseTableAnnouncement(tableLabel) {
 
 /**
  * Generate standard, natural Hindi announcement text for incoming restaurant orders,
- * including table location and specific order items ("ye ye order hai").
+ * including table location / parcel mode and specific order items ("ye ye order hai").
  *
  * Examples:
  * - Table 5, no items: "नया ऑर्डर आया है। टेबल नंबर पाँच से ऑर्डर प्राप्त हुआ है।"
  * - Table 5, with items: "नया ऑर्डर आया है। टेबल नंबर पाँच से ऑर्डर प्राप्त हुआ है। ऑर्डर में है: दो बटर नान, और एक पनीर टिक्का।"
- * - Counter with items: "नया ऑर्डर आया है। काउंटर से ऑर्डर प्राप्त हुआ है। ऑर्डर में है: एक कोल्ड कॉफ़ी।"
+ * - Parcel, with items: "नया पार्सल ऑर्डर आया है। पार्सल के लिए ऑर्डर प्राप्त हुआ है। ऑर्डर में है: दो बटर नान।"
  *
  * @param {string|number|Object|null|undefined} tableLabelOrOrder - Raw table label or order object
  * @param {Array<Object|string>} [itemsList] - Optional items if tableLabel was passed as string/number
@@ -289,13 +307,15 @@ export function getBaseTableAnnouncement(tableLabel) {
 export function getHindiTableAnnouncement(tableLabelOrOrder, itemsList) {
   let tableLabel = tableLabelOrOrder
   let items = itemsList
+  let orderType
 
   if (tableLabelOrOrder && typeof tableLabelOrOrder === 'object') {
     tableLabel = tableLabelOrOrder.tableLabel
+    orderType = tableLabelOrOrder.orderType
     items = itemsList || tableLabelOrOrder.items
   }
 
-  const baseAnnouncement = getBaseTableAnnouncement(tableLabel)
+  const baseAnnouncement = getBaseTableAnnouncement(tableLabel, orderType)
   const itemsAnnouncement = formatHindiOrderItems(items)
 
   if (!itemsAnnouncement) {
@@ -332,10 +352,13 @@ export const SERVICE_REQUEST_ENGLISH_LABELS = {
  * Get natural Hindi phrasing for a table location without order prefixes.
  * e.g. "14" -> "टेबल नंबर चौदह"
  */
-export function getTableLocationPhrase(tableLabel) {
+export function getTableLocationPhrase(tableLabel, orderType) {
+  if (orderType === 'PARCEL') return 'पार्सल'
   if (!tableLabel) return 'काउंटर'
   const raw = String(tableLabel).trim()
   if (!raw) return 'काउंटर'
+
+  if (PARCEL_REGEX.test(raw)) return 'पार्सल'
 
   for (const item of SPECIAL_LOCATION_MAP) {
     if (item.match.test(raw)) {

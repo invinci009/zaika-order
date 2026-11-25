@@ -396,8 +396,8 @@ export default function SpecialMenuPage() {
                 onClick={() => {
                   if (navigator.share) {
                     navigator.share({
-                      title: 'Biryani Badshah — Special Menu',
-                      text: 'Check out the Party Packs and Grand Handi Biryani from Biryani Badshah!',
+                      title: 'PM Zaika Restaurant — Special Menu',
+                      text: 'Check out the Party Packs and Grand Handi Biryani from PM Zaika Restaurant!',
                       url: shareUrl,
                     }).catch(() => {})
                   } else {

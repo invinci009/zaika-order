@@ -47,7 +47,7 @@ export function SplashScreen({
   return (
     <div
       onClick={onComplete}
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-between py-6 px-4 sm:px-6 overflow-hidden transition-all duration-700 ease-in-out select-none cursor-pointer ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-between py-4 sm:py-6 px-4 sm:px-6 overflow-hidden transition-all duration-700 ease-in-out select-none cursor-pointer ${
         phase === 'leaving' ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
       style={{
@@ -119,9 +119,9 @@ export function SplashScreen({
         </div>
       </header>
 
-      {/* Main Center Content: Crown, Title, Cuisine, and Detailed Restaurant Card */}
-      <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 my-auto max-w-[390px] w-full text-center">
-        {/* Official PM Zaika Medallion Logo */}
+      {/* Main Center Content: Grand Medallion Logo, Culinary Tagline, and Restaurant Card */}
+      <div className="relative z-10 flex flex-col items-center gap-2.5 sm:gap-3.5 my-auto max-w-[400px] w-full text-center">
+        {/* Official PM Zaika Medallion Logo — Large Focal Emblem */}
         <div
           className="relative flex items-center justify-center my-1"
           style={{
@@ -133,15 +133,15 @@ export function SplashScreen({
         >
           {/* Luminous Pulsing Gold Halo Ring behind Logo */}
           <div
-            className="absolute -inset-3 sm:-inset-4 rounded-full pointer-events-none border border-amber-400/40"
+            className="absolute -inset-4 sm:-inset-5 rounded-full pointer-events-none border border-amber-400/45"
             style={{
-              boxShadow: '0 0 45px rgba(245, 158, 11, 0.55), inset 0 0 30px rgba(245, 158, 11, 0.25)',
+              boxShadow: '0 0 60px rgba(245, 158, 11, 0.6), inset 0 0 36px rgba(245, 158, 11, 0.28)',
               animation: 'ambientBreath 3.5s ease-in-out infinite alternate',
             }}
           />
 
           {/* Medallion Container */}
-          <div className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full overflow-hidden shadow-[0_12px_45px_rgba(0,0,0,0.95),0_0_35px_rgba(245,158,11,0.35)] border-2 border-[#f59e0b] bg-black/90 p-0.5 shrink-0">
+          <div className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-full overflow-hidden shadow-[0_16px_55px_rgba(0,0,0,0.95),0_0_45px_rgba(245,158,11,0.4)] border-2 border-[#f59e0b] bg-black/95 p-1 shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"

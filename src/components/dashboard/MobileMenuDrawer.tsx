@@ -86,7 +86,7 @@ export default function MobileMenuDrawer({
   }
 
   const handleShareSurvey = async () => {
-    const surveyUrl = `${window.location.origin}/r/biryani-badshah-patna`
+    const surveyUrl = `${window.location.origin}/order/default/menu`
     if (navigator.share) {
       try {
         await navigator.share({
@@ -115,7 +115,7 @@ export default function MobileMenuDrawer({
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-500 flex items-center justify-center text-white font-extrabold shadow-md shadow-amber-600/25 text-xs tracking-wider">
-              BB
+              PM
             </div>
             <div>
               <h2 className="text-base font-bold text-white tracking-tight leading-tight">
@@ -322,7 +322,7 @@ export default function MobileMenuDrawer({
               </div>
               <div>
                 <span className="text-xs font-bold text-slate-200 group-hover:text-white block">
-                  Badshah VIP &amp; Loyalty
+                  PM Zaika Royal Pass &amp; Loyalty
                 </span>
                 <span className="text-[10px] text-slate-400">
                   Point rules, free gifts &amp; customer balances
@@ -560,7 +560,7 @@ export default function MobileMenuDrawer({
         {/* Quick External Actions */}
         <div className="grid grid-cols-2 gap-2 pt-1">
           <Link
-            href="/r/biryani-badshah-patna"
+            href="/order/default/menu"
             target="_blank"
             onClick={onClose}
             className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 flex flex-col items-center justify-center text-center gap-1.5 hover:bg-slate-800/60 transition-colors"

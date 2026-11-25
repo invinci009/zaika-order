@@ -14,7 +14,8 @@ import {
   UtensilsCrossed,
   Receipt,
 } from 'lucide-react'
-import { formatTableDisplay } from '@/lib/ordering/rules.mjs'
+import { formatTableDisplay, isParcelLabel } from '@/lib/ordering/rules.mjs'
+import { announceOrderInHindi } from '@/lib/client/speechAnnouncer'
 import { useOrderAnnouncer } from './OrderAnnouncerContext'
 
 const SERVICE_TYPE_META: Record<
@@ -57,6 +58,7 @@ interface KOrder {
   id: string
   orderNumber: string
   tableLabel: string | null
+  orderType?: 'DINE_IN' | 'PARCEL'
   customerName: string
   itemCount: number
   fulfilment: string
@@ -109,6 +111,7 @@ export default function KitchenTab() {
         id: o.id,
         orderNumber: o.orderNumber,
         tableLabel: o.tableLabel || null,
+        orderType: o.orderType,
         customerName: o.customerName || 'Guest',
         itemCount: o.itemCount || (o.items?.reduce((s, i) => s + i.quantity, 0) ?? 0),
         fulfilment: o.fulfilment,
@@ -331,13 +334,39 @@ export default function KitchenTab() {
             const overdue = age >= 15
             const next = nextFor(o.fulfilment)
             return (
-              <div key={o.id} className={`p-4 rounded-2xl border bg-slate-900/80 ${overdue ? 'border-rose-500/50' : 'border-slate-800'}`}>
+              <div key={o.id} className={`p-4 rounded-2xl border bg-slate-900/80 ${overdue ? 'border-rose-500/50' : o.orderType === 'PARCEL' || isParcelLabel(o.tableLabel) ? 'border-emerald-500/40' : 'border-slate-800'}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-2xl font-black text-white">{o.orderNumber}</p>
-                    <p className="text-xs text-slate-300 font-semibold">{o.tableLabel ? formatTableDisplay(o.tableLabel) : 'Counter'} • {age}m {overdue && <span className="text-rose-400 font-bold">OVERDUE</span>}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-2xl font-black text-white">{o.orderNumber}</p>
+                      {o.orderType === 'PARCEL' || isParcelLabel(o.tableLabel) ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          📦 PARCEL
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          🍽️ {o.tableLabel ? formatTableDisplay(o.tableLabel) : 'Counter'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-300 font-semibold mt-0.5">{o.tableLabel ? formatTableDisplay(o.tableLabel) : 'Counter'} • {age}m {overdue && <span className="text-rose-400 font-bold">OVERDUE</span>}</p>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">{o.fulfilment}</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => announceOrderInHindi({
+                        tableLabel: o.tableLabel,
+                        orderType: o.orderType,
+                        items: o.items || [],
+                        playChimeFirst: true,
+                      })}
+                      title="Play Hindi Voice Announcement"
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      🔊 Voice
+                    </button>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">{o.fulfilment}</span>
+                  </div>
                 </div>
                 <div className="mt-2 space-y-1 text-sm text-slate-200">
                   {d ? (

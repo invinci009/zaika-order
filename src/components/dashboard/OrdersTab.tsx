@@ -29,7 +29,8 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react'
-import { formatPaise, formatTableDisplay } from '@/lib/ordering/rules.mjs'
+import { formatPaise, formatTableDisplay, isParcelLabel } from '@/lib/ordering/rules.mjs'
+import { announceOrderInHindi } from '@/lib/client/speechAnnouncer'
 import { useOrderAnnouncer } from './OrderAnnouncerContext'
 
 interface OrderRow {
@@ -37,6 +38,7 @@ interface OrderRow {
   orderNumber: string
   tableId: string | null
   tableLabel: string | null
+  orderType?: 'DINE_IN' | 'PARCEL'
   customerName: string
   customerPhone: string
   itemCount: number
@@ -46,6 +48,7 @@ interface OrderRow {
   paidPaise: number
   refundedPaise: number
   createdAt: string
+  items?: Array<{ itemName: string; quantity: number; lineTotalPaise?: number; options?: Array<{ optionName: string }> }>
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -100,6 +103,7 @@ interface OrderDetail {
     customerPhone: string
     tableId?: string | null
     tableLabel: string | null
+    orderType?: 'DINE_IN' | 'PARCEL'
     fulfilment: string
     notes?: string
     items: DetailItem[]
@@ -130,6 +134,7 @@ export default function OrdersTab({
   const [statusFilter, setStatusFilter] = useState('active')
   const [payFilter, setPayFilter] = useState('all')
   const [tableFilter, setTableFilter] = useState('all')
+  const [modeFilter, setModeFilter] = useState<'all' | 'DINE_IN' | 'PARCEL'>('all')
 
   // Detail Modal State
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -214,8 +219,10 @@ export default function OrdersTab({
                   id: o.id,
                   orderNumber: o.orderNumber,
                   tableLabel: o.tableLabel,
+                  orderType: o.orderType,
                   totalPaise: o.totalPaise,
                   fulfilment: o.fulfilment,
+                  items: o.items,
                 })
               })
               setJustArrivedCount(fresh.length)
@@ -246,6 +253,7 @@ export default function OrdersTab({
             orderNumber: o.orderNumber,
             tableId: o.tableId || null,
             tableLabel: o.tableLabel || null,
+            orderType: o.orderType,
             customerName: o.customerName || 'Guest',
             customerPhone: o.customerPhone || '',
             itemCount: o.itemCount || (o.items?.reduce((s, i) => s + i.quantity, 0) ?? 0),
@@ -299,9 +307,12 @@ export default function OrdersTab({
         if (!['RECEIVED', 'ACCEPTED', 'PREPARING', 'READY'].includes(o.fulfilment)) return false
       } else if (statusFilter !== 'all' && o.fulfilment !== statusFilter) return false
       if (payFilter !== 'all' && o.paymentStatus !== payFilter) return false
+      const isParcel = o.orderType === 'PARCEL' || isParcelLabel(o.tableLabel)
+      if (modeFilter === 'PARCEL' && !isParcel) return false
+      if (modeFilter === 'DINE_IN' && isParcel) return false
       return true
     })
-  }, [orders, statusFilter, payFilter])
+  }, [orders, statusFilter, payFilter, modeFilter])
 
   const openDetail = async (id: string) => {
     setSelectedId(id)
@@ -321,7 +332,8 @@ export default function OrdersTab({
       if (res.ok && data?.order) {
         setDetail(data)
         const o = data.order
-        setEditTableId(o.tableId || '')
+        const isParcelOrder = o.orderType === 'PARCEL' || isParcelLabel(o.tableLabel)
+        setEditTableId(isParcelOrder ? '__PARCEL__' : o.tableId || '')
         setEditCustomerName(o.customerName || '')
         setEditCustomerPhone(o.customerPhone || '')
         setEditNotes(o.notes || '')
@@ -425,13 +437,21 @@ export default function OrdersTab({
     if (!selectedId) return
     setSavingEdit(true)
     try {
+      const isParcelSelection = editTableId === '__PARCEL__'
       const selectedTable = tables.find((t) => t.id === editTableId)
       const res = await fetch(`/api/business/orders/${selectedId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tableId: editTableId ? editTableId : null,
-          tableLabel: selectedTable ? selectedTable.label : editTableId ? null : 'Counter',
+          orderType: isParcelSelection ? 'PARCEL' : 'DINE_IN',
+          tableId: isParcelSelection ? null : editTableId ? editTableId : null,
+          tableLabel: isParcelSelection
+            ? 'Parcel'
+            : selectedTable
+            ? selectedTable.label
+            : editTableId
+            ? null
+            : 'Counter',
           customerName: editCustomerName,
           customerPhone: editCustomerPhone,
           notes: editNotes,
@@ -604,7 +624,7 @@ export default function OrdersTab({
         </head>
         <body>
           <div class="center">
-            <h2 style="margin:0;font-size:16px;letter-spacing:1px;font-weight:900;">BIRYANI BADSHAH</h2>
+            <h2 style="margin:0;font-size:16px;letter-spacing:1px;font-weight:900;">PM ZAIKA RESTAURANT</h2>
             <div style="font-size:10px;font-weight:bold;text-transform:uppercase;margin-top:2px;">
               ${isKitchen ? '★ KITCHEN ORDER TICKET (KOT) ★' : '★ CUSTOMER TAX INVOICE ★'}
             </div>
@@ -615,7 +635,11 @@ export default function OrdersTab({
           </div>
 
           <div class="table-badge">
-            ${o.tableLabel ? `TABLE ${o.tableLabel}` : 'COUNTER / DINE-IN'}
+            ${o.orderType === 'PARCEL' || isParcelLabel(o.tableLabel)
+              ? `★ PARCEL / TAKEAWAY ★${o.tableLabel && !isParcelLabel(o.tableLabel) ? ` (${o.tableLabel})` : ''}`
+              : o.tableLabel
+              ? formatTableDisplay(o.tableLabel).toUpperCase()
+              : 'COUNTER / DINE-IN'}
           </div>
 
           <div style="font-size:11px;">
@@ -667,7 +691,7 @@ export default function OrdersTab({
             </div>
             <div class="divider"></div>
             <div class="center" style="font-size:10px;margin-top:8px;">
-              Thank you for dining with Biryani Badshah!<br/>
+              Thank you for dining with PM Zaika Restaurant!<br/>
               Scan table QR to leave feedback.
             </div>
           `
@@ -781,6 +805,15 @@ export default function OrdersTab({
           <option value="PARTIALLY_REFUNDED">Part-refund</option>
         </select>
         <select
+          value={modeFilter}
+          onChange={(e) => setModeFilter(e.target.value as 'all' | 'DINE_IN' | 'PARCEL')}
+          className="h-10 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white px-3 cursor-pointer"
+        >
+          <option value="all">All order modes</option>
+          <option value="DINE_IN">🍽️ Dine-In (Tables)</option>
+          <option value="PARCEL">📦 Parcel Orders</option>
+        </select>
+        <select
           value={tableFilter}
           onChange={(e) => setTableFilter(e.target.value)}
           className="h-10 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white px-3 cursor-pointer"
@@ -814,7 +847,11 @@ export default function OrdersTab({
             return (
               <div
                 key={o.id}
-                className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/90 hover:border-amber-500/30 transition-all flex flex-col justify-between gap-3 shadow-sm hover:shadow-md"
+                className={`p-4 rounded-2xl bg-slate-900/90 border transition-all flex flex-col justify-between gap-3 shadow-sm hover:shadow-md ${
+                  o.orderType === 'PARCEL' || isParcelLabel(o.tableLabel)
+                    ? 'border-emerald-500/35 hover:border-emerald-400/60'
+                    : 'border-slate-800/90 hover:border-amber-500/30'
+                }`}
               >
                 {/* Header Row */}
                 <div className="flex items-start justify-between gap-2">
@@ -830,9 +867,15 @@ export default function OrdersTab({
                     <div className="text-xs text-slate-300 mt-0.5 flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-slate-200">{o.customerName}</span>
                       <span className="text-slate-500">•</span>
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 text-[11px] font-medium">
-                        {o.tableLabel ? formatTableDisplay(o.tableLabel) : 'Counter'}
-                      </span>
+                      {o.orderType === 'PARCEL' || isParcelLabel(o.tableLabel) ? (
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-[11px] font-bold">
+                          📦 Parcel{o.tableLabel && !isParcelLabel(o.tableLabel) ? ` • ${formatTableDisplay(o.tableLabel)}` : ''}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-semibold">
+                          🍽️ {o.tableLabel ? formatTableDisplay(o.tableLabel) : 'Counter'}
+                        </span>
+                      )}
                       <span className="text-slate-500">•</span>
                       <span className="text-slate-400">{o.itemCount} items</span>
                       {newOrderIdsRef.current.has(o.id) && (
@@ -843,13 +886,30 @@ export default function OrdersTab({
                     </div>
                   </div>
 
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider uppercase border shadow-sm ${
-                      STATUS_COLORS[o.fulfilment] || 'bg-slate-800 text-slate-300'
-                    }`}
-                  >
-                    {o.fulfilment}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        announceOrderInHindi({
+                          tableLabel: o.tableLabel,
+                          orderType: o.orderType,
+                          items: o.items || [],
+                          playChimeFirst: true,
+                        })
+                      }
+                      title="Play Hindi Voice Announcement"
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-[10px] font-bold cursor-pointer transition-colors"
+                    >
+                      🔊
+                    </button>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider uppercase border shadow-sm ${
+                        STATUS_COLORS[o.fulfilment] || 'bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      {o.fulfilment}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Price and Payment row */}
@@ -1098,17 +1158,18 @@ export default function OrdersTab({
 
                     <div>
                       <label className="text-[11px] font-semibold text-slate-300 block mb-1">
-                        Assigned Dining Table
+                        Order Type / Dining Table
                       </label>
                       <select
                         value={editTableId}
                         onChange={(e) => setEditTableId(e.target.value)}
                         className="w-full h-9 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white px-3 cursor-pointer"
                       >
-                        <option value="">Counter / Takeaway</option>
+                        <option value="__PARCEL__">📦 Parcel (Pack & Takeaway)</option>
+                        <option value="">Counter / Walk-in</option>
                         {tables.map((t) => (
                           <option key={t.id} value={t.id}>
-                            {formatTableDisplay(t.label)}
+                            🍽️ {formatTableDisplay(t.label)}
                           </option>
                         ))}
                       </select>
@@ -1214,11 +1275,32 @@ export default function OrdersTab({
                       </a>
                     </div>
                     <div className="flex justify-between items-center flex-wrap gap-2 pt-1 border-t border-slate-800/80">
-                      <span className="text-slate-400 text-xs">Dining Table</span>
+                      <span className="text-slate-400 text-xs">Order Type / Table</span>
                       <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                        <span className="text-amber-300 font-semibold px-2 py-0.5 rounded bg-slate-900 text-xs">
-                          {detail.order.tableLabel ? formatTableDisplay(detail.order.tableLabel) : 'Counter'}
-                        </span>
+                        {detail.order.orderType === 'PARCEL' || isParcelLabel(detail.order.tableLabel) ? (
+                          <span className="text-emerald-300 font-bold px-2.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/35 text-xs">
+                            📦 Parcel{detail.order.tableLabel && !isParcelLabel(detail.order.tableLabel) ? ` • ${formatTableDisplay(detail.order.tableLabel)}` : ''}
+                          </span>
+                        ) : (
+                          <span className="text-amber-300 font-semibold px-2 py-0.5 rounded bg-slate-900 text-xs">
+                            🍽️ {detail.order.tableLabel ? formatTableDisplay(detail.order.tableLabel) : 'Counter'}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            announceOrderInHindi({
+                              tableLabel: detail.order.tableLabel,
+                              orderType: detail.order.orderType,
+                              items: detail.order.items,
+                              playChimeFirst: true,
+                            })
+                          }
+                          title="Play Hindi Voice Announcement"
+                          className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-[11px] font-bold cursor-pointer"
+                        >
+                          🔊 Voice
+                        </button>
                         {(() => {
                           const table = tables.find(
                             (t) => t.id === detail.order.tableId || t.label === detail.order.tableLabel

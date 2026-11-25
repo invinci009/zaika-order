@@ -7,21 +7,22 @@ export const FOOD_IMAGE_MAP: Record<string, string> = {
   // ==========================================
   // SOUPS (Each soup has its OWN distinct photo!)
   // ==========================================
-  'veg sweet corn': 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=400&q=80',
-  'sweet corn (non veg)': 'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?auto=format&fit=crop&w=400&q=80',
-  'hot n sour (veg)': 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=400&q=80',
-  'hot n sour (non veg)': 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=400&q=80',
-  'veg manchow': 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=400&q=80',
-  'chicken manchow soup': 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80',
-  'mushroom soup': 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=400&q=80',
-  'chicken mushroom soup': 'https://images.unsplash.com/photo-1588566565463-180a5b2090f2?auto=format&fit=crop&w=400&q=80',
+  'veg sweet corn': '/menu/veg-sweet-corn.jpg',
+  'sweet corn (non veg)': '/menu/sweet-corn-chicken-soup.jpg',
+  'hot n sour (veg)': '/menu/hot-n-sour-veg.jpg',
+  'hot n sour (non veg)': '/menu/hot-n-sour-non-veg.jpg',
+  'veg manchow': '/menu/veg-manchow.avif',
+  'chicken manchow soup': '/menu/chicken-manchow-soup.jpg',
+  'mushroom soup': '/menu/mushroom-soup.avif',
+  'chicken mushroom soup': '/menu/chicken-mushroom-soup.jpg',
 
   // ==========================================
   // STARTERS VEG
   // ==========================================
   'mix veg manchurian dry': 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=400&q=80',
-  'french fry': 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80',
-  'penuts masala': 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=400&q=80',
+  'french fry': '/menu/french-fry.avif',
+  'penuts masala': '/menu/peanuts-masala.jpg',
+  'peanuts masala': '/menu/peanuts-masala.jpg',
   'paneer chili dry': 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=400&q=80',
   'paneer pakora': 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80',
   'gobi manchurian': 'https://images.unsplash.com/photo-1625398407796-82650a8c135f?auto=format&fit=crop&w=400&q=80',
@@ -98,11 +99,25 @@ export const FOOD_IMAGE_MAP: Record<string, string> = {
   // ==========================================
   // BREADS & NAANS
   // ==========================================
-  'butter naan': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80',
-  'garlic naan': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80',
-  'plain naan': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80',
-  'baby naan': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80',
-  'tandoori roti': 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80',
+  'butter naan': '/menu/butter-naan.jpg',
+  'garlic naan': '/menu/garlic-naan.jpg',
+  'plain naan': '/menu/plain-naan.jpg',
+  'ginger naan': '/menu/butter-naan.jpg',
+  'paneer stuff naan': '/menu/kulcha-naan.jpg',
+  'paneer garlic naan': '/menu/paneer-garlic-naan.avif',
+  'paneer ginger naan': '/menu/paneer-garlic-naan.avif',
+  'veg stuff naan': '/menu/kulcha-naan.jpg',
+  'kulcha': '/menu/kulcha-naan.jpg',
+  'paneer kulcha': '/menu/kulcha-naan.jpg',
+  'veg stuff kulcha': '/menu/kulcha-naan.jpg',
+  'chicken stuff naan': '/menu/plain-naan.jpg',
+  'chicken garlic naan': '/menu/garlic-naan.jpg',
+  'chicken ginger naan': '/menu/plain-naan.jpg',
+  'chicken stuff kulcha': '/menu/kulcha-naan.jpg',
+  'plain roti': '/menu/plain-naan.jpg',
+  'butter roti': '/menu/butter-naan.jpg',
+  'baby naan': '/menu/butter-naan.jpg',
+  'tandoori roti': '/menu/plain-naan.jpg',
 
   // ==========================================
   // NOODLES & CHINESE
@@ -208,11 +223,17 @@ export function getFoodImage(name: string, categoryId?: string): string | null {
 
   if (clean.includes('biryani') && clean.includes('mutton')) return FOOD_IMAGE_MAP['mutton biryani']
   if (clean.includes('biryani')) return FOOD_IMAGE_MAP['chicken biryani']
-  if (clean.includes('tandoori')) return FOOD_IMAGE_MAP['chicken tandoori']
+  if (clean.includes('tandoori') && !clean.includes('roti')) return FOOD_IMAGE_MAP['chicken tandoori']
   if (clean.includes('lollypop')) return FOOD_IMAGE_MAP['chicken lollypop']
   if (clean.includes('butter masala')) return FOOD_IMAGE_MAP['chicken butter masala']
   if (clean.includes('tikka')) return FOOD_IMAGE_MAP['chicken tikka']
-  if (clean.includes('naan')) return FOOD_IMAGE_MAP['butter naan']
+  if (clean.includes('french fry') || clean.includes('french fries')) return FOOD_IMAGE_MAP['french fry']
+  if (clean.includes('peanut') || clean.includes('penut')) return FOOD_IMAGE_MAP['penuts masala']
+  if (clean.includes('kulcha')) return FOOD_IMAGE_MAP['kulcha']
+  if (clean.includes('paneer') && clean.includes('naan')) return FOOD_IMAGE_MAP['paneer garlic naan']
+  if (clean.includes('garlic') && clean.includes('naan')) return FOOD_IMAGE_MAP['garlic naan']
+  if (clean.includes('plain') && clean.includes('naan')) return FOOD_IMAGE_MAP['plain naan']
+  if (clean.includes('naan') || clean.includes('roti')) return FOOD_IMAGE_MAP['butter naan']
   if (clean.includes('noodle')) return FOOD_IMAGE_MAP['veg noodles']
   if (clean.includes('paneer')) return FOOD_IMAGE_MAP['paneer butter masala']
 

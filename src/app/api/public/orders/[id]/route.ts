@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOrder, getOrderEvents } from '@/lib/firebase/ordering'
 import { verifyTokenAgainstHash } from '@/lib/ordering/tokens'
-import { maskPhone } from '@/lib/ordering/rules.mjs'
+import { maskPhone, isParcelLabel } from '@/lib/ordering/rules.mjs'
 import { getRestaurantSettings } from '@/lib/firebase/firestore'
 import { getRestaurantConfig } from '@/config/loader'
 
@@ -46,6 +46,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       {
         orderId: order.id,
         orderNumber: order.orderNumber,
+        orderType: order.orderType || (isParcelLabel(order.tableLabel) ? 'PARCEL' : 'DINE_IN'),
         tableLabel: order.tableLabel,
         customerName: order.customerName,
         customerPhoneMasked: maskPhone(order.customerPhone),
