@@ -1,0 +1,1346 @@
+[
+    {
+        "id": 1,
+        "name": "Plain Roti",
+        "price": 20.0,
+        "category": "TANDOORI ROTI",
+        "diet": "veg",
+        "target_filename": "001_Plain_Roti.webp"
+    },
+    {
+        "id": 2,
+        "name": "Yellow Daal",
+        "price": 100.0,
+        "category": "INDIAN DAAL",
+        "diet": "veg",
+        "target_filename": "002_Yellow_Daal.webp"
+    },
+    {
+        "id": 3,
+        "name": "Aloo Gobhi",
+        "price": 160.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "003_Aloo_Gobhi.webp"
+    },
+    {
+        "id": 4,
+        "name": "Mix Veg Manchurian Dry",
+        "price": 250.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "004_Mix_Veg_Manchurian_Dry.webp"
+    },
+    {
+        "id": 5,
+        "name": "Veg Biryani",
+        "price": 140.0,
+        "category": "BIRYANI",
+        "diet": "veg",
+        "target_filename": "005_Veg_Biryani.webp"
+    },
+    {
+        "id": 6,
+        "name": "Paneer Tikka",
+        "price": 240.0,
+        "category": "VEG TANDOORI",
+        "diet": "veg",
+        "target_filename": "006_Paneer_Tikka.webp"
+    },
+    {
+        "id": 7,
+        "name": "Chicken Stuff Naan",
+        "price": 100.0,
+        "category": "NAAN (NON VEG)",
+        "diet": "nonveg",
+        "target_filename": "007_Chicken_Stuff_Naan.webp"
+    },
+    {
+        "id": 8,
+        "name": "Egg Curry",
+        "price": 100.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "egg",
+        "target_filename": "008_Egg_Curry.webp"
+    },
+    {
+        "id": 9,
+        "name": "Plain Naan",
+        "price": 35.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "009_Plain_Naan.webp"
+    },
+    {
+        "id": 10,
+        "name": "Chicken Lollypop",
+        "price": 230.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "010_Chicken_Lollypop.webp"
+    },
+    {
+        "id": 11,
+        "name": "Veg Sweet Corn",
+        "price": 110.0,
+        "category": "SOUP",
+        "diet": "veg",
+        "target_filename": "011_Veg_Sweet_Corn.webp"
+    },
+    {
+        "id": 12,
+        "name": "Chicken Tandoori",
+        "price": 400.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "012_Chicken_Tandoori.webp"
+    },
+    {
+        "id": 13,
+        "name": "Veg Noodles",
+        "price": 110.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "013_Veg_Noodles.webp"
+    },
+    {
+        "id": 14,
+        "name": "Butter Naan",
+        "price": 40.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "014_Butter_Naan.webp"
+    },
+    {
+        "id": 15,
+        "name": "Butter Roti",
+        "price": 25.0,
+        "category": "TANDOORI ROTI",
+        "diet": "veg",
+        "target_filename": "015_Butter_Roti.webp"
+    },
+    {
+        "id": 16,
+        "name": "Chicken Tikka",
+        "price": 300.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "016_Chicken_Tikka.webp"
+    },
+    {
+        "id": 17,
+        "name": "Daal Fry",
+        "price": 120.0,
+        "category": "INDIAN DAAL",
+        "diet": "veg",
+        "target_filename": "017_Daal_Fry.webp"
+    },
+    {
+        "id": 18,
+        "name": "French Fry",
+        "price": 90.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "018_French_Fry.webp"
+    },
+    {
+        "id": 19,
+        "name": "Chicken Pakora",
+        "price": 220.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "019_Chicken_Pakora.webp"
+    },
+    {
+        "id": 20,
+        "name": "Paneer Gullar Kabab",
+        "price": 260.0,
+        "category": "VEG TANDOORI",
+        "diet": "veg",
+        "target_filename": "020_Paneer_Gullar_Kabab.webp"
+    },
+    {
+        "id": 21,
+        "name": "Sweet Corn (Non Veg)",
+        "price": 140.0,
+        "category": "SOUP",
+        "diet": "nonveg",
+        "target_filename": "021_Sweet_Corn_Non_Veg.webp"
+    },
+    {
+        "id": 22,
+        "name": "Aloo Parwal",
+        "price": 160.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "022_Aloo_Parwal.webp"
+    },
+    {
+        "id": 23,
+        "name": "Egg Do Payaza",
+        "price": 120.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "egg",
+        "target_filename": "023_Egg_Do_Payaza.webp"
+    },
+    {
+        "id": 24,
+        "name": "Chicken Garlic Naan",
+        "price": 140.0,
+        "category": "NAAN (NON VEG)",
+        "diet": "nonveg",
+        "target_filename": "024_Chicken_Garlic_Naan.webp"
+    },
+    {
+        "id": 25,
+        "name": "Paneer Noodles",
+        "price": 150.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "025_Paneer_Noodles.webp"
+    },
+    {
+        "id": 26,
+        "name": "Paneer Biryani",
+        "price": 150.0,
+        "category": "BIRYANI",
+        "diet": "veg",
+        "target_filename": "026_Paneer_Biryani.webp"
+    },
+    {
+        "id": 27,
+        "name": "Hot N Sour (Veg)",
+        "price": 110.0,
+        "category": "SOUP",
+        "diet": "veg",
+        "target_filename": "027_Hot_N_Sour_Veg.webp"
+    },
+    {
+        "id": 28,
+        "name": "Chicken Reshmi Kabab",
+        "price": 350.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "028_Chicken_Reshmi_Kabab.webp"
+    },
+    {
+        "id": 29,
+        "name": "Mashroom Noodles",
+        "price": 170.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "029_Mashroom_Noodles.webp"
+    },
+    {
+        "id": 30,
+        "name": "Garlic Naan",
+        "price": 60.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "030_Garlic_Naan.webp"
+    },
+    {
+        "id": 31,
+        "name": "Egg Biryani",
+        "price": 150.0,
+        "category": "BIRYANI",
+        "diet": "egg",
+        "target_filename": "031_Egg_Biryani.webp"
+    },
+    {
+        "id": 32,
+        "name": "Aloo Matter",
+        "price": 160.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "032_Aloo_Matter.webp"
+    },
+    {
+        "id": 33,
+        "name": "Chicken Fried (2 Pic Leg)",
+        "price": 220.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "033_Chicken_Fried_2_Pic_Leg.webp"
+    },
+    {
+        "id": 34,
+        "name": "Penuts Masala",
+        "price": 100.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "034_Penuts_Masala.webp"
+    },
+    {
+        "id": 35,
+        "name": "Chicken Ginger Naan",
+        "price": 140.0,
+        "category": "NAAN (NON VEG)",
+        "diet": "nonveg",
+        "target_filename": "035_Chicken_Ginger_Naan.webp"
+    },
+    {
+        "id": 36,
+        "name": "Daal Tadka",
+        "price": 140.0,
+        "category": "INDIAN DAAL",
+        "diet": "veg",
+        "target_filename": "036_Daal_Tadka.webp"
+    },
+    {
+        "id": 37,
+        "name": "Egg Kadhai",
+        "price": 120.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "egg",
+        "target_filename": "037_Egg_Kadhai.webp"
+    },
+    {
+        "id": 38,
+        "name": "Paneer Malai Tikka Kabab",
+        "price": 270.0,
+        "category": "VEG TANDOORI",
+        "diet": "veg",
+        "target_filename": "038_Paneer_Malai_Tikka_Kabab.webp"
+    },
+    {
+        "id": 39,
+        "name": "Lactha Butter Pratha",
+        "price": 30.0,
+        "category": "TANDOORI ROTI",
+        "diet": "veg",
+        "target_filename": "039_Lactha_Butter_Pratha.webp"
+    },
+    {
+        "id": 40,
+        "name": "Chicken Curry",
+        "price": 260.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "040_Chicken_Curry.webp"
+    },
+    {
+        "id": 41,
+        "name": "Aloo dum Bhojpuri",
+        "price": 220.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "041_Aloo_dum_Bhojpuri.webp"
+    },
+    {
+        "id": 42,
+        "name": "Egg Noodles",
+        "price": 140.0,
+        "category": "NOODLES",
+        "diet": "egg",
+        "target_filename": "042_Egg_Noodles.webp"
+    },
+    {
+        "id": 43,
+        "name": "Chicken Stuff Kulcha",
+        "price": 90.0,
+        "category": "NAAN (NON VEG)",
+        "diet": "nonveg",
+        "target_filename": "043_Chicken_Stuff_Kulcha.webp"
+    },
+    {
+        "id": 44,
+        "name": "Hara-Bhara Kabab",
+        "price": 220.0,
+        "category": "VEG TANDOORI",
+        "diet": "veg",
+        "target_filename": "044_Hara_Bhara_Kabab.webp"
+    },
+    {
+        "id": 45,
+        "name": "Ginger Naan",
+        "price": 60.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "045_Ginger_Naan.webp"
+    },
+    {
+        "id": 46,
+        "name": "Hot N Sour (Non Veg)",
+        "price": 140.0,
+        "category": "SOUP",
+        "diet": "nonveg",
+        "target_filename": "046_Hot_N_Sour_Non_Veg.webp"
+    },
+    {
+        "id": 47,
+        "name": "Chicken Fried (800 gm Chicken)",
+        "price": 420.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "047_Chicken_Fried_800_gm_Chicken.webp"
+    },
+    {
+        "id": 48,
+        "name": "Chicken Malai Kabab",
+        "price": 350.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "048_Chicken_Malai_Kabab.webp"
+    },
+    {
+        "id": 49,
+        "name": "Chicken Biryani",
+        "price": 170.0,
+        "category": "BIRYANI",
+        "diet": "nonveg",
+        "target_filename": "049_Chicken_Biryani.webp"
+    },
+    {
+        "id": 50,
+        "name": "Paneer Chili Dry",
+        "price": 220.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "050_Paneer_Chili_Dry.webp"
+    },
+    {
+        "id": 51,
+        "name": "Aloo Pratha",
+        "price": 50.0,
+        "category": "TANDOORI ROTI",
+        "diet": "veg",
+        "target_filename": "051_Aloo_Pratha.webp"
+    },
+    {
+        "id": 52,
+        "name": "Aloo Dum Kashmiri",
+        "price": 260.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "052_Aloo_Dum_Kashmiri.webp"
+    },
+    {
+        "id": 53,
+        "name": "Paneer Stuff Naan",
+        "price": 80.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "053_Paneer_Stuff_Naan.webp"
+    },
+    {
+        "id": 54,
+        "name": "Mutton Biryani",
+        "price": 270.0,
+        "category": "BIRYANI",
+        "diet": "nonveg",
+        "target_filename": "054_Mutton_Biryani.webp"
+    },
+    {
+        "id": 55,
+        "name": "Veg Manchow",
+        "price": 110.0,
+        "category": "SOUP",
+        "diet": "veg",
+        "target_filename": "055_Veg_Manchow.webp"
+    },
+    {
+        "id": 56,
+        "name": "Chicken Hyderabadi",
+        "price": 280.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "056_Chicken_Hyderabadi.webp"
+    },
+    {
+        "id": 57,
+        "name": "Chicken Noodles",
+        "price": 170.0,
+        "category": "NOODLES",
+        "diet": "nonveg",
+        "target_filename": "057_Chicken_Noodles.webp"
+    },
+    {
+        "id": 58,
+        "name": "Gobi Pratha",
+        "price": 50.0,
+        "category": "TANDOORI ROTI",
+        "diet": "veg",
+        "target_filename": "058_Gobi_Pratha.webp"
+    },
+    {
+        "id": 59,
+        "name": "Paneer Pakora",
+        "price": 200.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "059_Paneer_Pakora.webp"
+    },
+    {
+        "id": 60,
+        "name": "Chicken Crunchy",
+        "price": 220.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "060_Chicken_Crunchy.webp"
+    },
+    {
+        "id": 61,
+        "name": "Chicken Leg Kabab",
+        "price": 300.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "061_Chicken_Leg_Kabab.webp"
+    },
+    {
+        "id": 62,
+        "name": "Veg Seekh Kabab",
+        "price": 220.0,
+        "category": "VEG TANDOORI",
+        "diet": "veg",
+        "target_filename": "062_Veg_Seekh_Kabab.webp"
+    },
+    {
+        "id": 63,
+        "name": "Chicken Gullar Kabab",
+        "price": 250.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "063_Chicken_Gullar_Kabab.webp"
+    },
+    {
+        "id": 64,
+        "name": "Chicken Manchow Soup",
+        "price": 140.0,
+        "category": "SOUP",
+        "diet": "nonveg",
+        "target_filename": "064_Chicken_Manchow_Soup.webp"
+    },
+    {
+        "id": 65,
+        "name": "Gobi Manchurian",
+        "price": 200.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "065_Gobi_Manchurian.webp"
+    },
+    {
+        "id": 66,
+        "name": "Aloo Masala",
+        "price": 160.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "066_Aloo_Masala.webp"
+    },
+    {
+        "id": 67,
+        "name": "Zaika Spl. Biryani",
+        "price": 300.0,
+        "category": "BIRYANI",
+        "diet": "nonveg",
+        "target_filename": "067_Zaika_Spl_Biryani.webp"
+    },
+    {
+        "id": 68,
+        "name": "Soya Malai Kabab",
+        "price": 220.0,
+        "category": "VEG TANDOORI",
+        "diet": "veg",
+        "target_filename": "068_Soya_Malai_Kabab.webp"
+    },
+    {
+        "id": 69,
+        "name": "Paneer Garlic Naan",
+        "price": 100.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "069_Paneer_Garlic_Naan.webp"
+    },
+    {
+        "id": 70,
+        "name": "Paneer Pratha",
+        "price": 90.0,
+        "category": "TANDOORI ROTI",
+        "diet": "veg",
+        "target_filename": "070_Paneer_Pratha.webp"
+    },
+    {
+        "id": 71,
+        "name": "Mix Noodles",
+        "price": 200.0,
+        "category": "NOODLES",
+        "diet": "nonveg",
+        "target_filename": "071_Mix_Noodles.webp"
+    },
+    {
+        "id": 72,
+        "name": "Chicken Do Payza",
+        "price": 280.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "072_Chicken_Do_Payza.webp"
+    },
+    {
+        "id": 73,
+        "name": "Honey Chicken Chilli Dry",
+        "price": 260.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "073_Honey_Chicken_Chilli_Dry.webp"
+    },
+    {
+        "id": 74,
+        "name": "Veg Hakka Noodles",
+        "price": 140.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "074_Veg_Hakka_Noodles.webp"
+    },
+    {
+        "id": 75,
+        "name": "Seya Malai Chap",
+        "price": 220.0,
+        "category": "VEG TANDOORI",
+        "diet": "veg",
+        "target_filename": "075_Seya_Malai_Chap.webp"
+    },
+    {
+        "id": 76,
+        "name": "Chicken Hendi",
+        "price": 280.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "076_Chicken_Hendi.webp"
+    },
+    {
+        "id": 77,
+        "name": "Paneer Ginger Naan",
+        "price": 100.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "077_Paneer_Ginger_Naan.webp"
+    },
+    {
+        "id": 78,
+        "name": "Mushroom Soup",
+        "price": 110.0,
+        "category": "SOUP",
+        "diet": "veg",
+        "target_filename": "078_Mushroom_Soup.webp"
+    },
+    {
+        "id": 79,
+        "name": "Paneer Mugalai Pratha",
+        "price": 120.0,
+        "category": "TANDOORI ROTI",
+        "diet": "veg",
+        "target_filename": "079_Paneer_Mugalai_Pratha.webp"
+    },
+    {
+        "id": 80,
+        "name": "Veg Chili Dry",
+        "price": 200.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "080_Veg_Chili_Dry.webp"
+    },
+    {
+        "id": 81,
+        "name": "Chicken Seekh Kabab",
+        "price": 250.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "081_Chicken_Seekh_Kabab.webp"
+    },
+    {
+        "id": 82,
+        "name": "Chicken Manchurian Dry",
+        "price": 260.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "082_Chicken_Manchurian_Dry.webp"
+    },
+    {
+        "id": 83,
+        "name": "Aloo Jeera",
+        "price": 160.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "083_Aloo_Jeera.webp"
+    },
+    {
+        "id": 84,
+        "name": "Chicken Mugalai Pratha",
+        "price": 150.0,
+        "category": "TANDOORI ROTI",
+        "diet": "nonveg",
+        "target_filename": "084_Chicken_Mugalai_Pratha.webp"
+    },
+    {
+        "id": 85,
+        "name": "Chicken Chili Bonless Dry",
+        "price": 220.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "085_Chicken_Chili_Bonless_Dry.webp"
+    },
+    {
+        "id": 86,
+        "name": "Chicken Mushroom Soup",
+        "price": 160.0,
+        "category": "SOUP",
+        "diet": "nonveg",
+        "target_filename": "086_Chicken_Mushroom_Soup.webp"
+    },
+    {
+        "id": 87,
+        "name": "Paneer Masala",
+        "price": 240.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "087_Paneer_Masala.webp"
+    },
+    {
+        "id": 88,
+        "name": "Chicken Kadahi",
+        "price": 280.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "088_Chicken_Kadahi.webp"
+    },
+    {
+        "id": 89,
+        "name": "Veg Stuff Naan",
+        "price": 70.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "089_Veg_Stuff_Naan.webp"
+    },
+    {
+        "id": 90,
+        "name": "Paneer Hakka Noodles",
+        "price": 170.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "090_Paneer_Hakka_Noodles.webp"
+    },
+    {
+        "id": 91,
+        "name": "Chicken Malai Seekh Kabab",
+        "price": 300.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "091_Chicken_Malai_Seekh_Kabab.webp"
+    },
+    {
+        "id": 92,
+        "name": "Paneer 65",
+        "price": 220.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "092_Paneer_65.webp"
+    },
+    {
+        "id": 93,
+        "name": "Mashroom Hakka Noodles",
+        "price": 200.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "093_Mashroom_Hakka_Noodles.webp"
+    },
+    {
+        "id": 94,
+        "name": "Crispy Chili Potatos",
+        "price": 150.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "094_Crispy_Chili_Potatos.webp"
+    },
+    {
+        "id": 95,
+        "name": "Kulcha",
+        "price": 25.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "095_Kulcha.webp"
+    },
+    {
+        "id": 96,
+        "name": "Chicken Tagari",
+        "price": 350.0,
+        "category": "TANDOORI",
+        "diet": "nonveg",
+        "target_filename": "096_Chicken_Tagari.webp"
+    },
+    {
+        "id": 97,
+        "name": "Mashroom Mugalai Pratha",
+        "price": 150.0,
+        "category": "TANDOORI ROTI",
+        "diet": "veg",
+        "target_filename": "097_Mashroom_Mugalai_Pratha.webp"
+    },
+    {
+        "id": 98,
+        "name": "Paneer Butter Masala",
+        "price": 250.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "098_Paneer_Butter_Masala.webp"
+    },
+    {
+        "id": 99,
+        "name": "Chicken 65",
+        "price": 250.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "099_Chicken_65.webp"
+    },
+    {
+        "id": 100,
+        "name": "Chicken Masala",
+        "price": 300.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "100_Chicken_Masala.webp"
+    },
+    {
+        "id": 101,
+        "name": "Chicken Butter Masala",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "101_Chicken_Butter_Masala.webp"
+    },
+    {
+        "id": 102,
+        "name": "Chicken Chilli Bone Dry",
+        "price": 200.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "102_Chicken_Chilli_Bone_Dry.webp"
+    },
+    {
+        "id": 103,
+        "name": "Egg Hakka Noodles",
+        "price": 170.0,
+        "category": "NOODLES",
+        "diet": "egg",
+        "target_filename": "103_Egg_Hakka_Noodles.webp"
+    },
+    {
+        "id": 104,
+        "name": "Paneer Do Pyazza",
+        "price": 250.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "104_Paneer_Do_Pyazza.webp"
+    },
+    {
+        "id": 105,
+        "name": "Honey Chili Potatos",
+        "price": 180.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "105_Honey_Chili_Potatos.webp"
+    },
+    {
+        "id": 106,
+        "name": "Paneer Kulcha",
+        "price": 70.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "106_Paneer_Kulcha.webp"
+    },
+    {
+        "id": 107,
+        "name": "Veg Stuff Kulcha",
+        "price": 50.0,
+        "category": "NAAN",
+        "diet": "veg",
+        "target_filename": "107_Veg_Stuff_Kulcha.webp"
+    },
+    {
+        "id": 108,
+        "name": "Crispy Baby Corn Chilli",
+        "price": 240.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "108_Crispy_Baby_Corn_Chilli.webp"
+    },
+    {
+        "id": 109,
+        "name": "Paneer Kadhai",
+        "price": 250.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "109_Paneer_Kadhai.webp"
+    },
+    {
+        "id": 110,
+        "name": "Chicken Hakka Noodles",
+        "price": 220.0,
+        "category": "NOODLES",
+        "diet": "nonveg",
+        "target_filename": "110_Chicken_Hakka_Noodles.webp"
+    },
+    {
+        "id": 111,
+        "name": "Chicken Tikka Masala",
+        "price": 370.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "111_Chicken_Tikka_Masala.webp"
+    },
+    {
+        "id": 112,
+        "name": "Lemon Chilli Dry",
+        "price": 250.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "112_Lemon_Chilli_Dry.webp"
+    },
+    {
+        "id": 113,
+        "name": "Mix Hakka Noodles",
+        "price": 260.0,
+        "category": "NOODLES",
+        "diet": "nonveg",
+        "target_filename": "113_Mix_Hakka_Noodles.webp"
+    },
+    {
+        "id": 114,
+        "name": "Veg Cheese Roll",
+        "price": 200.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "114_Veg_Cheese_Roll.webp"
+    },
+    {
+        "id": 115,
+        "name": "Butter Chicken Chilli Dry",
+        "price": 260.0,
+        "category": "STARTER NON VEG",
+        "diet": "nonveg",
+        "target_filename": "115_Butter_Chicken_Chilli_Dry.webp"
+    },
+    {
+        "id": 116,
+        "name": "Paneer Handi",
+        "price": 250.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "116_Paneer_Handi.webp"
+    },
+    {
+        "id": 117,
+        "name": "Chicken Tikka Butter Masala",
+        "price": 390.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "117_Chicken_Tikka_Butter_Masala.webp"
+    },
+    {
+        "id": 118,
+        "name": "Mashroom Chili Dry",
+        "price": 220.0,
+        "category": "STARTER VEG",
+        "diet": "veg",
+        "target_filename": "118_Mashroom_Chili_Dry.webp"
+    },
+    {
+        "id": 119,
+        "name": "Veg Sizwan Noodles",
+        "price": 160.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "119_Veg_Sizwan_Noodles.webp"
+    },
+    {
+        "id": 120,
+        "name": "Egg Chili Dry",
+        "price": 150.0,
+        "category": "STARTER NON VEG",
+        "diet": "egg",
+        "target_filename": "120_Egg_Chili_Dry.webp"
+    },
+    {
+        "id": 121,
+        "name": "Chicken Bharta",
+        "price": 330.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "121_Chicken_Bharta.webp"
+    },
+    {
+        "id": 122,
+        "name": "Paneer Lababdar",
+        "price": 280.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "122_Paneer_Lababdar.webp"
+    },
+    {
+        "id": 123,
+        "name": "Paneer Punjabi",
+        "price": 280.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "123_Paneer_Punjabi.webp"
+    },
+    {
+        "id": 124,
+        "name": "Chicken Leg Kabab Masala (2 Pic)",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "124_Chicken_Leg_Kabab_Masala_2_Pic.webp"
+    },
+    {
+        "id": 125,
+        "name": "Chicken Sizwan Noodles",
+        "price": 220.0,
+        "category": "NOODLES",
+        "diet": "nonveg",
+        "target_filename": "125_Chicken_Sizwan_Noodles.webp"
+    },
+    {
+        "id": 126,
+        "name": "Chicken Leg Kabab Butter Masala (2 Pic)",
+        "price": 340.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "126_Chicken_Leg_Kabab_Butter_Masala_2_Pic.webp"
+    },
+    {
+        "id": 127,
+        "name": "Paneer Tikka Masala",
+        "price": 320.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "127_Paneer_Tikka_Masala.webp"
+    },
+    {
+        "id": 128,
+        "name": "Mix Sizwan Noodles",
+        "price": 240.0,
+        "category": "NOODLES",
+        "diet": "nonveg",
+        "target_filename": "128_Mix_Sizwan_Noodles.webp"
+    },
+    {
+        "id": 129,
+        "name": "Paneer Sizwan Noodles",
+        "price": 200.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "129_Paneer_Sizwan_Noodles.webp"
+    },
+    {
+        "id": 130,
+        "name": "Chicken Dehati (6 Pic)",
+        "price": 420.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "130_Chicken_Dehati_6_Pic.webp"
+    },
+    {
+        "id": 131,
+        "name": "Paneer Tikka Butter Masala",
+        "price": 340.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "131_Paneer_Tikka_Butter_Masala.webp"
+    },
+    {
+        "id": 132,
+        "name": "Paneer Kofta",
+        "price": 300.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "132_Paneer_Kofta.webp"
+    },
+    {
+        "id": 133,
+        "name": "Egg Sizwan Noodles",
+        "price": 200.0,
+        "category": "NOODLES",
+        "diet": "egg",
+        "target_filename": "133_Egg_Sizwan_Noodles.webp"
+    },
+    {
+        "id": 134,
+        "name": "Chicken Mughlai Mussalam",
+        "price": 520.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "134_Chicken_Mughlai_Mussalam.webp"
+    },
+    {
+        "id": 135,
+        "name": "Mashroom Sizwan Noodles",
+        "price": 220.0,
+        "category": "NOODLES",
+        "diet": "veg",
+        "target_filename": "135_Mashroom_Sizwan_Noodles.webp"
+    },
+    {
+        "id": 136,
+        "name": "Chicken Tandoori Masala",
+        "price": 520.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "136_Chicken_Tandoori_Masala.webp"
+    },
+    {
+        "id": 137,
+        "name": "Malai Kofta",
+        "price": 300.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "137_Malai_Kofta.webp"
+    },
+    {
+        "id": 138,
+        "name": "Chicken Punjabi",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "138_Chicken_Punjabi.webp"
+    },
+    {
+        "id": 139,
+        "name": "Paneer Mushroom Masala",
+        "price": 300.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "139_Paneer_Mushroom_Masala.webp"
+    },
+    {
+        "id": 140,
+        "name": "Chicken Korhazori",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "140_Chicken_Korhazori.webp"
+    },
+    {
+        "id": 141,
+        "name": "Paneer Mushroom Butter Masala",
+        "price": 350.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "141_Paneer_Mushroom_Butter_Masala.webp"
+    },
+    {
+        "id": 142,
+        "name": "Chicken Bhuna",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "142_Chicken_Bhuna.webp"
+    },
+    {
+        "id": 143,
+        "name": "Paneer Capsicum",
+        "price": 300.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "143_Paneer_Capsicum.webp"
+    },
+    {
+        "id": 144,
+        "name": "Chicken Patiyala",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "144_Chicken_Patiyala.webp"
+    },
+    {
+        "id": 145,
+        "name": "Shahi Paneer",
+        "price": 300.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "145_Shahi_Paneer.webp"
+    },
+    {
+        "id": 146,
+        "name": "Chicken Rata",
+        "price": 370.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "146_Chicken_Rata.webp"
+    },
+    {
+        "id": 147,
+        "name": "Mushroom Curry",
+        "price": 280.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "147_Mushroom_Curry.webp"
+    },
+    {
+        "id": 148,
+        "name": "Mushroom Masala",
+        "price": 280.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "148_Mushroom_Masala.webp"
+    },
+    {
+        "id": 149,
+        "name": "Chicken Kassa",
+        "price": 300.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "149_Chicken_Kassa.webp"
+    },
+    {
+        "id": 150,
+        "name": "Mushroom Do Pyaza",
+        "price": 280.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "150_Mushroom_Do_Pyaza.webp"
+    },
+    {
+        "id": 151,
+        "name": "Chicken Istu",
+        "price": 300.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "151_Chicken_Istu.webp"
+    },
+    {
+        "id": 152,
+        "name": "Mushroom Handi",
+        "price": 280.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "152_Mushroom_Handi.webp"
+    },
+    {
+        "id": 153,
+        "name": "Mutton Curry (4 Pic)",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "153_Mutton_Curry_4_Pic.webp"
+    },
+    {
+        "id": 154,
+        "name": "Mutton do Payza (4 Pic)",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "154_Mutton_do_Payza_4_Pic.webp"
+    },
+    {
+        "id": 155,
+        "name": "Mushroom Kadahi",
+        "price": 280.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "155_Mushroom_Kadahi.webp"
+    },
+    {
+        "id": 156,
+        "name": "Mushroom Mather Masala",
+        "price": 340.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "156_Mushroom_Mather_Masala.webp"
+    },
+    {
+        "id": 157,
+        "name": "Mutton Hendi (4 Pic)",
+        "price": 320.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "157_Mutton_Hendi_4_Pic.webp"
+    },
+    {
+        "id": 158,
+        "name": "Mutton Dehati (6 Pic)",
+        "price": 470.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "158_Mutton_Dehati_6_Pic.webp"
+    },
+    {
+        "id": 159,
+        "name": "Mushroom Butter Masala",
+        "price": 320.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "159_Mushroom_Butter_Masala.webp"
+    },
+    {
+        "id": 160,
+        "name": "Mutton Istu (4 Pic)",
+        "price": 340.0,
+        "category": "INDIAN NON VEG CURRY",
+        "diet": "nonveg",
+        "target_filename": "160_Mutton_Istu_4_Pic.webp"
+    },
+    {
+        "id": 161,
+        "name": "Mushroom Dehati",
+        "price": 310.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "161_Mushroom_Dehati.webp"
+    },
+    {
+        "id": 162,
+        "name": "Mather Paneer",
+        "price": 200.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "162_Mather_Paneer.webp"
+    },
+    {
+        "id": 163,
+        "name": "Kaju Paneer",
+        "price": 270.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "163_Kaju_Paneer.webp"
+    },
+    {
+        "id": 164,
+        "name": "Kaju Masala",
+        "price": 270.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "164_Kaju_Masala.webp"
+    },
+    {
+        "id": 165,
+        "name": "Kaju Korma",
+        "price": 320.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "165_Kaju_Korma.webp"
+    },
+    {
+        "id": 166,
+        "name": "Mix Veg",
+        "price": 210.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "166_Mix_Veg.webp"
+    },
+    {
+        "id": 167,
+        "name": "Veg Korma",
+        "price": 240.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "167_Veg_Korma.webp"
+    },
+    {
+        "id": 168,
+        "name": "Meth Matter Malai",
+        "price": 240.0,
+        "category": "INDIAN VEG CURRY",
+        "diet": "veg",
+        "target_filename": "168_Meth_Matter_Malai.webp"
+    }
+]

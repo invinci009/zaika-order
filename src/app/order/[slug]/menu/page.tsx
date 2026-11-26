@@ -65,7 +65,7 @@ import {
 
 // --- FALLBACK FOOD IMAGE ---
 const FALLBACK_FOOD_IMG =
-  'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80';
+  '/images/menu/049_Chicken_Biryani.webp';
 
 // --- AUTHENTIC PM ZAIKA MENU DATA ---
 const MENU_ITEMS = [
@@ -84,7 +84,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Slow-cooked Awadhi mutton layered with saffron basmati in a sealed clay handi.",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/054_Mutton_Biryani.webp"
   },
   {
     id: "chicken-dum-biryani",
@@ -101,7 +101,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Fragrant long-grain basmati slow-steamed with spiced chicken, mint, and fried onions.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/049_Chicken_Biryani.webp"
   },
   {
     id: "veg-sweet-corn",
@@ -118,7 +118,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with veg sweet corn and fragrant seasonings.",
-    image: "/menu/veg-sweet-corn.jpg"
+    image: "/images/menu/011_Veg_Sweet_Corn.webp"
   },
   {
     id: "sweet-corn-non-veg",
@@ -135,7 +135,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with sweet corn (non veg) and fragrant seasonings.",
-    image: "/menu/sweet-corn-chicken-soup.jpg"
+    image: "/images/menu/021_Sweet_Corn_Non_Veg.webp"
   },
   {
     id: "hot-n-sour-veg",
@@ -152,7 +152,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with hot n sour (veg) and fragrant seasonings.",
-    image: "/menu/hot-n-sour-veg.jpg"
+    image: "/images/menu/027_Hot_N_Sour_Veg.webp"
   },
   {
     id: "hot-n-sour-non-veg",
@@ -169,7 +169,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with hot n sour (non veg) and fragrant seasonings.",
-    image: "/menu/hot-n-sour-non-veg.jpg"
+    image: "/images/menu/046_Hot_N_Sour_Non_Veg.webp"
   },
   {
     id: "veg-manchow",
@@ -186,7 +186,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with veg manchow and fragrant seasonings.",
-    image: "/menu/veg-manchow.avif"
+    image: "/images/menu/055_Veg_Manchow.webp"
   },
   {
     id: "chicken-manchow-soup",
@@ -203,7 +203,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with chicken manchow  and fragrant seasonings.",
-    image: "/menu/chicken-manchow-soup.jpg"
+    image: "/images/menu/064_Chicken_Manchow_Soup.webp"
   },
   {
     id: "mushroom-soup",
@@ -220,7 +220,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with mushroom  and fragrant seasonings.",
-    image: "/menu/mushroom-soup.avif"
+    image: "/images/menu/078_Mushroom_Soup.webp"
   },
   {
     id: "chicken-mushroom-soup",
@@ -237,7 +237,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Warming savory broth gently simmered with chicken mushroom  and fragrant seasonings.",
-    image: "/menu/chicken-mushroom-soup.jpg"
+    image: "/images/menu/086_Chicken_Mushroom_Soup.webp"
   },
   {
     id: "mix-veg-manchurian-dry",
@@ -254,7 +254,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mix veg manchurian dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/004_Mix_Veg_Manchurian_Dry.webp"
   },
   {
     id: "french-fry",
@@ -271,7 +271,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika french fry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "/menu/french-fry.avif"
+    image: "/images/menu/018_French_Fry.webp"
   },
   {
     id: "penuts-masala",
@@ -288,7 +288,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika penuts masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "/menu/peanuts-masala.jpg"
+    image: "/images/menu/034_Penuts_Masala.webp"
   },
   {
     id: "paneer-chili-dry",
@@ -305,7 +305,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer chili dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/050_Paneer_Chili_Dry.webp"
   },
   {
     id: "paneer-pakora",
@@ -322,7 +322,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer pakora prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/059_Paneer_Pakora.webp"
   },
   {
     id: "gobi-manchurian",
@@ -339,7 +339,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika gobi manchurian prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1625398407796-82650a8c135f?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/065_Gobi_Manchurian.webp"
   },
   {
     id: "veg-chili-dry",
@@ -356,7 +356,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika veg chili dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/080_Veg_Chili_Dry.webp"
   },
   {
     id: "paneer-65",
@@ -373,7 +373,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer 65 prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/092_Paneer_65.webp"
   },
   {
     id: "crispy-chili-potatos",
@@ -390,7 +390,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika crispy chili potatos prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/094_Crispy_Chili_Potatos.webp"
   },
   {
     id: "honey-chili-potatos",
@@ -407,7 +407,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika honey chili potatos prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/105_Honey_Chili_Potatos.webp"
   },
   {
     id: "crispy-baby-corn-chilli",
@@ -424,7 +424,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika crispy baby corn chilli prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1625398407796-82650a8c135f?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/108_Crispy_Baby_Corn_Chilli.webp"
   },
   {
     id: "veg-cheese-roll",
@@ -441,7 +441,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika veg cheese roll prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/114_Veg_Cheese_Roll.webp"
   },
   {
     id: "mashroom-chili-dry",
@@ -458,7 +458,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mashroom chili dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/118_Mashroom_Chili_Dry.webp"
   },
   {
     id: "chicken-lollypop",
@@ -475,7 +475,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika chicken lollypop prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/010_Chicken_Lollypop.webp"
   },
   {
     id: "chicken-pakora",
@@ -492,7 +492,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken pakora prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/019_Chicken_Pakora.webp"
   },
   {
     id: "chicken-fried-2-pic-leg",
@@ -509,7 +509,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken fried (2 pic leg) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/033_Chicken_Fried_2_Pic_Leg.webp"
   },
   {
     id: "chicken-fried-800-gm-chicken",
@@ -526,7 +526,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken fried (800 gm chicken) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/047_Chicken_Fried_800_gm_Chicken.webp"
   },
   {
     id: "chicken-crunchy",
@@ -543,7 +543,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken crunchy prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/060_Chicken_Crunchy.webp"
   },
   {
     id: "honey-chicken-chilli-dry",
@@ -560,7 +560,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika honey chicken chilli dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/073_Honey_Chicken_Chilli_Dry.webp"
   },
   {
     id: "chicken-manchurian-dry",
@@ -577,7 +577,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken manchurian dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/082_Chicken_Manchurian_Dry.webp"
   },
   {
     id: "chicken-chili-bonless-dry",
@@ -594,7 +594,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken chili bonless dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/085_Chicken_Chili_Bonless_Dry.webp"
   },
   {
     id: "chicken-65",
@@ -611,7 +611,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken 65 prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/099_Chicken_65.webp"
   },
   {
     id: "chicken-chilli-bone-dry",
@@ -628,7 +628,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken chilli bone dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/102_Chicken_Chilli_Bone_Dry.webp"
   },
   {
     id: "lemon-chilli-dry",
@@ -645,7 +645,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika lemon chilli dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/112_Lemon_Chilli_Dry.webp"
   },
   {
     id: "butter-chicken-chilli-dry",
@@ -662,7 +662,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika butter chicken chilli dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/115_Butter_Chicken_Chilli_Dry.webp"
   },
   {
     id: "egg-chili-dry",
@@ -679,7 +679,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika egg chili dry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/120_Egg_Chili_Dry.webp"
   },
   {
     id: "egg-curry",
@@ -696,7 +696,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika egg curry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/008_Egg_Curry.webp"
   },
   {
     id: "egg-do-payaza",
@@ -713,7 +713,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika egg do payaza prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/023_Egg_Do_Payaza.webp"
   },
   {
     id: "egg-kadhai",
@@ -730,7 +730,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika egg kadhai prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/037_Egg_Kadhai.webp"
   },
   {
     id: "chicken-curry",
@@ -747,7 +747,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken curry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/040_Chicken_Curry.webp"
   },
   {
     id: "chicken-hyderabadi",
@@ -764,7 +764,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken hyderabadi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/056_Chicken_Hyderabadi.webp"
   },
   {
     id: "chicken-do-payza",
@@ -781,7 +781,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken do payza prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/072_Chicken_Do_Payza.webp"
   },
   {
     id: "chicken-hendi",
@@ -798,7 +798,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken hendi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/076_Chicken_Hendi.webp"
   },
   {
     id: "chicken-kadahi",
@@ -815,7 +815,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken kadahi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/088_Chicken_Kadahi.webp"
   },
   {
     id: "chicken-masala",
@@ -832,7 +832,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/100_Chicken_Masala.webp"
   },
   {
     id: "chicken-butter-masala",
@@ -849,7 +849,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika chicken butter masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/101_Chicken_Butter_Masala.webp"
   },
   {
     id: "chicken-tikka-masala",
@@ -866,7 +866,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika chicken tikka masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/111_Chicken_Tikka_Masala.webp"
   },
   {
     id: "chicken-tikka-butter-masala",
@@ -883,7 +883,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika chicken tikka butter masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/117_Chicken_Tikka_Butter_Masala.webp"
   },
   {
     id: "chicken-bharta",
@@ -900,7 +900,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken bharta prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/121_Chicken_Bharta.webp"
   },
   {
     id: "chicken-leg-kabab-masala-2-pic",
@@ -917,7 +917,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken leg kabab masala (2 pic) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/124_Chicken_Leg_Kabab_Masala_2_Pic.webp"
   },
   {
     id: "chicken-leg-kabab-butter-masala-2-pic",
@@ -934,7 +934,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika chicken leg kabab butter masala (2 pic) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/126_Chicken_Leg_Kabab_Butter_Masala_2_Pic.webp"
   },
   {
     id: "chicken-dehati-6-pic",
@@ -951,7 +951,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken dehati (6 pic) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/130_Chicken_Dehati_6_Pic.webp"
   },
   {
     id: "chicken-mughlai-mussalam",
@@ -968,7 +968,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken mughlai mussalam prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/134_Chicken_Mughlai_Mussalam.webp"
   },
   {
     id: "chicken-tandoori-masala",
@@ -985,7 +985,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika chicken tandoori masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/136_Chicken_Tandoori_Masala.webp"
   },
   {
     id: "chicken-punjabi",
@@ -1002,7 +1002,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken punjabi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/138_Chicken_Punjabi.webp"
   },
   {
     id: "chicken-korhazori",
@@ -1019,7 +1019,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken korhazori prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/140_Chicken_Korhazori.webp"
   },
   {
     id: "chicken-bhuna",
@@ -1036,7 +1036,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken bhuna prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/142_Chicken_Bhuna.webp"
   },
   {
     id: "chicken-patiyala",
@@ -1053,7 +1053,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken patiyala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/144_Chicken_Patiyala.webp"
   },
   {
     id: "chicken-rata",
@@ -1070,7 +1070,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken rata prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/146_Chicken_Rata.webp"
   },
   {
     id: "chicken-kassa",
@@ -1087,7 +1087,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken kassa prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/149_Chicken_Kassa.webp"
   },
   {
     id: "chicken-istu",
@@ -1104,7 +1104,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika chicken istu prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/151_Chicken_Istu.webp"
   },
   {
     id: "mutton-curry-4-pic",
@@ -1121,7 +1121,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mutton curry (4 pic) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/153_Mutton_Curry_4_Pic.webp"
   },
   {
     id: "mutton-do-payza-4-pic",
@@ -1138,7 +1138,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mutton do payza (4 pic) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/154_Mutton_do_Payza_4_Pic.webp"
   },
   {
     id: "mutton-hendi-4-pic",
@@ -1155,7 +1155,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mutton hendi (4 pic) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/157_Mutton_Hendi_4_Pic.webp"
   },
   {
     id: "mutton-dehati-6-pic",
@@ -1172,7 +1172,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mutton dehati (6 pic) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/158_Mutton_Dehati_6_Pic.webp"
   },
   {
     id: "mutton-istu-4-pic",
@@ -1189,7 +1189,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mutton istu (4 pic) prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/160_Mutton_Istu_4_Pic.webp"
   },
   {
     id: "chicken-tandoori",
@@ -1206,7 +1206,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/012_Chicken_Tandoori.webp"
   },
   {
     id: "chicken-tikka",
@@ -1223,7 +1223,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/016_Chicken_Tikka.webp"
   },
   {
     id: "chicken-reshmi-kabab",
@@ -1240,7 +1240,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/028_Chicken_Reshmi_Kabab.webp"
   },
   {
     id: "chicken-malai-kabab",
@@ -1257,7 +1257,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/048_Chicken_Malai_Kabab.webp"
   },
   {
     id: "chicken-leg-kabab",
@@ -1274,7 +1274,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/061_Chicken_Leg_Kabab.webp"
   },
   {
     id: "chicken-gullar-kabab",
@@ -1291,7 +1291,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/063_Chicken_Gullar_Kabab.webp"
   },
   {
     id: "chicken-seekh-kabab",
@@ -1308,7 +1308,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/081_Chicken_Seekh_Kabab.webp"
   },
   {
     id: "chicken-malai-seekh-kabab",
@@ -1325,7 +1325,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/091_Chicken_Malai_Seekh_Kabab.webp"
   },
   {
     id: "chicken-tagari",
@@ -1342,7 +1342,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/096_Chicken_Tagari.webp"
   },
   {
     id: "veg-biryani",
@@ -1359,7 +1359,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Authentic PM Zaika veg biryani prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1642821373181-696a54913e93?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/005_Veg_Biryani.webp"
   },
   {
     id: "paneer-biryani",
@@ -1376,7 +1376,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Authentic PM Zaika paneer biryani prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1642821373181-696a54913e93?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/026_Paneer_Biryani.webp"
   },
   {
     id: "egg-biryani",
@@ -1393,7 +1393,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Authentic PM Zaika egg biryani prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/031_Egg_Biryani.webp"
   },
   {
     id: "chicken-biryani",
@@ -1410,7 +1410,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Authentic PM Zaika chicken biryani prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/049_Chicken_Biryani.webp"
   },
   {
     id: "mutton-biryani",
@@ -1427,7 +1427,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika mutton biryani prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/054_Mutton_Biryani.webp"
   },
   {
     id: "zaika-spl-biryani",
@@ -1444,7 +1444,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika zaika spl. biryani prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/067_Zaika_Spl_Biryani.webp"
   },
   {
     id: "aloo-gobhi",
@@ -1461,7 +1461,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika aloo gobhi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/003_Aloo_Gobhi.webp"
   },
   {
     id: "aloo-parwal",
@@ -1478,7 +1478,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika aloo parwal prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/022_Aloo_Parwal.webp"
   },
   {
     id: "aloo-matter",
@@ -1495,7 +1495,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika aloo matter prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/032_Aloo_Matter.webp"
   },
   {
     id: "aloo-dum-bhojpuri",
@@ -1512,7 +1512,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika aloo dum bhojpuri prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/041_Aloo_dum_Bhojpuri.webp"
   },
   {
     id: "aloo-dum-kashmiri",
@@ -1529,7 +1529,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika aloo dum kashmiri prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/052_Aloo_Dum_Kashmiri.webp"
   },
   {
     id: "aloo-masala",
@@ -1546,7 +1546,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika aloo masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/066_Aloo_Masala.webp"
   },
   {
     id: "aloo-jeera",
@@ -1563,7 +1563,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika aloo jeera prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/083_Aloo_Jeera.webp"
   },
   {
     id: "paneer-masala",
@@ -1580,7 +1580,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/087_Paneer_Masala.webp"
   },
   {
     id: "paneer-butter-masala",
@@ -1597,7 +1597,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika paneer butter masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/098_Paneer_Butter_Masala.webp"
   },
   {
     id: "paneer-do-pyazza",
@@ -1614,7 +1614,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer do pyazza prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/104_Paneer_Do_Pyazza.webp"
   },
   {
     id: "paneer-kadhai",
@@ -1631,7 +1631,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer kadhai prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/109_Paneer_Kadhai.webp"
   },
   {
     id: "paneer-handi",
@@ -1648,7 +1648,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika paneer handi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/116_Paneer_Handi.webp"
   },
   {
     id: "paneer-lababdar",
@@ -1665,7 +1665,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer lababdar prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/122_Paneer_Lababdar.webp"
   },
   {
     id: "paneer-punjabi",
@@ -1682,7 +1682,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer punjabi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/123_Paneer_Punjabi.webp"
   },
   {
     id: "paneer-tikka-masala",
@@ -1699,7 +1699,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika paneer tikka masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/127_Paneer_Tikka_Masala.webp"
   },
   {
     id: "paneer-tikka-butter-masala",
@@ -1716,7 +1716,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika paneer tikka butter masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/131_Paneer_Tikka_Butter_Masala.webp"
   },
   {
     id: "paneer-kofta",
@@ -1733,7 +1733,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer kofta prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/132_Paneer_Kofta.webp"
   },
   {
     id: "malai-kofta",
@@ -1750,7 +1750,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika malai kofta prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/137_Malai_Kofta.webp"
   },
   {
     id: "paneer-mushroom-masala",
@@ -1767,7 +1767,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer mushroom masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/139_Paneer_Mushroom_Masala.webp"
   },
   {
     id: "paneer-mushroom-butter-masala",
@@ -1784,7 +1784,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika paneer mushroom butter masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/141_Paneer_Mushroom_Butter_Masala.webp"
   },
   {
     id: "paneer-capsicum",
@@ -1801,7 +1801,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika paneer capsicum prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/143_Paneer_Capsicum.webp"
   },
   {
     id: "shahi-paneer",
@@ -1818,7 +1818,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika shahi paneer prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/145_Shahi_Paneer.webp"
   },
   {
     id: "mushroom-curry",
@@ -1835,7 +1835,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mushroom curry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/147_Mushroom_Curry.webp"
   },
   {
     id: "mushroom-masala",
@@ -1852,7 +1852,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mushroom masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/148_Mushroom_Masala.webp"
   },
   {
     id: "mushroom-do-pyaza",
@@ -1869,7 +1869,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mushroom do pyaza prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/150_Mushroom_Do_Pyaza.webp"
   },
   {
     id: "mushroom-handi",
@@ -1886,7 +1886,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika mushroom handi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/152_Mushroom_Handi.webp"
   },
   {
     id: "mushroom-kadahi",
@@ -1903,7 +1903,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mushroom kadahi prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/155_Mushroom_Kadahi.webp"
   },
   {
     id: "mushroom-mather-masala",
@@ -1920,7 +1920,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mushroom mather masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/156_Mushroom_Mather_Masala.webp"
   },
   {
     id: "mushroom-butter-masala",
@@ -1937,7 +1937,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika mushroom butter masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/159_Mushroom_Butter_Masala.webp"
   },
   {
     id: "mushroom-dehati",
@@ -1954,7 +1954,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mushroom dehati prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/161_Mushroom_Dehati.webp"
   },
   {
     id: "mather-paneer",
@@ -1971,7 +1971,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mather paneer prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/162_Mather_Paneer.webp"
   },
   {
     id: "kaju-paneer",
@@ -1988,7 +1988,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika kaju paneer prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/163_Kaju_Paneer.webp"
   },
   {
     id: "kaju-masala",
@@ -2005,7 +2005,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika kaju masala prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/164_Kaju_Masala.webp"
   },
   {
     id: "kaju-korma",
@@ -2022,7 +2022,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika kaju korma prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/165_Kaju_Korma.webp"
   },
   {
     id: "mix-veg",
@@ -2039,7 +2039,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika mix veg prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/166_Mix_Veg.webp"
   },
   {
     id: "veg-korma",
@@ -2056,7 +2056,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Authentic PM Zaika veg korma prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1625398407796-82650a8c135f?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/167_Veg_Korma.webp"
   },
   {
     id: "meth-matter-malai",
@@ -2073,7 +2073,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Authentic PM Zaika meth matter malai prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/168_Meth_Matter_Malai.webp"
   },
   {
     id: "paneer-tikka",
@@ -2090,7 +2090,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/006_Paneer_Tikka.webp"
   },
   {
     id: "paneer-gullar-kabab",
@@ -2107,7 +2107,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/020_Paneer_Gullar_Kabab.webp"
   },
   {
     id: "paneer-malai-tikka-kabab",
@@ -2124,7 +2124,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1610057099443-fde8c8d50f2c?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/038_Paneer_Malai_Tikka_Kabab.webp"
   },
   {
     id: "hara-bhara-kabab",
@@ -2141,7 +2141,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/044_Hara_Bhara_Kabab.webp"
   },
   {
     id: "veg-seekh-kabab",
@@ -2158,7 +2158,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/062_Veg_Seekh_Kabab.webp"
   },
   {
     id: "soya-malai-kabab",
@@ -2175,7 +2175,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/068_Soya_Malai_Kabab.webp"
   },
   {
     id: "seya-malai-chap",
@@ -2192,7 +2192,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "Succulent skewers charred in authentic clay tandoor with aromatic yogurt marinade and herbs.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/075_Seya_Malai_Chap.webp"
   },
   {
     id: "plain-naan",
@@ -2209,7 +2209,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/plain-naan.jpg"
+    image: "/images/menu/009_Plain_Naan.webp"
   },
   {
     id: "butter-naan",
@@ -2226,7 +2226,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/butter-naan.jpg"
+    image: "/images/menu/014_Butter_Naan.webp"
   },
   {
     id: "garlic-naan",
@@ -2243,7 +2243,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/garlic-naan.jpg"
+    image: "/images/menu/030_Garlic_Naan.webp"
   },
   {
     id: "ginger-naan",
@@ -2260,7 +2260,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/butter-naan.jpg"
+    image: "/images/menu/045_Ginger_Naan.webp"
   },
   {
     id: "paneer-stuff-naan",
@@ -2277,7 +2277,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/kulcha-naan.jpg"
+    image: "/images/menu/053_Paneer_Stuff_Naan.webp"
   },
   {
     id: "paneer-garlic-naan",
@@ -2294,7 +2294,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/paneer-garlic-naan.avif"
+    image: "/images/menu/069_Paneer_Garlic_Naan.webp"
   },
   {
     id: "paneer-ginger-naan",
@@ -2311,7 +2311,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/paneer-garlic-naan.avif"
+    image: "/images/menu/077_Paneer_Ginger_Naan.webp"
   },
   {
     id: "veg-stuff-naan",
@@ -2328,7 +2328,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/kulcha-naan.jpg"
+    image: "/images/menu/089_Veg_Stuff_Naan.webp"
   },
   {
     id: "kulcha",
@@ -2345,7 +2345,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/kulcha-naan.jpg"
+    image: "/images/menu/095_Kulcha.webp"
   },
   {
     id: "paneer-kulcha",
@@ -2362,7 +2362,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/kulcha-naan.jpg"
+    image: "/images/menu/106_Paneer_Kulcha.webp"
   },
   {
     id: "veg-stuff-kulcha",
@@ -2379,7 +2379,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/kulcha-naan.jpg"
+    image: "/images/menu/107_Veg_Stuff_Kulcha.webp"
   },
   {
     id: "chicken-stuff-naan",
@@ -2396,7 +2396,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/plain-naan.jpg"
+    image: "/images/menu/007_Chicken_Stuff_Naan.webp"
   },
   {
     id: "chicken-garlic-naan",
@@ -2413,7 +2413,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/garlic-naan.jpg"
+    image: "/images/menu/024_Chicken_Garlic_Naan.webp"
   },
   {
     id: "chicken-ginger-naan",
@@ -2430,7 +2430,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/plain-naan.jpg"
+    image: "/images/menu/035_Chicken_Ginger_Naan.webp"
   },
   {
     id: "chicken-stuff-kulcha",
@@ -2447,7 +2447,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/kulcha-naan.jpg"
+    image: "/images/menu/043_Chicken_Stuff_Kulcha.webp"
   },
   {
     id: "plain-roti",
@@ -2464,7 +2464,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/plain-naan.jpg"
+    image: "/images/menu/001_Plain_Roti.webp"
   },
   {
     id: "butter-roti",
@@ -2481,7 +2481,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "/menu/butter-naan.jpg"
+    image: "/images/menu/015_Butter_Roti.webp"
   },
   {
     id: "lactha-butter-pratha",
@@ -2498,7 +2498,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/039_Lactha_Butter_Pratha.webp"
   },
   {
     id: "aloo-pratha",
@@ -2515,7 +2515,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/051_Aloo_Pratha.webp"
   },
   {
     id: "gobi-pratha",
@@ -2532,7 +2532,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1625398407796-82650a8c135f?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/058_Gobi_Pratha.webp"
   },
   {
     id: "paneer-pratha",
@@ -2549,7 +2549,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/070_Paneer_Pratha.webp"
   },
   {
     id: "paneer-mugalai-pratha",
@@ -2566,7 +2566,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/079_Paneer_Mugalai_Pratha.webp"
   },
   {
     id: "chicken-mugalai-pratha",
@@ -2583,7 +2583,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/084_Chicken_Mugalai_Pratha.webp"
   },
   {
     id: "mashroom-mugalai-pratha",
@@ -2600,7 +2600,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Crisp, fluffy artisan bread freshly slapped in the roaring clay tandoor oven.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/097_Mashroom_Mugalai_Pratha.webp"
   },
   {
     id: "yellow-daal",
@@ -2617,7 +2617,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika yellow daal prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/002_Yellow_Daal.webp"
   },
   {
     id: "daal-fry",
@@ -2634,7 +2634,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika daal fry prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/017_Daal_Fry.webp"
   },
   {
     id: "daal-tadka",
@@ -2651,7 +2651,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: false,
     description: "Authentic PM Zaika daal tadka prepared with royal Awadhi spices and fresh ingredients.",
-    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/036_Daal_Tadka.webp"
   },
   {
     id: "veg-noodles",
@@ -2668,7 +2668,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1612927601601-6638404737ce?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/013_Veg_Noodles.webp"
   },
   {
     id: "paneer-noodles",
@@ -2685,7 +2685,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/025_Paneer_Noodles.webp"
   },
   {
     id: "mashroom-noodles",
@@ -2702,7 +2702,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/029_Mashroom_Noodles.webp"
   },
   {
     id: "egg-noodles",
@@ -2719,7 +2719,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1612927601601-6638404737ce?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/042_Egg_Noodles.webp"
   },
   {
     id: "chicken-noodles",
@@ -2736,7 +2736,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1612927601601-6638404737ce?auto=format&fit=crop&w=400&q=80"
+    image: "/images/menu/057_Chicken_Noodles.webp"
   },
   {
     id: "mix-noodles",
@@ -2753,7 +2753,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/071_Mix_Noodles.webp"
   },
   {
     id: "veg-hakka-noodles",
@@ -2770,7 +2770,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/074_Veg_Hakka_Noodles.webp"
   },
   {
     id: "paneer-hakka-noodles",
@@ -2787,7 +2787,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/090_Paneer_Hakka_Noodles.webp"
   },
   {
     id: "mashroom-hakka-noodles",
@@ -2804,7 +2804,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/093_Mashroom_Hakka_Noodles.webp"
   },
   {
     id: "egg-hakka-noodles",
@@ -2821,7 +2821,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/103_Egg_Hakka_Noodles.webp"
   },
   {
     id: "chicken-hakka-noodles",
@@ -2838,7 +2838,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/110_Chicken_Hakka_Noodles.webp"
   },
   {
     id: "mix-hakka-noodles",
@@ -2855,7 +2855,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/113_Mix_Hakka_Noodles.webp"
   },
   {
     id: "veg-sizwan-noodles",
@@ -2872,7 +2872,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/119_Veg_Sizwan_Noodles.webp"
   },
   {
     id: "chicken-sizwan-noodles",
@@ -2889,7 +2889,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/125_Chicken_Sizwan_Noodles.webp"
   },
   {
     id: "mix-sizwan-noodles",
@@ -2906,7 +2906,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/128_Mix_Sizwan_Noodles.webp"
   },
   {
     id: "paneer-sizwan-noodles",
@@ -2923,7 +2923,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/129_Paneer_Sizwan_Noodles.webp"
   },
   {
     id: "egg-sizwan-noodles",
@@ -2940,7 +2940,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/133_Egg_Sizwan_Noodles.webp"
   },
   {
     id: "mashroom-sizwan-noodles",
@@ -2957,7 +2957,7 @@ const MENU_ITEMS = [
     popular: false,
     customizable: true,
     description: "High flame wok-tossed long noodles with crisp julienned vegetables and zesty sauces.",
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/135_Mashroom_Sizwan_Noodles.webp"
   },
   {
     id: "double-egg-chicken-roll",
@@ -2974,7 +2974,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Flaky layered paratha wrapped around succulent spiced chicken tikka, dual farm eggs, crisp onions, and zesty green chutney.",
-    image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/171_Double_Egg_Chicken_Roll.webp"
   },
   {
     id: "paneer-kathi-roll",
@@ -2991,7 +2991,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: true,
     description: "Char-grilled malai paneer wrapped in flaky tandoori paratha with mint relish and sliced bell peppers.",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/172_Paneer_Kathi_Roll.webp"
   },
   {
     id: "special-motter-pulao-1kg",
@@ -3008,7 +3008,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Party Pack \u2014 1 kg aromatic basmati peas pulao.",
-    image: "https://images.unsplash.com/photo-1642821373181-696a54913e93?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/173_Motter_Pulao.webp"
   },
   {
     id: "special-meetha-zarda-1kg",
@@ -3025,7 +3025,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Party Pack \u2014 1 kg royal sweet saffron rice with rich dry fruits.",
-    image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/174_Meetha_Zarda.webp"
   },
   {
     id: "special-chicken-korma-1kg",
@@ -3042,7 +3042,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Party Pack \u2014 1 kg rich traditional Mughlai chicken curry.",
-    image: "https://images.unsplash.com/photo-1628294895950-9805252327bc?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/140_Chicken_Korhazori.webp"
   },
   {
     id: "special-mutton-korma-1kg",
@@ -3059,7 +3059,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Party Pack \u2014 1 kg royal slow-cooked tender mutton curry.",
-    image: "https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/154_Mutton_do_Payza_4_Pic.webp"
   },
   {
     id: "special-chicken-stick-kabab-1kg",
@@ -3076,7 +3076,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Party Pack \u2014 1 kg skewered boneless kababs roasted in clay oven.",
-    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/081_Chicken_Seekh_Kabab.webp"
   },
   {
     id: "special-murg-mussallam-pcs",
@@ -3093,7 +3093,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Special \u2014 Whole chicken prepared in royal Mughlai rich gravy.",
-    image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/134_Chicken_Mughlai_Mussalam.webp"
   },
   {
     id: "special-mutton-raan-e-arabia",
@@ -3110,7 +3110,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Grand Special \u2014 Whole slow-roasted Arabian mutton raan.",
-    image: "https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/179_Mutton_Rane_E_Arabia.webp"
   },
   {
     id: "special-baby-naan-1kg",
@@ -3127,7 +3127,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Mehman Nawazi Party Pack \u2014 1 kg fresh tandoori baby naans.",
-    image: "/menu/butter-naan.jpg"
+    image: "/images/menu/014_Butter_Naan.webp"
   },
   {
     id: "special-chicken-biryani-handi-45",
@@ -3144,7 +3144,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Shan-E-Biryani \u2014 Grand Chicken Handi serving 40-45 persons (~\u20b9165/person).",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/067_Zaika_Spl_Biryani.webp"
   },
   {
     id: "special-chicken-biryani-handi-80",
@@ -3161,7 +3161,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Shan-E-Biryani \u2014 Mega Chicken Handi serving 75-80 persons (~\u20b9175/person).",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/049_Chicken_Biryani.webp"
   },
   {
     id: "special-mutton-biryani-handi-45",
@@ -3178,7 +3178,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Shan-E-Biryani \u2014 Grand Mutton Handi serving 40-45 persons (~\u20b9275/person).",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/054_Mutton_Biryani.webp"
   },
   {
     id: "special-mutton-biryani-handi-80",
@@ -3195,7 +3195,7 @@ const MENU_ITEMS = [
     popular: true,
     customizable: false,
     description: "Shan-E-Biryani \u2014 Mega Mutton Handi serving 75-80 persons (~\u20b9268/person).",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+    image: "/images/menu/054_Mutton_Biryani.webp"
   }
 ];
 
@@ -3205,53 +3205,53 @@ const CATEGORIES = [
     id: 'All',
     label: 'All',
     image:
-      'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=240&q=80'
+      '/images/menu/138_Chicken_Punjabi.webp'
   },
   {
     id: 'Biryani',
     label: 'Biryani',
     image:
-      'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=240&q=80'
+      '/images/menu/049_Chicken_Biryani.webp'
   },
   {
     id: 'Tandoor',
     label: 'Tandoor',
     image:
-      'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=240&q=80'
+      '/images/menu/012_Chicken_Tandoori.webp'
   },
   {
     id: 'Mains',
     label: 'Curries',
     image:
-      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=240&q=80'
+      '/images/menu/109_Paneer_Kadhai.webp'
   },
   {
     id: 'Starters',
     label: 'Starters',
     image:
-      'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=240&q=80'
+      '/images/menu/010_Chicken_Lollypop.webp'
   },
   {
     id: 'Soups',
     label: 'Soups',
-    image: '/menu/veg-sweet-corn.jpg'
+    image: '/images/menu/064_Chicken_Manchow_Soup.webp'
   },
   {
     id: 'Breads',
     label: 'Breads',
-    image: '/menu/garlic-naan.jpg'
+    image: '/images/menu/030_Garlic_Naan.webp'
   },
   {
     id: 'Chinese',
     label: 'Chinese',
     image:
-      'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=240&q=80'
+      '/images/menu/125_Chicken_Sizwan_Noodles.webp'
   },
   {
     id: 'Party Packs',
     label: 'Party Packs',
     image:
-      'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=240&q=80'
+      '/images/menu/054_Mutton_Biryani.webp'
   }
 ];
 
