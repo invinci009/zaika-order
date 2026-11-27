@@ -16,7 +16,7 @@ export default function ThankYouCard({ restaurantName, slug }: ThankYouCardProps
       try {
         await navigator.share({
           title: `${restaurantName} — Fine Dining Restaurant & Banquet`,
-          text: `Check out ${restaurantName} on Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505!`,
+          text: `Check out ${restaurantName} at PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar!`,
           url,
         })
       } catch {}
@@ -90,7 +90,7 @@ export default function ThankYouCard({ restaurantName, slug }: ThankYouCardProps
           {/* Secondary Buttons Row */}
           <div className="grid grid-cols-2 gap-2">
             <a
-              href="https://www.google.com/maps/search/?api=1&query=Phulwari+Rd+Near+Shaheed+Bhagat+Singh+Chowk+Birla+Colony+Phulwari+Sharif+Patna"
+              href="https://www.google.com/maps/search/?api=1&query=PM+Zaika+Restaurant+Shersha+Road+Gur+Ki+Mandi+Infront+of+Bank+of+India+Patna+800007+Bihar"
               target="_blank"
               rel="noopener noreferrer"
               className="h-11 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-amber-500/25 text-amber-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"

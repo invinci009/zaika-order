@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Password reset instructions sent to ${resolvedEmail}. Please check your email inbox (and Spam/Junk folder).`,
+      message: 'If an account exists for this email, a password reset link has been sent. Please check your inbox (and Spam/Junk folder).',
     })
   } catch (error) {
     console.error('Password reset error:', error)

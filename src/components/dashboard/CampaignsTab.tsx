@@ -35,7 +35,7 @@ interface CampaignsTabProps {
 }
 
 export default function CampaignsTab({ campaigns, onRefresh, businessSlug }: CampaignsTabProps) {
-  const activeSlug = businessSlug || campaigns[0]?.slug || 'biryani-badshah-patna'
+  const activeSlug = businessSlug || campaigns[0]?.slug || 'pm-zaika'
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newCampaignName, setNewCampaignName] = useState('')
@@ -229,7 +229,7 @@ export default function CampaignsTab({ campaigns, onRefresh, businessSlug }: Cam
                 <div className="grid grid-cols-2 gap-2">
                   <a
                     href={`/api/business/qr?slug=${camp.slug}&format=png&download=true`}
-                    download={`reviewpulse-qr-${camp.slug}.png`}
+                    download={`pm-zaika-qr-${camp.slug}.png`}
                     className="h-10 px-2.5 rounded-xl border border-slate-800 bg-slate-900/90 hover:bg-slate-800 text-slate-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
                   >
                     <Download className="w-3.5 h-3.5 text-amber-400" />
@@ -238,7 +238,7 @@ export default function CampaignsTab({ campaigns, onRefresh, businessSlug }: Cam
 
                   <a
                     href={`/api/business/qr?slug=${camp.slug}&format=svg&download=true`}
-                    download={`reviewpulse-qr-${camp.slug}.svg`}
+                    download={`pm-zaika-qr-${camp.slug}.svg`}
                     className="h-10 px-2.5 rounded-xl border border-slate-800 bg-slate-900/90 hover:bg-slate-800 text-slate-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
                   >
                     <Download className="w-3.5 h-3.5 text-yellow-400" />

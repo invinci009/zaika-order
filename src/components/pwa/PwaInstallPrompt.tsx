@@ -45,7 +45,7 @@ export default function PwaInstallPrompt() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/icons/icon-192x192.png"
-              alt="ReviewPulse"
+              alt="PM Zaika"
               className="w-full h-full rounded-2xl object-cover"
             />
             <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-slate-950 border border-amber-400 flex items-center justify-center text-amber-400">
@@ -61,7 +61,7 @@ export default function PwaInstallPrompt() {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <h2 id="pwa-install-title" className="text-lg font-bold tracking-tight text-white leading-tight">
-              Install ReviewPulse
+              Install PM Zaika App
             </h2>
             <p className="text-xs text-slate-400">
               PM Zaika Restaurant &amp; Order Portal

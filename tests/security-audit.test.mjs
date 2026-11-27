@@ -180,6 +180,34 @@ test('Cloudflare Security Audit Skill — Vulnerability Patch Verification', asy
     const nextConfigContent = fs.readFileSync(nextConfigPath, 'utf8')
 
     assert.ok(rateLimitContent.includes("cf-connecting-ip"), 'Prioritizes Cloudflare CF-Connecting-IP against spoofing')
+    assert.ok(rateLimitContent.includes('cf-ray'), 'Requires CF-Ray indicator before trusting CF-Connecting-IP')
     assert.ok(nextConfigContent.includes('Strict-Transport-Security'), 'Enforces HSTS with preload')
+    assert.ok(nextConfigContent.includes('Content-Security-Policy'), 'Enforces frame-ancestors and object-src CSP')
+  })
+
+  await t.test('15. Per-Category Rate Limit Isolation & Verified-JWT Partition Defense', () => {
+    const rateLimitPath = path.resolve(root, 'src/lib/middleware/rate-limit.ts')
+    const content = fs.readFileSync(rateLimitPath, 'utf8')
+
+    assert.ok(content.includes('upstashLimiters'), 'Uses per-category Upstash sliding-window map instead of shared global bucket')
+    assert.ok(content.includes('ai-draft'), 'Throttles AI review draft generation endpoint')
+    assert.ok(content.includes('jwtVerify') && content.includes('getVerifiedSessionPartition'), 'Cryptographically verifies session JWT before NAT Wi-Fi partitioning')
+  })
+
+  await t.test('16. Session Revocation Enforcement & Enumeration/XSS/CSV Hardening', () => {
+    const authContent = fs.readFileSync(path.resolve(root, 'src/lib/firebase/auth.ts'), 'utf8')
+    const resetContent = fs.readFileSync(path.resolve(root, 'src/app/api/auth/reset-password/route.ts'), 'utf8')
+    const loyaltyAuthContent = fs.readFileSync(path.resolve(root, 'src/app/api/public/loyalty/auth/route.ts'), 'utf8')
+    const ordersTabContent = fs.readFileSync(path.resolve(root, 'src/components/dashboard/OrdersTab.tsx'), 'utf8')
+    const customersTabContent = fs.readFileSync(path.resolve(root, 'src/components/dashboard/CustomersPortalTab.tsx'), 'utf8')
+    const orderIdRouteContent = fs.readFileSync(path.resolve(root, 'src/app/api/business/orders/[id]/route.ts'), 'utf8')
+
+    assert.ok(authContent.includes('verifySessionCookie(token, true)'), 'Checks revoked Firebase session cookies')
+    assert.ok(authContent.includes('verifyIdToken(token, true)'), 'Checks revoked Firebase ID tokens')
+    assert.ok(!resetContent.includes('sent to ${resolvedEmail}'), 'Does not echo resolved admin email on password reset')
+    assert.ok(!loyaltyAuthContent.includes('No account found for this number'), 'Uniform login error avoids account enumeration')
+    assert.ok(ordersTabContent.includes('escapeHtml'), 'Escapes untrusted order fields in print HTML (Stored XSS prevention)')
+    assert.ok(customersTabContent.includes('/^[=+\\-@\\t\\r%|]/'), 'Client CSV export disarms spreadsheet formula injection')
+    assert.ok(orderIdRouteContent.includes('adminOrderPatchSchema'), 'Validates business order PATCH body with Zod')
   })
 })

@@ -146,7 +146,7 @@ export function VipOrdersHubModal({
               <div className="relative z-10 flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 block">
-                    👑 Badshah Royal VIP Member
+                    👑 PM Zaika Royal VIP Member
                   </span>
                   <h4 className="text-base font-black text-white mt-0.5 truncate">
                     {loyaltyCustomer.name || 'VIP Guest'}
@@ -229,7 +229,7 @@ export function VipOrdersHubModal({
                     </div>
                     <h4 className="text-sm font-extrabold text-amber-950">No Previous Orders Yet</h4>
                     <p className="text-xs text-amber-900/80 leading-relaxed max-w-xs mx-auto">
-                      Welcome to the Badshah Family! Place your dine-in order today to earn{' '}
+                      Welcome to the PM Zaika Family! Place your dine-in order today to earn{' '}
                       <strong>+20 VIP points</strong>. Your orders will appear here for 1-tap reordering!
                     </p>
                     <button
@@ -352,7 +352,7 @@ export function VipOrdersHubModal({
               <div className="space-y-3">
                 <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 flex items-center justify-between gap-3 text-xs">
                   <div>
-                    <p className="font-black text-amber-950">How Badshah Points Work</p>
+                    <p className="font-black text-amber-950">How PM Zaika Points Work</p>
                     <p className="text-[11px] text-amber-900/80 leading-snug">
                       Earn <strong>+20 points</strong> on every dine-in meal delivery. Redeem points for free
                       desserts, biryanis &amp; cash discounts at checkout!

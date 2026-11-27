@@ -1,5 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
+import { jwtVerify } from 'jose'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // ==============================================================================
@@ -10,7 +11,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 // Prevents bot scans, DDoS, order flooding, and infinite loops from exhausting read/write limits.
 // ==============================================================================
 
-let ratelimit: Ratelimit | null = null
+const upstashLimiters = new Map<string, Ratelimit>()
 
 function isPlaceholderOrInvalid(val?: string): boolean {
   if (!val) return true
@@ -23,8 +24,11 @@ function isPlaceholderOrInvalid(val?: string): boolean {
   )
 }
 
-function getUpstashLimiter(): Ratelimit | null {
-  if (ratelimit) return ratelimit
+function getUpstashLimiter(category: string, maxRequests: number): Ratelimit | null {
+  const key = `${category}:${maxRequests}`
+  const existing = upstashLimiters.get(key)
+  if (existing) return existing
+
   const url = process.env.UPSTASH_REDIS_REST_URL
   const token = process.env.UPSTASH_REDIS_REST_TOKEN
 
@@ -33,13 +37,14 @@ function getUpstashLimiter(): Ratelimit | null {
   }
 
   try {
-    ratelimit = new Ratelimit({
+    const limiter = new Ratelimit({
       redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(60, '1 m'),
+      limiter: Ratelimit.slidingWindow(maxRequests, '1 m'),
       analytics: false,
-      prefix: 'badshah:ratelimit',
+      prefix: `pmzaika:ratelimit:${category}`,
     })
-    return ratelimit
+    upstashLimiters.set(key, limiter)
+    return limiter
   } catch {
     return null
   }
@@ -89,6 +94,59 @@ function checkMemoryLimit(
   return { success: true, remaining, reset: bucket.resetAt }
 }
 
+async function sha256HexEdge(input: string): Promise<Uint8Array> {
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(input))
+  const hex = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+  return new TextEncoder().encode(hex)
+}
+
+async function getVerifiedSessionPartition(request: NextRequest): Promise<string> {
+  try {
+    const custToken = request.cookies.get('rp_customer_session')?.value
+    if (custToken) {
+      const explicit = process.env.CUSTOMER_SESSION_SECRET
+      const serverPrivate = process.env.FIREBASE_PRIVATE_KEY || process.env.SESSION_COOKIE_SECRET
+      const rawSecret =
+        explicit && explicit.length >= 16
+          ? explicit
+          : serverPrivate
+          ? `${serverPrivate}::loyalty-customer-session`
+          : null
+      if (rawSecret) {
+        const key = await sha256HexEdge(rawSecret)
+        const { payload } = await jwtVerify(custToken, key, { algorithms: ['HS256'] })
+        if (typeof payload.c === 'string' && /^\d{10}$/.test(payload.c)) {
+          return `cust:${payload.c}`
+        }
+      }
+    }
+
+    const quizToken = request.cookies.get('rp_session')?.value
+    if (quizToken) {
+      const explicit = process.env.SESSION_COOKIE_SECRET
+      const serverPrivate = process.env.FIREBASE_PRIVATE_KEY
+      const rawSecret =
+        explicit && explicit.length >= 16
+          ? explicit
+          : serverPrivate
+          ? `${serverPrivate}::rp-session-secret`
+          : null
+      if (rawSecret) {
+        const key = await sha256HexEdge(rawSecret)
+        const { payload } = await jwtVerify(quizToken, key, { algorithms: ['HS256'] })
+        if (typeof payload.session_id === 'string' && payload.session_id.length > 0) {
+          return `sess:${payload.session_id.slice(-16)}`
+        }
+      }
+    }
+  } catch {
+    // Forged or expired cookies fail cryptographic verification and fall back to strict IP throttling
+  }
+  return ''
+}
+
 export async function rateLimitMiddleware(request: NextRequest): Promise<NextResponse | null> {
   // 1. In local development or testing, never throttle developer activity
   if (process.env.NODE_ENV === 'development') {
@@ -97,22 +155,18 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
 
   const { pathname } = request.nextUrl
   const method = request.method
-  // Prioritize Cloudflare's authenticated CF-Connecting-IP to prevent IP spoofing via forged X-Forwarded-For
+  // Only trust CF-Connecting-IP when Cloudflare's CF-Ray header indicates an authentic Cloudflare edge hop;
+  // otherwise prefer Vercel/proxy IP headers to prevent trivial IP-header spoofing bypasses.
+  const hasCloudflareRay = Boolean(request.headers.get('cf-ray')?.trim())
   const ip =
-    request.headers.get('cf-connecting-ip')?.trim() ||
+    (hasCloudflareRay ? request.headers.get('cf-connecting-ip')?.trim() : undefined) ||
+    request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip')?.trim() ||
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     'client'
 
-  // Security hardening: Only use trusted, server-issued HTTP-only cookies
-  // NEVER use client-supplied headers (x-table-id, x-session-id) as they permit trivial rate-limit bypass.
-  const trustedCookieSession =
-    request.cookies.get('rp_customer_session')?.value ||
-    request.cookies.get('rp_table_session')?.value ||
-    ''
-
-  // Determine rate limits and isolated bucket key based on action type
-  // High capacity guarantees seamless service for 10k+ daily users and 100+ concurrent orders on restaurant Wi-Fi
+  // Determine rate limits and isolated bucket key based on action type.
+  // Partition on verified JWT session only for non-auth shared restaurant Wi-Fi routes.
   let maxRequests = 120
   let category = 'general'
   const windowMs = 60_000 // 1 minute
@@ -128,6 +182,11 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
     maxRequests = 60
     category = 'auth-general'
     allowSessionPartition = false
+  } else if (pathname.includes('/sessions/') && pathname.includes('/draft')) {
+    // AI review draft generation (prevents LLM quota/billing abuse)
+    maxRequests = 15
+    category = 'ai-draft'
+    allowSessionPartition = false
   } else if (pathname.includes('/orders') && method === 'POST') {
     // Order creation: 300/min per IP to support 100+ concurrent diners on shared Wi-Fi
     maxRequests = 300
@@ -137,9 +196,14 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
     maxRequests = 150
     category = 'service-create'
   } else if (pathname.includes('/loyalty/auth') || pathname.includes('/loyalty/claim')) {
-    // Loyalty auth/claim attempts: 60/min
-    maxRequests = 60
+    // Loyalty auth/OTP/claim brute-force defense: 15/min per IP
+    maxRequests = 15
     category = 'loyalty-auth'
+    allowSessionPartition = false
+  } else if (pathname.startsWith('/api/public/image-proxy')) {
+    // Image proxy outbound fetch protection: 240/min per IP
+    maxRequests = 240
+    category = 'image-proxy'
     allowSessionPartition = false
   } else if (pathname.startsWith('/api/business/')) {
     // Business dashboard routes: max 600 per minute
@@ -160,10 +224,11 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
     category = 'public-general'
   }
 
-  const sessionSuffix = (allowSessionPartition && trustedCookieSession) ? `:${trustedCookieSession.slice(-16)}` : ''
+  const verifiedPartition = allowSessionPartition ? await getVerifiedSessionPartition(request) : ''
+  const sessionSuffix = verifiedPartition ? `:${verifiedPartition}` : ''
   const memoryKey = `${ip}${sessionSuffix}:${category}`
 
-  const limiter = getUpstashLimiter()
+  const limiter = getUpstashLimiter(category, maxRequests)
   if (limiter) {
     try {
       const timeoutPromise = new Promise<{ success: boolean; remaining: number; reset: number }>((_, reject) =>

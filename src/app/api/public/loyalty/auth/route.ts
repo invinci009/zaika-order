@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
       if (!phone) return NextResponse.json({ error: 'Enter a valid 10-digit mobile number.' }, { status: 400 })
       const account = await getCustomerAccount(phone)
       if (!account) {
-        return NextResponse.json({ error: 'No account found for this number. Please sign up.' }, { status: 404 })
+        return NextResponse.json({ error: 'Incorrect mobile number or password.' }, { status: 401 })
       }
       if (account.status === 'suspended') {
         return NextResponse.json(

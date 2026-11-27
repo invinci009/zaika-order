@@ -57,7 +57,7 @@ export default async function PublicQuizPage({ params, searchParams }: PublicQui
         table={tableLabel || tableParam || undefined}
         phone={config.contact.phone ? `+91 ${config.contact.phone.replace(/^\+?91/, '').trim()}` : '+91 74882 60572'}
         helpline={config.contact.helpline || '95257 48843'}
-        address="Phulwari Sharif, Patna"
+        address="PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar"
       />
     )
   }

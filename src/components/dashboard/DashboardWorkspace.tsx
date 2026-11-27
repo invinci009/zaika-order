@@ -171,7 +171,7 @@ export default function DashboardWorkspace({
           <div className="flex items-center gap-2 self-start sm:self-auto">
             {/* Live Survey Guest Preview */}
             <Link
-              href={campaigns[0]?.slug ? `/r/${campaigns[0].slug}` : (portalSlug ? `/r/${portalSlug}` : '/r/biryani-badshah-patna')}
+              href={campaigns[0]?.slug ? `/r/${campaigns[0].slug}` : (portalSlug ? `/r/${portalSlug}` : '/r/pm-zaika')}
               target="_blank"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors shadow-xs active:scale-95"
             >
@@ -256,7 +256,7 @@ export default function DashboardWorkspace({
           <CampaignsTab
             campaigns={campaigns}
             onRefresh={handleRefresh}
-            businessSlug={portalSlug || campaigns[0]?.slug || 'biryani-badshah-patna'}
+            businessSlug={portalSlug || campaigns[0]?.slug || 'pm-zaika'}
           />
         )}
         {activeTab === 'feedback' && <FeedbackTab feedbackList={feedbackList} />}

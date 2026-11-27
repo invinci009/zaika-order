@@ -15,7 +15,6 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error: unknown) {
     console.error('Table delete error:', error)
-    const message = error instanceof Error ? error.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 400 })
+    return NextResponse.json({ error: 'Failed to delete table' }, { status: 500 })
   }
 }

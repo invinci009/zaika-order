@@ -113,8 +113,8 @@ export default function OrderSlugError({ error, reset }: ErrorProps) {
           </div>
 
           {/* Footer Note */}
-          <div className="pt-2 border-t border-amber-500/15 text-[10.5px] text-amber-200/50">
-            PM Zaika Restaurant • Phulwari Sharif, Patna
+          <div className="pt-2 border-t border-amber-500/15 text-[10.5px] text-amber-200/50 leading-relaxed">
+            PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar
           </div>
         </div>
       </main>

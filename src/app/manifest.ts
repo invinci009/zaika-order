@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'PM Zaika Restaurant — Royal Awadhi Dining & Ordering',
     short_name: 'PM Zaika',
-    description: 'Instant QR customer feedback, smart AI reviews & live table ordering for PM Zaika Restaurant, Patna',
+    description: 'Instant QR customer feedback, smart AI reviews & live table ordering for PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar',
     start_url: '/',
     scope: '/',
     display: 'standalone',

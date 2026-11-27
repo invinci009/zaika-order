@@ -85,7 +85,7 @@ export default function OfflinePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
                 <Sparkles className="w-3.5 h-3.5" />
-                PM Zaika Restaurant, Patna
+                PM Zaika Restaurant
               </div>
               <a
                 href="tel:7488260572"
@@ -96,7 +96,7 @@ export default function OfflinePage() {
               </a>
             </div>
             <p className="text-[11px] text-slate-400 leading-tight">
-              Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505
+              PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar
             </p>
           </div>
 
@@ -131,7 +131,7 @@ export default function OfflinePage() {
 
       {/* Footer */}
       <footer className="relative z-10 text-center py-3 text-xs text-slate-500">
-        ReviewPulse PWA • Offline Resilience Engine
+        PM Zaika PWA • Offline Resilience Engine
       </footer>
     </div>
   )

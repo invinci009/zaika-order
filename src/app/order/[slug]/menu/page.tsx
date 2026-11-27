@@ -5458,16 +5458,16 @@ function MainApp() {
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-[13px] font-bold text-white">
-                      Phulwari Sharif, Patna
+                      Gur Ki Mandi, Patna - 800007
                     </h2>
                     <p className="text-[11.5px] text-[#8e829c] leading-relaxed mt-0.5">
-                      Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505
+                      PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar
                     </p>
                   </div>
                 </div>
 
                 <a
-                  href="https://maps.google.com/?q=Phulwari+Rd+Near+Shaheed+Bhagat+Singh+Chowk+Birla+Colony+Phulwari+Sharif+Patna+Bihar+801505"
+                  href="https://maps.google.com/?q=PM+Zaika+Restaurant+Shersha+Road+Gur+Ki+Mandi+Infront+of+Bank+of+India+Patna+800007+Bihar"
                   target="_blank"
                   rel="noreferrer"
                   className="shrink-0 h-8 px-3 rounded-full bg-[#180e28] hover:bg-[#201036] border border-[#2b1942] text-[#f59e0b] text-[11px] font-bold inline-flex items-center gap-1 transition-colors"

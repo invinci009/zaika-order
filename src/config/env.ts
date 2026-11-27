@@ -32,7 +32,7 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
   // Alerts & Push notifications
-  ORDER_ALERT_TOPIC: z.string().default('badshah-restaurant-orders'),
+  ORDER_ALERT_TOPIC: z.string().default('pm-zaika-orders'),
 
   // AI & Analytics
   GROQ_API_KEY: z.string().optional(),

@@ -12,8 +12,8 @@ export default function OnboardingWizard() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [name, setName] = useState('PM Zaika Restaurant')
-  const [location, setLocation] = useState('Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505')
-  const [phone, setPhone] = useState('77639 49496')
+  const [location, setLocation] = useState('PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar')
+  const [phone, setPhone] = useState('74882 60572')
   const [googleReviewUrl, setGoogleReviewUrl] = useState('')
   const [welcomeMessage, setWelcomeMessage] = useState(
     'Thanks for dining with PM Zaika Restaurant! We\'d love to hear about your royal experience today. For helpline & orders call 74882 60572.'
@@ -165,7 +165,7 @@ export default function OnboardingWizard() {
                   <span>Google Compliance Built-in</span>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  ReviewPulse automatically ensures equal review access and no rating steering, protecting your Google Business profile from penalties.
+                  PM Zaika automatically ensures equal review access and no rating steering, protecting your Google Business profile from penalties.
                 </p>
               </div>
             </>

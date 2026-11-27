@@ -122,7 +122,7 @@ export default function MobileMenuDrawer({
                 {restaurantName}
               </h2>
               <p className="text-[11px] text-slate-400">
-                {restaurantLocation || 'Patna'} • Restaurant Hub
+                {restaurantLocation || 'PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar'} • Restaurant Hub
               </p>
             </div>
           </div>
@@ -531,7 +531,7 @@ export default function MobileMenuDrawer({
             </div>
             <div>
               <span className="text-xs font-bold text-amber-300 block">
-                {isInstalled ? 'ReviewPulse Installed' : 'Install Mobile App'}
+                {isInstalled ? 'PM Zaika Installed' : 'Install Mobile App'}
               </span>
               <span className="text-[11px] text-slate-400 block">
                 {isInstalled

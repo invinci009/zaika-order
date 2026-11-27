@@ -109,27 +109,36 @@ export default function CustomersPortalTab({ customers, restaurantName }: Custom
   const totalCritical = customers.filter((c) => (c.overallRating ?? 5) <= 2 && c.hasPhone).length
   const totalWhatsAppOptIns = customers.filter((c) => c.optInMarketing).length
 
-  // CSV Export
+  // CSV Export (CWE-1236 safe)
   const handleExportCSV = () => {
+    const csvCell = (v: unknown): string => {
+      let s = String(v ?? '')
+      const trimmed = s.trimStart()
+      if (/^[=+\-@\t\r%|]/.test(trimmed)) {
+        s = `'${s}`
+      }
+      return `"${s.replace(/"/g, '""')}"`
+    }
+
     const headers = ['Name', 'Phone', 'Rating', 'Food Rating', 'Service Rating', 'Ordered Dishes', 'Campaign', 'Google Clicked', 'Date', 'Review Draft']
     const rows = filteredCustomers.map((c) => [
-      `"${c.name.replace(/"/g, '""')}"`,
-      `"${c.phone}"`,
+      csvCell(c.name),
+      csvCell(c.phone),
       c.overallRating ?? '',
       c.foodRating ?? '',
       c.serviceRating ?? '',
-      `"${c.orderedDishes.join(', ').replace(/"/g, '""')}"`,
-      `"${c.campaignName.replace(/"/g, '""')}"`,
+      csvCell(c.orderedDishes.join(', ')),
+      csvCell(c.campaignName),
       c.googleClicked ? 'Yes' : 'No',
-      `"${new Date(c.respondedAt).toLocaleDateString()}"`,
-      `"${(c.draftText || '').replace(/"/g, '""')}"`,
+      csvCell(new Date(c.respondedAt).toLocaleDateString()),
+      csvCell(c.draftText || ''),
     ])
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n')
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `biryani-badshah-customers-${new Date().toISOString().slice(0, 10)}.csv`)
+    link.setAttribute('download', `pm-zaika-customers-${new Date().toISOString().slice(0, 10)}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

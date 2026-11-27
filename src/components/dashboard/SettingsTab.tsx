@@ -271,7 +271,7 @@ export default function SettingsTab({
                   id="sLoc"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Phulwari Rd, Near Shaheed Bhagat Singh Chowk, Birla Colony, Phulwari Sharif, Patna, Bihar 801505"
+                  placeholder="PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar"
                   className="bg-slate-950/60 border-slate-800 text-white h-10 text-xs rounded-xl"
                 />
               </div>
@@ -291,7 +291,7 @@ export default function SettingsTab({
                     id="sPhone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="77639 49496"
+                    placeholder="74882 60572"
                     className="bg-slate-950/60 border-slate-800 text-white h-10 text-xs rounded-xl"
                   />
                   <p className="text-[10px] text-slate-400">
@@ -307,7 +307,7 @@ export default function SettingsTab({
                     id="sSecPhone"
                     value={secondaryPhone}
                     onChange={(e) => setSecondaryPhone(e.target.value)}
-                    placeholder="77639 49496"
+                    placeholder="95257 48843"
                     className="bg-slate-950/60 border-slate-800 text-white h-10 text-xs rounded-xl"
                   />
                   <p className="text-[10px] text-slate-400">
@@ -360,7 +360,7 @@ export default function SettingsTab({
 
               <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>ReviewPulse policy guardrails are permanently active for this restaurant.</span>
+                <span>PM Zaika policy guardrails are permanently active for this restaurant.</span>
               </div>
             </CardContent>
 

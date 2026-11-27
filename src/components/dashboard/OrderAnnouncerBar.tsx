@@ -418,7 +418,7 @@ export default function OrderAnnouncerBar({ onNavigateToOrders }: OrderAnnouncer
                   ntfy ऐप खोलें, <b>+</b> (Subscribe) दबाएँ और यह नाम डालें:
                 </p>
                 <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-950 font-mono text-amber-300 border border-slate-700 select-all">
-                  <span>badshah-restaurant-orders</span>
+                  <span>pm-zaika-orders</span>
                   <span className="text-[11px] text-slate-500 font-sans">Topic Name</span>
                 </div>
                 <p className="text-[11px] text-slate-400">

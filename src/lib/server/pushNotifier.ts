@@ -14,7 +14,7 @@ export interface OrderPushPayload {
  * Can be overridden in .env.local via ORDER_ALERT_TOPIC.
  */
 export function getOrderAlertTopic(): string {
-  return process.env.ORDER_ALERT_TOPIC || 'badshah-restaurant-orders'
+  return process.env.ORDER_ALERT_TOPIC || 'pm-zaika-orders'
 }
 
 /**
@@ -45,7 +45,7 @@ export async function sendMobileOrderAlarm(order: OrderPushPayload): Promise<boo
       : `🚨 नया ऑर्डर आया है! (#${order.orderNumber})`
     const body = `${tableText}${totalText}${itemsText}`
 
-    const host = process.env.NEXT_PUBLIC_APP_URL || 'https://badshah.vercel.app'
+    const host = process.env.NEXT_PUBLIC_APP_URL || 'https://zaika-order.vercel.app'
     const clickUrl = `${host}/dashboard#orders`
 
     const response = await fetch(`https://ntfy.sh/${topic}`, {
@@ -96,7 +96,7 @@ export async function sendMobileServiceAlarm(payload: {
       payload.note ? `\n📝 नोट: ${payload.note}` : ''
     }`
 
-    const host = process.env.NEXT_PUBLIC_APP_URL || 'https://biriyani-badshah.vercel.app'
+    const host = process.env.NEXT_PUBLIC_APP_URL || 'https://zaika-order.vercel.app'
     const clickUrl = `${host}/dashboard#kitchen`
 
     const response = await fetch(`https://ntfy.sh/${topic}`, {

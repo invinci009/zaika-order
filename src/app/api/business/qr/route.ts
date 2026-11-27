@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
         },
       })
       const isDownload = searchParams.get('download') === 'true'
-      const filename = type === 'special' ? `biryani-badshah-special-menu-qr.svg` : `reviewpulse-qr-${slug}.svg`
+      const filename = type === 'special' ? `pm-zaika-special-menu-qr.svg` : `pm-zaika-qr-${slug}.svg`
       return new NextResponse(svgString, {
         headers: {
           'Content-Type': 'image/svg+xml',
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     })
 
     const isDownload = searchParams.get('download') === 'true'
-    const filename = type === 'special' ? `biryani-badshah-special-menu-qr.png` : `reviewpulse-qr-${slug}.png`
+    const filename = type === 'special' ? `pm-zaika-special-menu-qr.png` : `pm-zaika-qr-${slug}.png`
     return new NextResponse(new Uint8Array(pngBuffer), {
       headers: {
         'Content-Type': 'image/png',

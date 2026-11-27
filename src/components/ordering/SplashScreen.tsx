@@ -17,7 +17,7 @@ export function SplashScreen({
   table,
   phone = '+91 74882 60572',
   helpline = '95257 48843',
-  address = 'Phulwari Sharif, Patna',
+  address = 'PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar',
 }: SplashScreenProps) {
   const [phase, setPhase] = useState<'entering' | 'showing' | 'leaving'>('entering')
   const [stepIndex, setStepIndex] = useState(0)
@@ -196,7 +196,7 @@ export function SplashScreen({
               <span className="text-amber-400">★</span> 4.8 Royal Dining
             </span>
             <span className="text-white/30">•</span>
-            <span className="text-amber-200/90">{address}</span>
+            <span className="text-amber-200/90">Gur Ki Mandi, Patna - 800007, Bihar</span>
           </div>
 
           {/* Row 2: Contact & Helpline */}
@@ -211,10 +211,10 @@ export function SplashScreen({
             )}
           </div>
 
-          {/* Row 3: Landmark & Social Handle */}
-          <div className="pt-0.5 border-t border-[#f59e0b]/15 flex items-center justify-between text-[10px] text-amber-200/60 px-1">
-            <span className="truncate max-w-[190px]">Phulwari Rd, Nr Shaheed Bhagat Singh Chowk</span>
-            <span className="font-semibold text-amber-300">@zaikarestaurant81</span>
+          {/* Row 3: Full Address & Social Handle */}
+          <div className="pt-1 border-t border-[#f59e0b]/15 flex items-center justify-between gap-2 text-[10px] text-amber-200/75 px-1 text-left">
+            <span className="leading-snug">{address}</span>
+            <span className="font-semibold text-amber-300 shrink-0">@zaikarestaurant81</span>
           </div>
         </div>
       </div>

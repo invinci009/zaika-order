@@ -77,7 +77,7 @@ interface SpecialMenuSectionProps {
 
 export function SpecialMenuSection({
   slug,
-  phone = '77639 49496',
+  phone = '74882 60572',
   cart: externalCart,
   onAddToCart: externalAddToCart,
   onIncrement: externalIncrement,
@@ -139,7 +139,7 @@ export function SpecialMenuSection({
 
   const shareUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/order/${slug}/special-menu`
-    : `https://biryanibadshah.com/order/${slug}/special-menu`
+    : `https://zaika-order.vercel.app/order/${slug}/special-menu`
 
   const handleShare = () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -155,7 +155,7 @@ export function SpecialMenuSection({
     }
   }
 
-  const cleanPhone = (phone || '7763949496').replace(/\D/g, '')
+  const cleanPhone = (phone || '7488260572').replace(/\D/g, '')
 
   return (
     <section className="space-y-4 animate-in fade-in duration-300">

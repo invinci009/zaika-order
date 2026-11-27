@@ -315,7 +315,7 @@ export default function QuizFlow({
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> 4.8 • Royal Dining Experience
                 </span>
                 <span className="text-amber-500/50">•</span>
-                <span className="text-amber-200/70">Phulwari Sharif, Patna</span>
+                <span className="text-amber-200/70">Gur Ki Mandi, Patna - 800007</span>
               </div>
             </div>
 
@@ -381,10 +381,10 @@ export default function QuizFlow({
             <div className="p-3 rounded-2xl bg-[#140b1e]/80 border border-amber-500/20 text-left space-y-0.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-amber-200">
                 <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>Phulwari Rd, Near Shaheed Bhagat Singh Chowk</span>
+                <span>PM Zaika Restaurant, Shersha Road, Gur Ki Mandi</span>
               </div>
               <p className="text-[11px] text-amber-200/60 pl-5 leading-relaxed">
-                Birla Colony, Phulwari Sharif, Patna, Bihar 801505
+                Infront of Bank of India, Patna - 800007, Bihar
               </p>
             </div>
 

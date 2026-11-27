@@ -19,7 +19,7 @@ export function SplashPortalClient({
   table,
   phone = '+91 74882 60572',
   helpline = '95257 48843',
-  address = 'Phulwari Sharif, Patna',
+  address = 'PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar',
 }: SplashPortalClientProps) {
   const router = useRouter()
 

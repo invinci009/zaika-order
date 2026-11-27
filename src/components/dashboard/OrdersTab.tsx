@@ -566,12 +566,20 @@ export default function OrdersTab({
       return
     }
     const isKitchen = kind === 'kitchen'
+    const escapeHtml = (v: unknown): string =>
+      String(v ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+
     const itemsHtml = o.items
       .map((it) => {
         const opts =
           it.options && it.options.length
             ? `<div style="font-size:11px;color:#444;padding-left:14px;font-style:italic;">+ ${it.options
-                .map((x) => x.optionName)
+                .map((x) => escapeHtml(x.optionName))
                 .join(', ')}</div>`
             : ''
         return `
@@ -579,7 +587,7 @@ export default function OrdersTab({
             <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:${
               isKitchen ? '14px' : '12px'
             };">
-              <span>${it.quantity} × ${it.itemName}</span>
+              <span>${Number(it.quantity) || 0} × ${escapeHtml(it.itemName)}</span>
               ${!isKitchen ? `<span>${it.lineTotalPaise === 0 ? 'FREE' : formatPaise(it.lineTotalPaise)}</span>` : ''}
             </div>
             ${opts}
@@ -593,7 +601,7 @@ export default function OrdersTab({
       <html>
         <head>
           <meta charset="utf-8" />
-          <title>${isKitchen ? 'KOT' : 'Receipt'} - ${o.orderNumber}</title>
+          <title>${isKitchen ? 'KOT' : 'Receipt'} - ${escapeHtml(o.orderNumber)}</title>
           <style>
             @page { margin: 4mm; size: 80mm auto; }
             * { box-sizing: border-box; }
@@ -625,26 +633,27 @@ export default function OrdersTab({
         <body>
           <div class="center">
             <h2 style="margin:0;font-size:16px;letter-spacing:1px;font-weight:900;">PM ZAIKA RESTAURANT</h2>
+            ${!isKitchen ? `<div style="font-size:9px;color:#333;margin-top:2px;">PM Zaika Restaurant, Shersha Road, Gur Ki Mandi, Infront of Bank of India, Patna - 800007, Bihar</div>` : ''}
             <div style="font-size:10px;font-weight:bold;text-transform:uppercase;margin-top:2px;">
               ${isKitchen ? '★ KITCHEN ORDER TICKET (KOT) ★' : '★ CUSTOMER TAX INVOICE ★'}
             </div>
-            <div style="font-size:13px;font-weight:bold;margin-top:4px;">${o.orderNumber}</div>
-            <div style="font-size:10px;color:#333;">${new Date(o.createdAt).toLocaleString('en-IN', {
+            <div style="font-size:13px;font-weight:bold;margin-top:4px;">${escapeHtml(o.orderNumber)}</div>
+            <div style="font-size:10px;color:#333;">${escapeHtml(new Date(o.createdAt).toLocaleString('en-IN', {
               timeZone: 'Asia/Kolkata',
-            })}</div>
+            }))}</div>
           </div>
 
           <div class="table-badge">
             ${o.orderType === 'PARCEL' || isParcelLabel(o.tableLabel)
-              ? `★ PARCEL / TAKEAWAY ★${o.tableLabel && !isParcelLabel(o.tableLabel) ? ` (${o.tableLabel})` : ''}`
+              ? `★ PARCEL / TAKEAWAY ★${o.tableLabel && !isParcelLabel(o.tableLabel) ? ` (${escapeHtml(o.tableLabel)})` : ''}`
               : o.tableLabel
-              ? formatTableDisplay(o.tableLabel).toUpperCase()
+              ? escapeHtml(formatTableDisplay(o.tableLabel).toUpperCase())
               : 'COUNTER / DINE-IN'}
           </div>
 
           <div style="font-size:11px;">
-            <div><strong>Guest:</strong> ${o.customerName}</div>
-            ${!isKitchen ? `<div><strong>Phone:</strong> ${o.customerPhone}</div>` : ''}
+            <div><strong>Guest:</strong> ${escapeHtml(o.customerName)}</div>
+            ${!isKitchen ? `<div><strong>Phone:</strong> ${escapeHtml(o.customerPhone)}</div>` : ''}
           </div>
 
           <div class="divider"></div>
@@ -657,7 +666,7 @@ export default function OrdersTab({
             o.notes
               ? `
             <div style="border:1px solid #000;padding:5px;margin:6px 0;font-size:11px;background:#f9f9f9;">
-              <strong>CHEF NOTE:</strong> ${o.notes}
+              <strong>CHEF NOTE:</strong> ${escapeHtml(o.notes)}
             </div>
           `
               : ''

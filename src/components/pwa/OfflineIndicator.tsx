@@ -50,7 +50,7 @@ export default function OfflineIndicator() {
     return (
       <div className="fixed top-2 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-950/90 border border-emerald-500/40 text-emerald-200 text-xs font-semibold shadow-xl backdrop-blur-md flex items-center gap-2 animate-in slide-in-from-top-4 duration-300">
         <Wifi className="w-4 h-4 text-emerald-400" />
-        <span>Back online! Reconnected to ReviewPulse.</span>
+        <span>Back online! Reconnected to PM Zaika.</span>
       </div>
     )
   }

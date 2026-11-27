@@ -23,22 +23,24 @@ export async function validateSession(token: string): Promise<AuthUser | null> {
   if (!token || typeof token !== 'string') return null
   const auth = getAdminAuth()
 
-  // 1. First verify as a long-lived Firebase session cookie (up to 14 days)
+  // 1. First verify as a long-lived Firebase session cookie (checkRevoked = true enforces logout/password rotation)
   try {
-    const decoded = await auth.verifySessionCookie(token, false)
+    const decoded = await auth.verifySessionCookie(token, true)
     return {
       uid: decoded.uid,
       email: decoded.email || null,
       displayName: decoded.name || null,
       emailVerified: decoded.email_verified || false,
     }
-  } catch {
+  } catch (err) {
+    const code = typeof err === 'object' && err !== null && 'code' in err ? String((err as { code?: unknown }).code) : ''
+    if (code === 'auth/session-cookie-revoked') return null
     // Session cookie verification failed, fall back to ID token
   }
 
-  // 2. Fall back to standard Firebase ID token
+  // 2. Fall back to standard Firebase ID token (checkRevoked = true)
   try {
-    const decoded = await auth.verifyIdToken(token)
+    const decoded = await auth.verifyIdToken(token, true)
     return {
       uid: decoded.uid,
       email: decoded.email || null,

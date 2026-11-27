@@ -12,6 +12,12 @@ const changePasswordSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate caller BEFORE parsing or validating body
+    const user = await getSessionFromRequest(request)
+    if (!user || !user.email) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
     const body = await request.json().catch(() => ({}))
     const parsed = changePasswordSchema.safeParse(body)
 
@@ -23,13 +29,6 @@ export async function POST(request: NextRequest) {
     }
 
     const { currentPassword, newPassword } = parsed.data
-
-    // Identify the caller via robust session helper (supports both Firebase session cookies and ID tokens)
-    const user = await getSessionFromRequest(request)
-    if (!user || !user.email) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-
     const { uid, email } = user
 
     // Verify the current password by signing in with it

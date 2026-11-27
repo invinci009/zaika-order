@@ -347,10 +347,10 @@ export default function SpecialMenuPage() {
                 <QrCode className="w-4 h-4" />
               </button>
               <a
-                href="tel:7763949496"
+                href="tel:7488260572"
                 className="p-2 rounded-xl bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors"
                 aria-label="Call restaurant"
-                title="Helpline: 77639 49496"
+                title="Helpline: +91 74882 60572"
               >
                 <Phone className="w-4 h-4" />
               </a>
@@ -411,7 +411,7 @@ export default function SpecialMenuPage() {
               </button>
               <a
                 href={`/api/business/qr?slug=${slug}&type=special&format=png&download=true`}
-                download="biryani-badshah-special-menu.png"
+                download="pm-zaika-special-menu.png"
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors cursor-pointer border border-stone-200"
               >
                 Save QR
@@ -675,11 +675,11 @@ export default function SpecialMenuPage() {
             Advance notice recommended for bulk Handi Biryanis and large events. You can place your order online above or call our helpline directly.
           </p>
           <a
-            href="tel:7763949496"
+            href="tel:7488260572"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition-colors shadow-md shadow-emerald-700/20 cursor-pointer"
           >
             <Phone className="w-4 h-4" />
-            <span>Call Helpline: 77639 49496</span>
+            <span>Call Helpline: +91 74882 60572</span>
           </a>
         </div>
 
