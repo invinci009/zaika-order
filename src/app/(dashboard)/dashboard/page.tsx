@@ -11,8 +11,7 @@ import {
   getPrivateFeedback,
   getMenuItems,
 } from '@/lib/firebase/firestore'
-import { getTables } from '@/lib/firebase/ordering'
-import { getOrderMenuItems } from '@/lib/firebase/ordering'
+import { getTables, getOrderMenuItemsCount } from '@/lib/firebase/ordering'
 import { getRestaurantConfig } from '@/config/loader'
 import { getCached } from '@/lib/cache'
 import DashboardWorkspace from '@/components/dashboard/DashboardWorkspace'
@@ -47,7 +46,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   // 2-4, 8-9. Fetch independent collections in parallel. These were
   // sequential awaits — each one cost a full Firestore round-trip, so page
   // load grew linearly with every query. Results are identical, just concurrent.
-  const [settingsResult, campaigns, events, privateFeedbackData, menuItems, diningTables, orderMenuItems] = await Promise.all([
+  const [settingsResult, campaigns, events, privateFeedbackData, menuItems, diningTables, orderMenuCount] = await Promise.all([
     getRestaurantSettings().catch((e) => {
       console.warn('Dashboard getRestaurantSettings failed:', e.message)
       return null
@@ -72,9 +71,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       console.warn('Dashboard getTables failed:', e.message)
       return []
     }),
-    getOrderMenuItems().catch((e) => {
-      console.warn('Dashboard getOrderMenuItems failed:', e.message)
-      return []
+    getOrderMenuItemsCount().catch((e) => {
+      console.warn('Dashboard getOrderMenuItemsCount failed:', e.message)
+      return 0
     }),
   ])
   const config = getRestaurantConfig()
@@ -425,7 +424,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       menuItems={menuItems}
       tables={tableItems}
       portalSlug={portalSlug}
-      orderMenuCount={orderMenuItems.length}
+      orderMenuCount={orderMenuCount}
       userEmail={user.email || 'admin'}
     />
   )

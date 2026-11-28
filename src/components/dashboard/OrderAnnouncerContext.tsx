@@ -647,6 +647,8 @@ export function OrderAnnouncerProvider({ children }: { children: React.ReactNode
     scheduleNext()
 
     const onVisible = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return
       pollActiveOrders()
       pollServiceRequests()
     }

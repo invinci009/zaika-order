@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCampaignBySlug, getCampaigns, getRestaurantSettings } from '@/lib/firebase/firestore'
+import { getCampaigns, getRestaurantSettings } from '@/lib/firebase/firestore'
 import {
   getOrderMenuCategories,
   getOrderMenuItems,
@@ -7,11 +7,39 @@ import {
   resolveTableToken,
   getTables,
   normalizeTableLabel,
+  type OrderMenuItem,
+  type OrderMenuCategory,
+  type OrderingConfig,
+  type DiningTable,
 } from '@/lib/firebase/ordering'
 import { hashToken } from '@/lib/ordering/tokens'
 import { getRestaurantConfig } from '@/config/loader'
 import { normalizeImageUrl } from '@/lib/ordering/validation'
 import { getCached } from '@/lib/cache'
+
+function computeMenuCatalogEtag(
+  items: OrderMenuItem[],
+  categories: OrderMenuCategory[],
+  ordering: OrderingConfig,
+  updatedAt: string | undefined,
+  tables: DiningTable[],
+  tableId: string | null
+): string {
+  let sig = `${categories.length}:${items.length}:${ordering.updatedAt}:${updatedAt || '0'}:${tableId || ''}`
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i]
+    sig += `|${it.id}:${it.pricePaise}:${it.available ? 1 : 0}:${it.visible ? 1 : 0}:${it.imageUrl || ''}:${it.updatedAt || ''}`
+  }
+  for (let i = 0; i < tables.length; i++) {
+    const t = tables[i]
+    sig += `|t:${t.id}:${t.active ? 1 : 0}:${t.state || ''}`
+  }
+  let hash = 5381
+  for (let i = 0; i < sig.length; i++) {
+    hash = (hash * 33) ^ sig.charCodeAt(i)
+  }
+  return `W/"menu-${(hash >>> 0).toString(36)}-${items.length}"`
+}
 
 // GET /api/public/order-menu?slug=...&token=...
 // Public menu: only visible items (availability flagged for sold-out labels).
@@ -19,17 +47,27 @@ import { getCached } from '@/lib/cache'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const slug = searchParams.get('slug') || ''
+    const slug = (searchParams.get('slug') || '').trim().toLowerCase()
     const token = searchParams.get('token')
 
     const config = getRestaurantConfig()
-    let campaign = await getCampaignBySlug(slug).catch(() => null)
-    if (!campaign || !campaign.active) {
-      campaign = await getCampaignBySlug(config.slug).catch(() => null)
-    }
-    if (!campaign || !campaign.active) {
-      const allCampaigns = await getCampaigns().catch(() => [])
-      campaign = allCampaigns.find((c) => c.active) || null
+    const allCampaigns = await getCampaigns().catch(() => [])
+    const defaultSlug = config.slug.toLowerCase()
+    let campaign =
+      allCampaigns.find((c) => c.slug.toLowerCase() === slug && c.active) ||
+      allCampaigns.find((c) => c.slug.toLowerCase() === defaultSlug && c.active) ||
+      allCampaigns.find((c) => c.active) ||
+      null
+
+    if (!campaign && (slug === defaultSlug || slug === 'pm-zaika' || slug === 'zaika' || slug === 'order')) {
+      campaign = {
+        id: 'default-pm-zaika',
+        slug: config.slug,
+        name: config.name,
+        active: true,
+        createdAt: '',
+        updatedAt: '',
+      } as typeof allCampaigns[number]
     }
     if (!campaign || !campaign.active) {
       return NextResponse.json({ error: 'Ordering is not available for this link' }, { status: 404 })
@@ -82,14 +120,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const etag = `W/"menu-${categories.length}-${items.length}-${settings?.updatedAt || '0'}"`
+    const etag = computeMenuCatalogEtag(items, categories, ordering, settings?.updatedAt, diningTables, table?.id || null)
+    const cacheHeaders = {
+      ETag: etag,
+      'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=120',
+    }
     if (request.headers.get('if-none-match') === etag) {
       return new NextResponse(null, {
         status: 304,
-        headers: {
-          ETag: etag,
-          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=86400',
-        },
+        headers: cacheHeaders,
       })
     }
 
@@ -129,10 +168,7 @@ export async function GET(request: NextRequest) {
       },
       {
         status: 200,
-        headers: {
-          ETag: etag,
-          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=86400',
-        },
+        headers: cacheHeaders,
       }
     )
   } catch (error) {

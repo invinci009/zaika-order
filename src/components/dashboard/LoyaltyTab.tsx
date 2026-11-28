@@ -139,37 +139,14 @@ export default function LoyaltyTab({ onRefresh }: { onRefresh: () => void }) {
   const [redemptions, setRedemptions] = useState<RedemptionRow[]>([])
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
 
-  useEffect(() => {
-    Promise.all([
-      fetch('/api/business/loyalty/config', { cache: 'no-store' }),
-      fetch('/api/business/loyalty/rewards', { cache: 'no-store' }),
-      fetch('/api/business/loyalty/customers', { cache: 'no-store' }),
-      fetch('/api/business/loyalty/redemptions', { cache: 'no-store' }),
-      fetch('/api/business/loyalty/analytics', { cache: 'no-store' }),
-    ])
-      .then(async ([cfgRes, rwRes, custRes, redRes, anRes]) => {
-        if (cfgRes.ok) setConfig(await cfgRes.json())
-        if (rwRes.ok) setRewards(await rwRes.json())
-        if (custRes.ok) setCustomers(await custRes.json())
-        if (redRes.ok) setRedemptions(await redRes.json())
-        if (anRes.ok) setAnalytics(await anRes.json())
-      })
-      .catch(() => {
-        setFeedback({ ok: false, msg: 'Could not load loyalty data' })
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [])
-
   const loadAll = useCallback(async (silent = false) => {
     try {
       const [cfgRes, rwRes, custRes, redRes, anRes] = await Promise.all([
-        fetch('/api/business/loyalty/config', { cache: 'no-store' }),
-        fetch('/api/business/loyalty/rewards', { cache: 'no-store' }),
-        fetch('/api/business/loyalty/customers', { cache: 'no-store' }),
-        fetch('/api/business/loyalty/redemptions', { cache: 'no-store' }),
-        fetch('/api/business/loyalty/analytics', { cache: 'no-store' }),
+        fetch('/api/business/loyalty/config'),
+        fetch('/api/business/loyalty/rewards'),
+        fetch('/api/business/loyalty/customers'),
+        fetch('/api/business/loyalty/redemptions'),
+        fetch('/api/business/loyalty/analytics'),
       ])
       if (cfgRes.ok) setConfig(await cfgRes.json())
       if (rwRes.ok) setRewards(await rwRes.json())
@@ -182,6 +159,13 @@ export default function LoyaltyTab({ onRefresh }: { onRefresh: () => void }) {
       if (!silent) setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      void loadAll()
+    }, 0)
+    return () => clearTimeout(id)
+  }, [loadAll])
 
   const flash = (ok: boolean, msg: string) => {
     setFeedback({ ok, msg })

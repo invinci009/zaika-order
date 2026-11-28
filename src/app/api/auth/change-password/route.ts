@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { getServerAuth } from '@/lib/firebase/server-auth'
 import { getAdminAuth } from '@/lib/firebase/admin'
-import { getSessionFromRequest } from '@/lib/firebase/auth'
+import { getSessionFromRequest, invalidateAuthSessionCache } from '@/lib/firebase/auth'
 import { z } from 'zod'
 
 const changePasswordSchema = z.object({
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
     // Invalidate prior sessions upon password rotation (CWE-613 / Cloudflare session invalidation)
     try {
       await getAdminAuth().revokeRefreshTokens(uid)
+      invalidateAuthSessionCache(request.cookies.get('firebase_token')?.value, uid)
     } catch (revokeErr) {
       console.warn('Could not revoke previous refresh tokens:', revokeErr)
     }

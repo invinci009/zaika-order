@@ -280,13 +280,17 @@ export default function OrdersTab({
 
     fetchOrders()
 
-    // 5-second background polling for custom filter views
+    // Poll less aggressively (20s) for historical/custom filters, and pause when tab is hidden
     const t = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return
       fetchOrders(true)
-    }, 5000)
+    }, 20000)
 
     // Immediate sync when tab gains visibility, window focus, or network reconnects
     const onVis = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return
       fetchOrders(true)
     }
     document.addEventListener('visibilitychange', onVis)

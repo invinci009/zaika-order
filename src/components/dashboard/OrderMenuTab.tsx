@@ -76,6 +76,7 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
   const [fImageUrl, setFImageUrl] = useState('')
   const [uploadingImage, setUploadingImage] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   // Ordering config
@@ -134,6 +135,7 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
     setFFeatured(false)
     setFImageUrl('')
     setUploadError(null)
+    setUploadSuccess(false)
     setShowItemForm(true)
   }
 
@@ -147,30 +149,89 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
     setFFeatured(item.featured)
     setFImageUrl(item.imageUrl || '')
     setUploadError(null)
+    setUploadSuccess(false)
     setShowItemForm(true)
   }
 
+  /**
+   * Compress large camera/desktop photos to crisp <= 1200px WebP in-browser so uploads
+   * finish rapidly, stay well below serverless body limits, and load fast for diners.
+   */
+  const compressImageForUpload = async (file: File): Promise<File> => {
+    if (file.type === 'image/svg+xml' || file.type === 'image/gif') return file
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result || ''))
+        reader.onerror = () => reject(new Error('read_failed'))
+        reader.readAsDataURL(file)
+      })
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new window.Image()
+        image.onload = () => resolve(image)
+        image.onerror = () => reject(new Error('decode_failed'))
+        image.src = dataUrl
+      })
+      const MAX_DIM = 1200
+      let width = img.naturalWidth || img.width
+      let height = img.naturalHeight || img.height
+      if (!width || !height) return file
+      if (width <= MAX_DIM && height <= MAX_DIM && file.size <= 350 * 1024 && file.type === 'image/webp') {
+        return file
+      }
+      const scale = Math.min(1, MAX_DIM / Math.max(width, height))
+      width = Math.max(1, Math.round(width * scale))
+      height = Math.max(1, Math.round(height * scale))
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return file
+      ctx.drawImage(img, 0, 0, width, height)
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', 0.84))
+      if (!blob || blob.size >= file.size) return file
+      const baseName = file.name.replace(/\.[^/.]+$/, '') || 'dish'
+      return new File([blob], `${baseName}.webp`, { type: 'image/webp' })
+    } catch {
+      return file
+    }
+  }
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const rawFile = e.target.files?.[0]
+    if (!rawFile) return
 
     setUploadingImage(true)
     setUploadError(null)
+    setUploadSuccess(false)
     try {
+      const preparedFile = await compressImageForUpload(rawFile)
+      if (preparedFile.size > 4.2 * 1024 * 1024) {
+        throw new Error('Image is still over 4.2MB after compression. Please pick a smaller image.')
+      }
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', preparedFile)
 
       const res = await fetch('/api/business/upload', {
         method: 'POST',
         body: formData,
       })
 
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.error || 'Upload failed')
+      const rawText = await res.text()
+      let data: { error?: string; url?: string } = {}
+      try {
+        data = JSON.parse(rawText)
+      } catch {
+        data = { error: res.status === 413 ? 'Image file too large for server limit (max 4MB).' : rawText.slice(0, 120) }
+      }
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || `Upload failed (${res.status})`)
       }
 
       setFImageUrl(data.url)
+      setUploadSuccess(true)
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Failed to upload image')
     } finally {
@@ -465,11 +526,17 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
                   </p>
                 )}
 
+                {uploadSuccess && !uploadError && (
+                  <p className="text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-2 rounded-lg">
+                    Photo uploaded to Supabase Storage — click &quot;{editing ? 'Save Changes' : 'Create Item'}&quot; to publish it.
+                  </p>
+                )}
+
                 {fImageUrl ? (
                   <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900 border border-slate-800">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={fImageUrl}
+                      src={normalizeImageUrl(fImageUrl) || fImageUrl}
                       alt="Preview"
                       referrerPolicy="no-referrer"
                       className="w-16 h-16 rounded-lg object-cover border border-slate-700 bg-slate-950 shrink-0"
@@ -485,7 +552,15 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
                           disabled={uploadingImage}
                           className="h-7 text-[11px] text-amber-400 hover:text-amber-300 hover:bg-slate-800 cursor-pointer px-2"
                         >
-                          <Upload className="w-3 h-3 mr-1" /> Change Photo
+                          {uploadingImage ? (
+                            <>
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Uploading…
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-3 h-3 mr-1" /> Change Photo
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -493,7 +568,7 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
                 ) : (
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     <div
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => !uploadingImage && fileInputRef.current?.click()}
                       className="w-full sm:w-auto flex-1 border border-dashed border-slate-700 hover:border-amber-500/60 rounded-xl p-3 text-center cursor-pointer bg-slate-900/40 hover:bg-slate-900/80 transition-all flex items-center justify-center gap-2 group"
                     >
                       {uploadingImage ? (
@@ -503,7 +578,7 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
                       ) : (
                         <div className="flex items-center gap-2 text-xs text-slate-400 group-hover:text-slate-200">
                           <Upload className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
-                          <span>Upload dish image (JPG, PNG, WebP)</span>
+                          <span>Upload dish image (JPG, PNG, WebP, AVIF)</span>
                         </div>
                       )}
                     </div>
@@ -513,7 +588,7 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/svg+xml"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -561,9 +636,10 @@ export default function OrderMenuTab({ onRefresh }: { onRefresh: () => void }) {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs rounded-xl cursor-pointer px-4"
+                    disabled={uploadingImage}
+                    className="bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs rounded-xl cursor-pointer px-4"
                   >
-                    {editing ? 'Save Changes' : 'Create Item'}
+                    {uploadingImage ? 'Uploading…' : editing ? 'Save Changes' : 'Create Item'}
                   </Button>
                 </div>
               </div>

@@ -1295,8 +1295,20 @@ function summarize(account: LoyaltyAccount): LoyaltySnapshot {
 
 async function sweepAndSnapshot(phone: string): Promise<LoyaltySnapshot> {
   const db = getDb()
+  const ref = db.doc(`loyaltyAccounts/${phone}`)
+  const existingSnap = await ref.get()
+  if (existingSnap.exists) {
+    const existingData = existingSnap.data() as LoyaltyAccount
+    const nowMs = Date.now()
+    const hasExpiredBucket = (existingData.buckets || []).some(
+      (b) => b.remaining > 0 && b.expiresAt && new Date(b.expiresAt).getTime() <= nowMs
+    )
+    if (!hasExpiredBucket) {
+      return summarize(existingData)
+    }
+  }
+
   const snap = await db.runTransaction(async (tx) => {
-    const ref = db.doc(`loyaltyAccounts/${phone}`)
     const doc = await tx.get(ref)
     if (!doc.exists) {
       const empty = emptyLoyaltyAccount(phone, serverNow())
@@ -1468,10 +1480,10 @@ export interface LoyaltyCustomerRow {
 }
 
 export async function listLoyaltyCustomers(limit = 200): Promise<LoyaltyCustomerRow[]> {
-  return getCached(`loyalty:customers:list:${limit}`, 45 * 1000, async () => {
+  return getCached(`loyalty:customers:list:${limit}`, 90 * 1000, async () => {
     const db = getDb()
     const [custSnap, accSnaps] = await Promise.all([
-      db.collection('customerAccounts').limit(limit).get(),
+      db.collection('customerAccounts').select('name', 'status', 'verified', 'createdAt', 'lastLoginAt').limit(limit).get(),
       db.collection('loyaltyAccounts').limit(limit * 2).get(),
     ])
     const accountsByPhone = new Map(accSnaps.docs.map((d) => [d.id, d.data() as LoyaltyAccount]))
@@ -1550,12 +1562,12 @@ export interface LoyaltyAnalytics {
 }
 
 export async function getLoyaltyAnalytics(): Promise<LoyaltyAnalytics> {
-  return getCached('loyalty:analytics', 3 * 60 * 1000, async () => {
+  return getCached('loyalty:analytics', 5 * 60 * 1000, async () => {
     const db = getDb()
     const [accSnap, redSnap, earnSnap] = await Promise.all([
-      db.collection('loyaltyAccounts').limit(500).get(),
-      db.collection('redemptions').limit(500).get(),
-      db.collection('loyaltyTransactions').where('type', '==', 'EARN').limit(500).get(),
+      db.collection('loyaltyAccounts').select('earnedTotal', 'redeemedTotal', 'expiredTotal').limit(500).get(),
+      db.collection('redemptions').select('status', 'rewardId', 'rewardName', 'pointsSpent').limit(500).get(),
+      db.collection('loyaltyTransactions').where('type', '==', 'EARN').select('points').limit(500).get(),
     ])
 
     const accounts = accSnap.docs.map((d) => d.data() as LoyaltyAccount)

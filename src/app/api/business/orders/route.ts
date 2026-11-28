@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       orders = await getOrders(limit)
     }
     if (payment && payment !== 'all') orders = orders.filter((o) => o.paymentStatus === payment)
-    if (tableId) {
+    if (tableId && tableId !== 'all') {
       const allTables = await getTables(true).catch(() => [])
       const selectedTable = allTables.find((t) => t.id === tableId)
       orders = orders.filter((o) => {

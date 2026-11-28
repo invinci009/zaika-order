@@ -3,53 +3,121 @@ import { randomUUID } from 'crypto'
 import { getAdminStorage } from './admin'
 
 // ==============================================================================
-// Resilient Storage Engine (Firebase Storage + Supabase Storage Fallback)
-// Ensures menu item images and assets upload reliably without failing if
-// Firebase Storage is not yet initialized or exceeds free tier quotas.
+// Resilient Storage Engine (Supabase Storage Primary + Firebase Storage Fallback)
+// Prioritizes Supabase public bucket storage for instant CDN-backed image uploads
+// without waiting on uninitialized Firebase Storage buckets.
 // ==============================================================================
+
+const SUPABASE_BUCKET = 'menu-items'
+let bucketReadyPromise: Promise<void> | null = null
 
 function getStorageBucket() {
   const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim()
   if (!bucketName) {
-    throw new Error(
-      'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not set.'
-    )
+    throw new Error('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not set.')
   }
   return getAdminStorage().bucket(bucketName)
 }
 
+async function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+  const supabaseKey = (
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )?.trim()
+
+  if (!supabaseUrl || !supabaseKey) {
+    return null
+  }
+
+  const { createClient } = await import('@supabase/supabase-js')
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}
+
+async function ensureSupabaseBucket(supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseClient>>>) {
+  if (bucketReadyPromise) {
+    await bucketReadyPromise
+    return
+  }
+
+  bucketReadyPromise = (async () => {
+    try {
+      const { data } = await supabase.storage.getBucket(SUPABASE_BUCKET)
+      if (!data) {
+        await supabase.storage.createBucket(SUPABASE_BUCKET, { public: true }).catch(() => {})
+      } else if (!data.public) {
+        await supabase.storage.updateBucket(SUPABASE_BUCKET, { public: true }).catch(() => {})
+      }
+    } catch {
+      // If using anon key without admin bucket permissions, upload will still proceed if bucket exists
+    }
+  })()
+
+  try {
+    await bucketReadyPromise
+  } catch {
+    bucketReadyPromise = null
+  }
+}
+
 /**
- * Upload to Supabase Storage as a resilient zero-quota-cost fallback.
+ * Upload to Supabase Storage with long-lived CDN cache headers.
  */
 async function uploadToSupabaseStorage(
   cleanPath: string,
   data: Buffer,
   contentType: string
 ): Promise<string> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!supabaseUrl || !supabaseKey) {
+  const supabase = await getSupabaseClient()
+  if (!supabase) {
     throw new Error('Supabase storage credentials not configured')
   }
 
-  const { createClient } = await import('@supabase/supabase-js')
-  const supabase = createClient(supabaseUrl, supabaseKey)
-  const bucketName = 'menu-items'
+  await ensureSupabaseBucket(supabase)
 
-  const { error } = await supabase.storage
-    .from(bucketName)
-    .upload(cleanPath, data, { contentType, upsert: true })
+  const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(cleanPath, data, {
+    contentType,
+    cacheControl: '31536000',
+    upsert: true,
+  })
 
   if (error) {
     throw new Error(`Supabase Storage upload error: ${error.message}`)
   }
 
-  const { data: pubData } = supabase.storage.from(bucketName).getPublicUrl(cleanPath)
+  const { data: pubData } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(cleanPath)
   return pubData.publicUrl
 }
 
+async function uploadToFirebaseStorage(
+  cleanPath: string,
+  data: Buffer,
+  contentType: string
+): Promise<string> {
+  const bucket = getStorageBucket()
+  const file = bucket.file(cleanPath)
+  const downloadToken = randomUUID()
+
+  await file.save(data, {
+    resumable: false,
+    validation: false,
+    metadata: {
+      contentType,
+      cacheControl: 'public, max-age=31536000, immutable',
+      metadata: {
+        firebaseStorageDownloadTokens: downloadToken,
+      },
+    },
+  })
+
+  await file.makePublic().catch(() => {})
+  const encodedPath = encodeURIComponent(cleanPath)
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${downloadToken}`
+}
+
 /**
- * Upload a file to Storage (Firebase Storage first, with resilient Supabase fallback).
+ * Upload a file to Storage (Supabase Storage primary, Firebase Storage fallback).
  */
 export async function uploadFile(
   path: string,
@@ -58,42 +126,36 @@ export async function uploadFile(
 ): Promise<string> {
   const cleanPath = path.replace(/^\/+/, '')
 
-  // 1. Try Firebase Storage if bucket is reachable
-  try {
-    const bucket = getStorageBucket()
-    const file = bucket.file(cleanPath)
-    const downloadToken = randomUUID()
+  // 1. Primary: Supabase Storage (zero-hang, public CDN URL, free quota friendly)
+  let supabaseErr: unknown = null
+  const hasSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+      (process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim())
+  )
 
-    await file.save(data, {
-      metadata: {
-        contentType,
-        metadata: {
-          firebaseStorageDownloadTokens: downloadToken,
-        },
-      },
-    })
-
-    // Attempt public access for standard GCS ACLs if allowed
-    await file.makePublic().catch(() => {})
-
-    const encodedPath = encodeURIComponent(cleanPath)
-    return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${downloadToken}`
-  } catch (error: unknown) {
-    console.warn(
-      'Firebase Storage unavailable or uninitialized. Falling back to Supabase Storage...',
-      error instanceof Error ? error.message : error
-    )
-
-    // 2. Resilient fallback to Supabase Storage
+  if (hasSupabase) {
     try {
-      const fallbackUrl = await uploadToSupabaseStorage(cleanPath, data, contentType)
-      console.log('Successfully uploaded via fallback storage:', fallbackUrl)
-      return fallbackUrl
-    } catch (fallbackError: unknown) {
-      console.error('All storage options failed:', fallbackError)
-      const msg = error instanceof Error ? error.message : String(error)
-      throw new Error(`Upload failed: ${msg}`)
+      return await uploadToSupabaseStorage(cleanPath, data, contentType)
+    } catch (err) {
+      supabaseErr = err
+      console.warn(
+        'Supabase Storage upload failed, falling back to Firebase Storage:',
+        err instanceof Error ? err.message : err
+      )
     }
+  }
+
+  // 2. Fallback: Firebase Storage
+  try {
+    return await uploadToFirebaseStorage(cleanPath, data, contentType)
+  } catch (fbError: unknown) {
+    const firstMsg =
+      supabaseErr instanceof Error
+        ? supabaseErr.message
+        : fbError instanceof Error
+          ? fbError.message
+          : String(fbError)
+    throw new Error(`Upload failed: ${firstMsg}`)
   }
 }
 
@@ -102,24 +164,22 @@ export async function uploadFile(
  */
 export async function deleteFile(path: string): Promise<void> {
   const cleanPath = path.replace(/^\/+/, '')
+
+  try {
+    const supabase = await getSupabaseClient()
+    if (supabase) {
+      await supabase.storage.from(SUPABASE_BUCKET).remove([cleanPath])
+    }
+  } catch (err) {
+    console.warn('Supabase storage delete warning:', err)
+  }
+
   try {
     const bucket = getStorageBucket()
     const file = bucket.file(cleanPath)
     await file.delete().catch(() => {})
   } catch (err) {
     console.warn('Firebase storage delete warning:', err)
-  }
-
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (supabaseUrl && supabaseKey) {
-      const { createClient } = await import('@supabase/supabase-js')
-      const supabase = createClient(supabaseUrl, supabaseKey)
-      await supabase.storage.from('menu-items').remove([cleanPath])
-    }
-  } catch (err) {
-    console.warn('Supabase storage delete warning:', err)
   }
 }
 
@@ -128,24 +188,24 @@ export async function deleteFile(path: string): Promise<void> {
  */
 export async function fileExists(path: string): Promise<boolean> {
   const cleanPath = path.replace(/^\/+/, '')
+
   try {
-    const bucket = getStorageBucket()
-    const file = bucket.file(cleanPath)
-    const [exists] = await file.exists()
-    if (exists) return true
+    const supabase = await getSupabaseClient()
+    if (supabase) {
+      const folder = cleanPath.includes('/') ? cleanPath.slice(0, cleanPath.lastIndexOf('/')) : ''
+      const fileName = cleanPath.includes('/') ? cleanPath.slice(cleanPath.lastIndexOf('/') + 1) : cleanPath
+      const { data } = await supabase.storage.from(SUPABASE_BUCKET).list(folder, { search: fileName })
+      if (data && data.some((f) => f.name === fileName)) return true
+    }
   } catch {
     // continue
   }
 
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (supabaseUrl && supabaseKey) {
-      const { createClient } = await import('@supabase/supabase-js')
-      const supabase = createClient(supabaseUrl, supabaseKey)
-      const { data } = await supabase.storage.from('menu-items').list('', { search: cleanPath })
-      return Boolean(data && data.length > 0)
-    }
+    const bucket = getStorageBucket()
+    const file = bucket.file(cleanPath)
+    const [exists] = await file.exists()
+    if (exists) return true
   } catch {
     // continue
   }
@@ -158,8 +218,11 @@ export async function fileExists(path: string): Promise<boolean> {
  */
 export function getPublicUrl(path: string): string {
   const cleanPath = path.replace(/^\/+/, '')
-  const bucketName =
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim() || 'default'
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()?.replace(/\/+$/, '')
+  if (supabaseUrl) {
+    return `${supabaseUrl}/storage/v1/object/public/${SUPABASE_BUCKET}/${cleanPath}`
+  }
+  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim() || 'default'
   const encodedPath = encodeURIComponent(cleanPath)
   return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media`
 }
@@ -169,6 +232,19 @@ export function getPublicUrl(path: string): string {
  */
 export async function getSignedUrl(path: string, expiresInMinutes = 60): Promise<string> {
   const cleanPath = path.replace(/^\/+/, '')
+
+  try {
+    const supabase = await getSupabaseClient()
+    if (supabase) {
+      const { data } = await supabase.storage
+        .from(SUPABASE_BUCKET)
+        .createSignedUrl(cleanPath, expiresInMinutes * 60)
+      if (data?.signedUrl) return data.signedUrl
+    }
+  } catch {
+    // continue
+  }
+
   try {
     const bucket = getStorageBucket()
     const file = bucket.file(cleanPath)
@@ -178,17 +254,6 @@ export async function getSignedUrl(path: string, expiresInMinutes = 60): Promise
     })
     return url
   } catch {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (supabaseUrl && supabaseKey) {
-      const { createClient } = await import('@supabase/supabase-js')
-      const supabase = createClient(supabaseUrl, supabaseKey)
-      const { data } = await supabase.storage
-        .from('menu-items')
-        .createSignedUrl(cleanPath, expiresInMinutes * 60)
-      if (data?.signedUrl) return data.signedUrl
-    }
     return getPublicUrl(path)
   }
 }
-

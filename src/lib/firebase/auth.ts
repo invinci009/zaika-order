@@ -1,4 +1,5 @@
 import 'server-only'
+import { createHash } from 'crypto'
 import type { NextRequest } from 'next/server'
 import { getAdminAuth } from './admin'
 
@@ -15,40 +16,144 @@ export interface AuthUser {
   emailVerified: boolean
 }
 
+interface CachedAuthEntry {
+  user: AuthUser
+  expiresAt: number
+}
+
+const AUTH_CACHE_TTL_MS = 20_000
+const MAX_AUTH_CACHE_SIZE = 500
+
+declare global {
+  var __rp_authSessionCache: Map<string, CachedAuthEntry> | undefined
+  var __rp_authInFlight: Map<string, Promise<AuthUser | null>> | undefined
+  var __rp_revokedBeforeMs: Map<string, number> | undefined
+}
+
+const authSessionCache = (globalThis.__rp_authSessionCache ??= new Map<string, CachedAuthEntry>())
+const authInFlight = (globalThis.__rp_authInFlight ??= new Map<string, Promise<AuthUser | null>>())
+const revokedBeforeMs = (globalThis.__rp_revokedBeforeMs ??= new Map<string, number>())
+
+function hashSessionToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex')
+}
+
+function readJwtClaimsUnsafe(token: string): { iat?: number; exp?: number } | null {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+    const json = Buffer.from(parts[1], 'base64url').toString('utf8')
+    const parsed = JSON.parse(json)
+    return parsed && typeof parsed === 'object' ? (parsed as { iat?: number; exp?: number }) : null
+  } catch {
+    return null
+  }
+}
+
 /**
- * Validate a Firebase ID token and return the user info.
- * Use this in API routes to authenticate dashboard requests.
+ * Immediately invalidate cached Firebase session validations on logout or password rotation.
+ */
+export function invalidateAuthSessionCache(token?: string, uid?: string): void {
+  if (token) {
+    authSessionCache.delete(hashSessionToken(token))
+  }
+  if (uid) {
+    revokedBeforeMs.set(uid, Date.now())
+    for (const [k, v] of authSessionCache.entries()) {
+      if (v.user.uid === uid) {
+        authSessionCache.delete(k)
+      }
+    }
+  }
+}
+
+/**
+ * Validate a Firebase ID token or session cookie and return the user info.
+ * Short 20s verified cache (with explicit instant purge on logout/password reset) avoids
+ * paying a ~200ms Google Identity Toolkit HTTP roundtrip on every dashboard poll.
  */
 export async function validateSession(token: string): Promise<AuthUser | null> {
   if (!token || typeof token !== 'string') return null
-  const auth = getAdminAuth()
 
-  // 1. First verify as a long-lived Firebase session cookie (checkRevoked = true enforces logout/password rotation)
-  try {
-    const decoded = await auth.verifySessionCookie(token, true)
-    return {
-      uid: decoded.uid,
-      email: decoded.email || null,
-      displayName: decoded.name || null,
-      emailVerified: decoded.email_verified || false,
+  const tokenHash = hashSessionToken(token)
+  const now = Date.now()
+  const cached = authSessionCache.get(tokenHash)
+  if (cached && cached.expiresAt > now) {
+    const uidRevokedAt = revokedBeforeMs.get(cached.user.uid) || 0
+    if (uidRevokedAt <= now - AUTH_CACHE_TTL_MS) {
+      return cached.user
     }
-  } catch (err) {
-    const code = typeof err === 'object' && err !== null && 'code' in err ? String((err as { code?: unknown }).code) : ''
-    if (code === 'auth/session-cookie-revoked') return null
-    // Session cookie verification failed, fall back to ID token
+    authSessionCache.delete(tokenHash)
   }
 
-  // 2. Fall back to standard Firebase ID token (checkRevoked = true)
-  try {
-    const decoded = await auth.verifyIdToken(token, true)
-    return {
-      uid: decoded.uid,
-      email: decoded.email || null,
-      displayName: decoded.name || null,
-      emailVerified: decoded.email_verified || false,
+  const inflight = authInFlight.get(tokenHash)
+  if (inflight) {
+    return inflight
+  }
+
+  const verifyPromise = (async (): Promise<AuthUser | null> => {
+    const auth = getAdminAuth()
+    let user: AuthUser | null = null
+
+    // 1. First verify as a long-lived Firebase session cookie (checkRevoked = true enforces logout/password rotation)
+    try {
+      const decoded = await auth.verifySessionCookie(token, true)
+      user = {
+        uid: decoded.uid,
+        email: decoded.email || null,
+        displayName: decoded.name || null,
+        emailVerified: decoded.email_verified || false,
+      }
+    } catch (err) {
+      const code =
+        typeof err === 'object' && err !== null && 'code' in err
+          ? String((err as { code?: unknown }).code)
+          : ''
+      if (code === 'auth/session-cookie-revoked') return null
+      // Session cookie verification failed, fall back to ID token
     }
-  } catch {
-    return null
+
+    // 2. Fall back to standard Firebase ID token (checkRevoked = true)
+    if (!user) {
+      try {
+        const decoded = await auth.verifyIdToken(token, true)
+        user = {
+          uid: decoded.uid,
+          email: decoded.email || null,
+          displayName: decoded.name || null,
+          emailVerified: decoded.email_verified || false,
+        }
+      } catch {
+        return null
+      }
+    }
+
+    if (user) {
+      const claims = readJwtClaimsUnsafe(token)
+      const expMs = typeof claims?.exp === 'number' ? claims.exp * 1000 : Infinity
+      const expiresAt = Math.min(expMs, Date.now() + AUTH_CACHE_TTL_MS)
+      if (expiresAt > Date.now()) {
+        if (authSessionCache.size >= MAX_AUTH_CACHE_SIZE) {
+          const ts = Date.now()
+          for (const [k, v] of authSessionCache.entries()) {
+            if (v.expiresAt <= ts) authSessionCache.delete(k)
+          }
+          if (authSessionCache.size >= MAX_AUTH_CACHE_SIZE) {
+            authSessionCache.clear()
+          }
+        }
+        authSessionCache.set(tokenHash, { user, expiresAt })
+      }
+    }
+
+    return user
+  })()
+
+  authInFlight.set(tokenHash, verifyPromise)
+  try {
+    return await verifyPromise
+  } finally {
+    authInFlight.delete(tokenHash)
   }
 }
 

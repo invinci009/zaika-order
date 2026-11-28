@@ -3665,11 +3665,103 @@ const PmZaikaCrest = () => (
   </div>
 );
 
+function mapCategoryToMenuGroup(categoryName?: string | null): string {
+  const c = (categoryName || '').toUpperCase();
+  if (c.includes('SOUP')) return 'SOUP';
+  if (c.includes('BIRYANI') || c.includes('RICE')) return 'BIRYANI & RICE';
+  if (c.includes('ROTI') || c.includes('NAAN') || c.includes('BREAD')) return 'BREADS & NAAN';
+  if (c.includes('TANDOOR') || c.includes('KEBAB') || c.includes('KABAB')) return 'TANDOOR & KEBABS';
+  if (c.includes('STARTER')) return 'STARTERS';
+  if (c.includes('NON VEG CURRY')) return 'CURRIES (NON-VEG)';
+  if (c.includes('VEG CURRY') || c.includes('DAAL') || c.includes('DAL')) return 'CURRIES & DAL (VEG)';
+  if (c.includes('NOODLE') || c.includes('CHINESE') || c.includes('ROLL')) return 'CHINESE & ROLLS';
+  if (c.includes('MEHMAN') || c.includes('PARTY')) return 'MEHMAN NAWAZI PARTY PACKS';
+  return 'CURRIES (NON-VEG)';
+}
+
+function normMenuName(s?: string | null): string {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function mergeLiveCatalogItems(
+  baseItems: typeof MENU_ITEMS,
+  remoteItems: any[],
+  remoteCategories: Array<{ id: string; name: string }>
+) {
+  if (!Array.isArray(remoteItems) || remoteItems.length === 0) return baseItems;
+  const catNameById = new Map((remoteCategories || []).map((c) => [c.id, c.name]));
+
+  const remoteById = new Map<string, any>();
+  const remoteByNormName = new Map<string, any>();
+  const remoteByImg = new Map<string, any>();
+  for (const r of remoteItems) {
+    if (!r || !r.id) continue;
+    remoteById.set(r.id, r);
+    const nn = normMenuName(r.name);
+    if (nn) remoteByNormName.set(nn, r);
+    if (r.imageUrl) remoteByImg.set(r.imageUrl, r);
+  }
+
+  const consumedRemoteIds = new Set<string>();
+  const merged = baseItems.map((local) => {
+    const match =
+      remoteById.get(local.id) ||
+      remoteByNormName.get(normMenuName(local.name)) ||
+      remoteByImg.get(local.image);
+    if (!match) return local;
+    consumedRemoteIds.add(match.id);
+    const mappedVeg =
+      match.veg === 'veg' ? true : match.veg === 'nonveg' ? false : local.veg;
+    return {
+      ...local,
+      firestoreId: match.id,
+      name: match.name || local.name,
+      price: typeof match.pricePaise === 'number' && match.pricePaise > 0
+        ? Math.round(match.pricePaise / 100)
+        : local.price,
+      description: match.description || local.description,
+      image: match.imageUrl || local.image,
+      veg: mappedVeg,
+      popular: Boolean(match.featured || local.popular),
+      available: match.available !== false,
+    };
+  });
+
+  for (const r of remoteItems) {
+    if (!r || !r.id || consumedRemoteIds.has(r.id)) continue;
+    const catName = r.categoryId ? catNameById.get(r.categoryId) || 'Special' : 'Special';
+    const menuGroup = mapCategoryToMenuGroup(catName);
+    if (r.id.startsWith('special-') && menuGroup === 'MEHMAN NAWAZI PARTY PACKS') continue;
+    merged.push({
+      id: r.id,
+      firestoreId: r.id,
+      name: r.name,
+      category: catName,
+      menuGroup,
+      veg: r.veg === 'veg',
+      price: Math.round((r.pricePaise || 0) / 100),
+      halfPrice: null as any,
+      rating: 4.8,
+      ratingCount: '120+',
+      badge: r.featured ? 'POPULAR' : '',
+      badgeType: r.featured ? 'saffron' : '',
+      popular: Boolean(r.featured),
+      customizable: Array.isArray(r.options) && r.options.length > 0,
+      description: r.description || `Freshly prepared ${r.name} cooked to order.`,
+      image: r.imageUrl || FALLBACK_FOOD_IMG,
+      available: r.available !== false,
+    });
+  }
+
+  return merged;
+}
+
 function MainApp() {
   const searchParams = useSearchParams();
   const params = useParams();
   const slug = (params?.slug as string) || 'pm-zaika';
   const token = searchParams?.get('token') || '';
+  const tableQueryParam = searchParams?.get('table') || '';
 
   // Navigation Tab: direct Menu-first experience ('menu' | 'offers' | 'hub')
   const [activeTab, setActiveTab] = useState<'menu' | 'offers' | 'hub'>('menu');
@@ -3715,6 +3807,7 @@ function MainApp() {
   const [pendingPlaceAfterTable, setPendingPlaceAfterTable] = useState(false);
   const [stewardAlerted, setStewardAlerted] = useState(false);
   const [availableTables, setAvailableTables] = useState<Array<{ id: string; label: string; state?: string }>>([]);
+  const [liveMenuItems, setLiveMenuItems] = useState(MENU_ITEMS);
   const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
 
   useEffect(() => {
@@ -3731,7 +3824,7 @@ function MainApp() {
           setOrderType('DINE_IN');
           setSelectedTable(savedTable);
         }
-      } catch {}
+      } catch { }
     }
   }, [slug, initialDining.confirmed]);
 
@@ -3755,7 +3848,7 @@ function MainApp() {
           url.searchParams.delete('mode');
         }
         window.history.replaceState({}, '', url.toString());
-      } catch {}
+      } catch { }
     }
     if (closeSheet) {
       setTableModalOpen(false);
@@ -3767,13 +3860,15 @@ function MainApp() {
     const q = new URLSearchParams();
     q.set('slug', slug);
     if (token) q.set('token', token);
-    const tbl = searchParams.get('table');
-    if (tbl) q.set('table', tbl);
+    if (tableQueryParam) q.set('table', tableQueryParam);
 
     fetch(`/api/public/order-menu?${q.toString()}`)
       .then(async (res) => {
         if (!res.ok) return;
         const data = await res.json().catch(() => ({}));
+        if (Array.isArray(data.items) && data.items.length > 0) {
+          setLiveMenuItems(mergeLiveCatalogItems(MENU_ITEMS, data.items, data.categories || []));
+        }
         if (Array.isArray(data.tables) && data.tables.length > 0) {
           setAvailableTables(data.tables);
         }
@@ -3790,8 +3885,8 @@ function MainApp() {
           }
         }
       })
-      .catch(() => {});
-  }, [slug, token, searchParams]);
+      .catch(() => { });
+  }, [slug, token, tableQueryParam]);
 
   useEffect(() => {
     if (initialDining.confirmed) {
@@ -3924,7 +4019,7 @@ function MainApp() {
             };
           });
         saveCart(slug, cartLines, selectedTable);
-      } catch {}
+      } catch { }
     }
   }, [cart, slug, selectedTable]);
 
@@ -3969,7 +4064,7 @@ function MainApp() {
             setLoyaltySnapshot(parsed);
           }
         }
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -3983,7 +4078,7 @@ function MainApp() {
           window.localStorage.removeItem('pm_zaika_loyalty_customer');
           window.localStorage.removeItem('pm_zaika_loyalty_snapshot');
         }
-      } catch {}
+      } catch { }
     }
   }, [loyaltyCustomer]);
 
@@ -3992,7 +4087,7 @@ function MainApp() {
     if (typeof window !== 'undefined' && loyaltySnapshot) {
       try {
         window.localStorage.setItem('pm_zaika_loyalty_snapshot', JSON.stringify(loyaltySnapshot));
-      } catch {}
+      } catch { }
     }
   }, [loyaltySnapshot]);
 
@@ -4053,7 +4148,7 @@ function MainApp() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'logout' }),
-    }).catch(() => {});
+    }).catch(() => { });
     showToast('Logged out of Royal Points');
   };
 
@@ -4227,12 +4322,12 @@ function MainApp() {
   const menuGroupedDishes = useMemo(() => {
     const groups: Record<string, typeof MENU_ITEMS> = {};
     MENU_GROUPS.forEach((grp) => {
-      groups[grp] = MENU_ITEMS.filter(
+      groups[grp] = liveMenuItems.filter(
         (d) => d.menuGroup === grp && matchesFilters(d, true)
       );
     });
     return groups;
-  }, [searchQuery, selectedCategory, vegOnly, nonVegOnly, under250, bestsellersOnly, ratings45Only]);
+  }, [liveMenuItems, searchQuery, selectedCategory, vegOnly, nonVegOnly, under250, bestsellersOnly, ratings45Only]);
 
   const totalMenuResults = useMemo(
     () => Object.values(menuGroupedDishes).reduce((acc, arr) => acc + arr.length, 0),
@@ -4248,12 +4343,17 @@ function MainApp() {
   );
 
   // --- HELPER: CART OPERATIONS ---
-  const getDishQty = (dishId) => {
-    if (!dishId || !cart) return 0;
-    return Object.values(cart)
-      .filter((entry) => entry && entry.dish && entry.dish.id === dishId)
-      .reduce((sum, entry) => sum + (entry.qty || 0), 0);
-  };
+  const cartQtyByDish = useMemo(() => {
+    const counts = new Map<string, number>();
+    if (!cart) return counts;
+    for (const entry of Object.values(cart) as any[]) {
+      if (!entry?.dish?.id || !entry.qty) continue;
+      counts.set(entry.dish.id, (counts.get(entry.dish.id) || 0) + entry.qty);
+    }
+    return counts;
+  }, [cart]);
+
+  const getDishQty = (dishId) => cartQtyByDish.get(dishId) || 0;
 
   const quickAddDish = (dish) => {
     playAddToCartSound();
@@ -4440,7 +4540,7 @@ function MainApp() {
     const orderItems = Object.values(cart)
       .filter((c: any) => c && c.dish && c.dish.id && c.qty > 0)
       .map((c: any) => ({
-        itemId: c.dish.id,
+        itemId: c.dish.firestoreId || c.dish.id,
         quantity: c.qty,
         selections: c.portion === 'Half' ? [{ groupId: 'portion', optionId: 'half' }] : [],
       }));
@@ -4515,7 +4615,7 @@ function MainApp() {
           localStorage.setItem(`rp_order_${data.orderId}`, data.accessToken);
           localStorage.setItem('rp_customer_name', effectiveName);
           localStorage.setItem('rp_customer_phone', effectivePhone);
-        } catch {}
+        } catch { }
       }
 
       clearCart(slug, selectedTable);
@@ -4663,9 +4763,9 @@ function MainApp() {
   return (
     <div className="min-h-screen w-full bg-[#07030b] text-white flex justify-center sm:py-5 font-jakarta antialiased selection:bg-[#f59e0b]/20 selection:text-[#f59e0b]">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600;1,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-        .font-jakarta { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
-        .font-editorial { font-family: 'Playfair Display', Georgia, serif; }
+        .font-jakarta { font-family: var(--font-heading), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .font-editorial { font-family: Georgia, 'Times New Roman', serif; }
+        .dish-card-opt { content-visibility: auto; contain-intrinsic-size: 1px 128px; }
         .tnum { font-variant-numeric: tabular-nums; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -4728,13 +4828,12 @@ function MainApp() {
                       <button
                         type="button"
                         onClick={() => setTableModalOpen(true)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold cursor-pointer transition-colors tnum border ${
-                          orderType === 'PARCEL'
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold cursor-pointer transition-colors tnum border ${orderType === 'PARCEL'
                             ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
                             : selectedTable
-                            ? 'bg-[#f59e0b]/15 border-[#f59e0b]/40 text-[#fcd34d]'
-                            : 'bg-rose-500/15 border-rose-500/40 text-rose-300 animate-pulse'
-                        }`}
+                              ? 'bg-[#f59e0b]/15 border-[#f59e0b]/40 text-[#fcd34d]'
+                              : 'bg-rose-500/15 border-rose-500/40 text-rose-300 animate-pulse'
+                          }`}
                       >
                         {orderType === 'PARCEL' ? (
                           <Package className="w-3 h-3" />
@@ -4745,8 +4844,8 @@ function MainApp() {
                           {orderType === 'PARCEL'
                             ? 'Parcel • Takeaway'
                             : selectedTable
-                            ? `${formatTableDisplay(selectedTable)} • Dine-In`
-                            : 'Tap to Pick Table / Parcel'}
+                              ? `${formatTableDisplay(selectedTable)} • Dine-In`
+                              : 'Tap to Pick Table / Parcel'}
                         </span>
                         <ChevronDown className="w-3 h-3" />
                       </button>
@@ -4827,11 +4926,10 @@ function MainApp() {
                       playFilterClickSound();
                       setTableModalOpen(true);
                     }}
-                    className={`h-10 px-3 rounded-xl flex items-center justify-between gap-2 text-xs font-bold transition-all cursor-pointer ${
-                      orderType === 'DINE_IN'
+                    className={`h-10 px-3 rounded-xl flex items-center justify-between gap-2 text-xs font-bold transition-all cursor-pointer ${orderType === 'DINE_IN'
                         ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-[#140b20] shadow-md font-black'
                         : 'bg-transparent text-[#8e829c] hover:text-white hover:bg-[#1c0f2e]'
-                    }`}
+                      }`}
                   >
                     <span className="flex items-center gap-1.5 truncate">
                       <UtensilsCrossed className="w-3.5 h-3.5 shrink-0" />
@@ -4850,11 +4948,10 @@ function MainApp() {
                       playFilterClickSound();
                       applyDiningChoice('PARCEL', 'Parcel', true);
                     }}
-                    className={`h-10 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
-                      orderType === 'PARCEL'
+                    className={`h-10 px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${orderType === 'PARCEL'
                         ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-[#07030b] shadow-md font-black'
                         : 'bg-transparent text-[#8e829c] hover:text-white hover:bg-[#1c0f2e]'
-                    }`}
+                      }`}
                   >
                     <Package className="w-3.5 h-3.5 shrink-0" />
                     <span>Parcel (Pack)</span>
@@ -4983,6 +5080,10 @@ function MainApp() {
                           <img
                             src={cat.image}
                             alt={cat.label}
+                            width={50}
+                            height={50}
+                            decoding="async"
+                            referrerPolicy="no-referrer"
                             onError={(e) => {
                               e.currentTarget.src = FALLBACK_FOOD_IMG;
                             }}
@@ -5116,8 +5217,8 @@ function MainApp() {
                             return (
                               <article
                                 key={dish.id}
-                                onClick={() => openCustomization(dish)}
-                                className="p-3.5 sm:p-4 flex items-start justify-between gap-3 cursor-pointer hover:bg-white/[0.015] transition-colors"
+                                onClick={() => dish.available !== false && openCustomization(dish)}
+                                className="dish-card-opt p-3.5 sm:p-4 flex items-start justify-between gap-3 cursor-pointer hover:bg-white/[0.015] transition-colors"
                               >
                                 {/* Left: Info */}
                                 <div className="flex-1 min-w-0 pr-1">
@@ -5160,15 +5261,25 @@ function MainApp() {
                                     <img
                                       src={dish.image}
                                       alt={dish.name}
-                                      onClick={() => openCustomization(dish)}
+                                      width={112}
+                                      height={112}
+                                      decoding="async"
+                                      referrerPolicy="no-referrer"
+                                      onClick={() => dish.available !== false && openCustomization(dish)}
                                       onError={(e) => {
                                         e.currentTarget.src = FALLBACK_FOOD_IMG;
                                       }}
-                                      className="w-full h-full rounded-2xl object-cover cursor-pointer border border-white/5 shadow-md"
+                                      className={`w-full h-full rounded-2xl object-cover border border-white/5 shadow-md ${
+                                        dish.available === false ? 'opacity-50 grayscale cursor-not-allowed' : 'cursor-pointer'
+                                      }`}
                                       loading="lazy"
                                     />
                                     <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-10">
-                                      {qty === 0 ? (
+                                      {dish.available === false ? (
+                                        <span className="h-7 px-3 rounded-lg bg-[#1c0f2e] border border-rose-500/40 text-rose-300 text-[10px] font-bold uppercase tracking-wider shadow-lg inline-flex items-center whitespace-nowrap">
+                                          Sold Out
+                                        </span>
+                                      ) : qty === 0 ? (
                                         <button
                                           type="button"
                                           onClick={() =>
@@ -5666,11 +5777,10 @@ function MainApp() {
                 <button
                   type="button"
                   onClick={() => setOrderType('DINE_IN')}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
-                    orderType === 'DINE_IN'
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${orderType === 'DINE_IN'
                       ? 'bg-amber-500/15 border-[#f59e0b] ring-1 ring-[#f59e0b]/40 text-white'
                       : 'bg-[#180e28] border-[#2b1942] text-[#8e829c] hover:text-white'
-                  }`}
+                    }`}
                 >
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${orderType === 'DINE_IN' ? 'bg-[#f59e0b] text-[#140b20]' : 'bg-[#140b20] text-[#8e829c]'}`}>
                     <UtensilsCrossed className="w-4 h-4" />
@@ -5699,11 +5809,10 @@ function MainApp() {
                       }, 150);
                     }
                   }}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
-                    orderType === 'PARCEL'
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${orderType === 'PARCEL'
                       ? 'bg-emerald-500/20 border-emerald-500 ring-1 ring-emerald-500/40 text-white'
                       : 'bg-[#180e28] border-[#2b1942] text-[#8e829c] hover:text-white'
-                  }`}
+                    }`}
                 >
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${orderType === 'PARCEL' ? 'bg-emerald-500 text-[#07030b]' : 'bg-[#140b20] text-[#8e829c]'}`}>
                     <Package className="w-4 h-4" />
@@ -5721,10 +5830,10 @@ function MainApp() {
                   <div className="grid grid-cols-3 gap-2 max-h-[210px] overflow-y-auto no-scrollbar">
                     {(availableTables.length > 0
                       ? availableTables.map((t) => ({
-                          label: /^\d+$/.test(t.label) ? `Table ${t.label.padStart(2, '0')}` : t.label,
-                          raw: t.label,
-                          state: t.state || 'available',
-                        }))
+                        label: /^\d+$/.test(t.label) ? `Table ${t.label.padStart(2, '0')}` : t.label,
+                        raw: t.label,
+                        state: t.state || 'available',
+                      }))
                       : TABLES.map((lbl) => ({ label: lbl, raw: lbl, state: 'available' }))
                     ).map((tbl) => {
                       const isOwnActive = activeSession?.tableLabel === tbl.raw || activeSession?.tableLabel === tbl.label;
@@ -5752,13 +5861,12 @@ function MainApp() {
                               }, 150);
                             }
                           }}
-                          className={`py-2.5 rounded-2xl text-xs font-bold tnum transition-colors flex items-center justify-center gap-1 ${
-                            isBlocked
+                          className={`py-2.5 rounded-2xl text-xs font-bold tnum transition-colors flex items-center justify-center gap-1 ${isBlocked
                               ? 'bg-[#180e28]/60 border border-[#2b1942] text-[#6E6578] opacity-50 cursor-not-allowed'
                               : isSelected
-                              ? 'bg-[#f59e0b] text-[#140b20] font-black shadow-lg cursor-pointer'
-                              : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036] cursor-pointer'
-                          }`}
+                                ? 'bg-[#f59e0b] text-[#140b20] font-black shadow-lg cursor-pointer'
+                                : 'bg-[#180e28] border border-[#2b1942] text-white hover:bg-[#201036] cursor-pointer'
+                            }`}
                         >
                           <span>{tbl.label}</span>
                           {tbl.state === 'occupied' && !isOwnActive && (
@@ -5929,6 +6037,8 @@ function MainApp() {
                 <img
                   src={customDish.image}
                   alt={customDish.name}
+                  decoding="async"
+                  referrerPolicy="no-referrer"
                   onError={(e) => {
                     e.currentTarget.src = FALLBACK_FOOD_IMG;
                   }}
@@ -6113,9 +6223,8 @@ function MainApp() {
                   <button
                     type="button"
                     onClick={() => setTableModalOpen(true)}
-                    className={`text-[11.5px] font-bold inline-flex items-center gap-1 mt-0.5 cursor-pointer tnum ${
-                      orderType === 'PARCEL' ? 'text-emerald-400' : 'text-[#f59e0b]'
-                    }`}
+                    className={`text-[11.5px] font-bold inline-flex items-center gap-1 mt-0.5 cursor-pointer tnum ${orderType === 'PARCEL' ? 'text-emerald-400' : 'text-[#f59e0b]'
+                      }`}
                   >
                     {orderType === 'PARCEL' ? (
                       <Package className="w-3.5 h-3.5" />
@@ -6126,8 +6235,8 @@ function MainApp() {
                       {orderType === 'PARCEL'
                         ? 'Parcel • Takeaway Pack'
                         : selectedTable
-                        ? `${formatTableDisplay(selectedTable)} • Dine-In`
-                        : 'Select Table Number or Parcel'}
+                          ? `${formatTableDisplay(selectedTable)} • Dine-In`
+                          : 'Select Table Number or Parcel'}
                     </span>
                     <ChevronDown className="w-3.5 h-3.5" />
                   </button>
@@ -6318,11 +6427,10 @@ function MainApp() {
                               setOrderType('DINE_IN');
                             }
                           }}
-                          className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
-                            orderType === 'DINE_IN'
+                          className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${orderType === 'DINE_IN'
                               ? 'bg-[#f59e0b]/20 border-[#f59e0b] text-[#fcd34d]'
                               : 'bg-[#180e28] border-[#2b1942] text-[#8e829c] hover:text-white'
-                          }`}
+                            }`}
                         >
                           <UtensilsCrossed className="w-3.5 h-3.5 shrink-0" />
                           <span className="truncate">
@@ -6335,11 +6443,10 @@ function MainApp() {
                         <button
                           type="button"
                           onClick={() => applyDiningChoice('PARCEL', 'Parcel', false)}
-                          className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
-                            orderType === 'PARCEL'
+                          className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${orderType === 'PARCEL'
                               ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
                               : 'bg-[#180e28] border-[#2b1942] text-[#8e829c] hover:text-white'
-                          }`}
+                            }`}
                         >
                           <Package className="w-3.5 h-3.5 shrink-0" />
                           <span>Parcel</span>

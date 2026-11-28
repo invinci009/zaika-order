@@ -1,25 +1,41 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import OverviewTab, { type AnalyticsData } from './OverviewTab'
-import CampaignsTab, { type CampaignItem } from './CampaignsTab'
-import ResponsesTab, { type ResponseItem } from './ResponsesTab'
-import FeedbackTab, { type PrivateFeedbackItem } from './FeedbackTab'
-import MenuTab, { type MenuItem as DashboardMenuItem } from './MenuTab'
-import TablesTab, { type TableItem } from './TablesTab'
-import OrderMenuTab from './OrderMenuTab'
-import OrdersTab from './OrdersTab'
-import KitchenTab from './KitchenTab'
-import ReportsTab from './ReportsTab'
-import SettingsTab, { type BusinessSettings } from './SettingsTab'
-import CustomersPortalTab, { type CustomerDetail } from './CustomersPortalTab'
-import LoyaltyTab from './LoyaltyTab'
+import type { CampaignItem } from './CampaignsTab'
+import type { ResponseItem } from './ResponsesTab'
+import type { PrivateFeedbackItem } from './FeedbackTab'
+import type { MenuItem as DashboardMenuItem } from './MenuTab'
+import type { TableItem } from './TablesTab'
+import type { BusinessSettings } from './SettingsTab'
+import type { CustomerDetail } from './CustomersPortalTab'
 import MobileBottomNav from './MobileBottomNav'
 import MobileMenuDrawer from './MobileMenuDrawer'
 import { OrderAnnouncerProvider } from './OrderAnnouncerContext'
 import OrderAnnouncerBar from './OrderAnnouncerBar'
 import { usePwa } from '@/components/pwa/PwaProvider'
+
+// Lazy-load heavy secondary dashboard tabs so opening /dashboard downloads only what is active
+const TabSpinner = () => (
+  <div className="py-16 flex items-center justify-center">
+    <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+)
+
+const CampaignsTab = dynamic(() => import('./CampaignsTab'), { loading: TabSpinner })
+const ResponsesTab = dynamic(() => import('./ResponsesTab'), { loading: TabSpinner })
+const FeedbackTab = dynamic(() => import('./FeedbackTab'), { loading: TabSpinner })
+const MenuTab = dynamic(() => import('./MenuTab'), { loading: TabSpinner })
+const TablesTab = dynamic(() => import('./TablesTab'), { loading: TabSpinner })
+const OrderMenuTab = dynamic(() => import('./OrderMenuTab'), { loading: TabSpinner })
+const OrdersTab = dynamic(() => import('./OrdersTab'), { loading: TabSpinner })
+const KitchenTab = dynamic(() => import('./KitchenTab'), { loading: TabSpinner })
+const ReportsTab = dynamic(() => import('./ReportsTab'), { loading: TabSpinner })
+const SettingsTab = dynamic(() => import('./SettingsTab'), { loading: TabSpinner })
+const CustomersPortalTab = dynamic(() => import('./CustomersPortalTab'), { loading: TabSpinner })
+const LoyaltyTab = dynamic(() => import('./LoyaltyTab'), { loading: TabSpinner })
 import {
   LayoutDashboard,
   QrCode,

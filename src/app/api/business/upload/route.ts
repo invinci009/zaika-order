@@ -83,7 +83,11 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
+    const rawMsg = error instanceof Error ? error.message : 'Failed to upload image'
     console.error('Menu image upload error:', error)
-    return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 })
+    const safeError = rawMsg.includes('Supabase')
+      ? 'Storage upload failed. Ensure Supabase Storage bucket "menu-items" exists and credentials are set.'
+      : 'Failed to upload image'
+    return NextResponse.json({ error: safeError }, { status: 500 })
   }
 }

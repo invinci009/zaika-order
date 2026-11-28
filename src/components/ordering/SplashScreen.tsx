@@ -29,11 +29,11 @@ export function SplashScreen({
   ]
 
   useEffect(() => {
-    const t0 = setTimeout(() => setPhase('showing'), 60)
-    const s1 = setTimeout(() => setStepIndex(1), 1100)
-    const s2 = setTimeout(() => setStepIndex(2), 2200)
-    const tLeave = setTimeout(() => setPhase('leaving'), 3400)
-    const tEnd = setTimeout(() => onComplete(), 3850)
+    const t0 = setTimeout(() => setPhase('showing'), 40)
+    const s1 = setTimeout(() => setStepIndex(1), 320)
+    const s2 = setTimeout(() => setStepIndex(2), 620)
+    const tLeave = setTimeout(() => setPhase('leaving'), 850)
+    const tEnd = setTimeout(() => onComplete(), 1100)
 
     return () => {
       clearTimeout(t0)

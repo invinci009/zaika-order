@@ -216,12 +216,14 @@ export async function POST(request: NextRequest) {
       getOrderingConfig().catch(() => ({ taxRateBps: 500, serviceChargePaise: 0 })),
     ])
     const menuById = new Map(menuItems.map((m) => [m.id, m]))
+    const toSlug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const menuBySlug = new Map(menuItems.map((m) => [toSlug(m.name), m]))
 
     const snapshots: OrderItemSnapshot[] = []
     const quoteLines: Array<{ item: { pricePaise: number }; quantity: number; selections: Array<{ pricePaise: number }> }> = []
 
     for (const line of input.items) {
-      const menuItem = menuById.get(line.itemId)
+      const menuItem = menuById.get(line.itemId) || menuBySlug.get(toSlug(line.itemId))
       if (!menuItem || !menuItem.visible) {
         return NextResponse.json({ error: `Item no longer available: ${line.itemId}` }, { status: 409 })
       }
