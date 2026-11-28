@@ -7,6 +7,7 @@ import {
   resolveTableToken,
   getTables,
   normalizeTableLabel,
+  ensureMenuCachesFresh,
   type OrderMenuItem,
   type OrderMenuCategory,
   type OrderingConfig,
@@ -15,7 +16,6 @@ import {
 import { hashToken } from '@/lib/ordering/tokens'
 import { getRestaurantConfig } from '@/config/loader'
 import { normalizeImageUrl } from '@/lib/ordering/validation'
-import { getCached } from '@/lib/cache'
 
 function computeMenuCatalogEtag(
   items: OrderMenuItem[],
@@ -73,26 +73,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Ordering is not available for this link' }, { status: 404 })
     }
 
-    const { categories, items, ordering, settings, diningTables } = await getCached(
-      'public:order_menu:catalog',
-      10 * 60 * 1000,
-      async () => {
-        const [categories, items, ordering, settings, diningTables] = await Promise.all([
-          getOrderMenuCategories().catch(() => []),
-          getOrderMenuItems().catch(() => []),
-          getOrderingConfig().catch(() => ({
-            taxRateBps: 500,
-            serviceChargePaise: 0,
-            currency: 'INR' as const,
-            generalOrderingEnabled: true,
-            updatedAt: '',
-          })),
-          getRestaurantSettings().catch(() => null),
-          getTables(true).catch(() => []),
-        ])
-        return { categories, items, ordering, settings, diningTables }
-      }
-    )
+    await ensureMenuCachesFresh().catch(() => {})
+    const [categories, items, ordering, settings, diningTables] = await Promise.all([
+      getOrderMenuCategories().catch(() => []),
+      getOrderMenuItems().catch(() => []),
+      getOrderingConfig().catch(() => ({
+        taxRateBps: 500,
+        serviceChargePaise: 0,
+        currency: 'INR' as const,
+        generalOrderingEnabled: true,
+        updatedAt: '',
+      })),
+      getRestaurantSettings().catch(() => null),
+      getTables(true).catch(() => []),
+    ])
 
     const tableParam = searchParams.get('table')
     let table: { id: string; label: string; state?: string } | null = null

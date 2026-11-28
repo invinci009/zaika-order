@@ -31,6 +31,7 @@ const serverNow = () => new Date().toISOString()
 function invalidateCatalogCache(prefix: string): void {
   invalidateCache(prefix)
   invalidateCache('public:order_menu:')
+  bumpSyncState('menu').catch(() => {})
 }
 
 // ---------------------------------------------------------------------------
@@ -64,6 +65,7 @@ export interface TableQrToken {
 }
 
 export async function getTables(includeInactive = true): Promise<DiningTable[]> {
+  await ensureMenuCachesFresh().catch(() => {})
   const tables = await getCached('tables:all', 60 * 60 * 1000, async () => {
     const q = getDb().collection('diningTables').orderBy('label', 'asc')
     const snapshot = await q.get()
@@ -317,6 +319,7 @@ export interface OrderingConfig {
 }
 
 export async function getOrderingConfig(): Promise<OrderingConfig> {
+  await ensureMenuCachesFresh().catch(() => {})
   return getCached('order:config', 60 * 60 * 1000, async () => {
     const snap = await getDb().doc('restaurant/ordering').get()
     if (!snap.exists) {
@@ -400,6 +403,7 @@ export interface OrderMenuItem {
 }
 
 export async function getOrderMenuCategories(): Promise<OrderMenuCategory[]> {
+  await ensureMenuCachesFresh().catch(() => {})
   return getCached('order:categories', 60 * 60 * 1000, async () => {
     const snap = await getDb().collection('orderMenuCategories').orderBy('position', 'asc').get()
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as OrderMenuCategory)
@@ -438,6 +442,7 @@ export async function upsertOrderMenuCategory(data: {
 }
 
 export async function getOrderMenuItems(): Promise<OrderMenuItem[]> {
+  await ensureMenuCachesFresh().catch(() => {})
   return getCached('order:menu_items', 60 * 60 * 1000, async () => {
     const snap = await getDb().collection('orderMenuItems').orderBy('position', 'asc').get()
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as OrderMenuItem)
@@ -660,13 +665,15 @@ const activeOrdersCache: ActiveOrdersCacheState = (globalThis.__rp_activeOrdersC
 /**
  * Lightweight sync version coordinator in Firestore (counters/syncState).
  * Allows any serverless instance to coordinate with at most 1 shared read per 10s
- * instead of scanning entire orders/serviceRequests collections.
+ * instead of scanning entire orders/serviceRequests/menu collections.
  */
 interface SyncStateSnapshot {
   ordersUpdatedAt: number
   serviceRequestsUpdatedAt: number
+  menuUpdatedAt: number
+  menuSyncedAt: number
   fetchedAt: number
-  inFlight: Promise<{ ordersUpdatedAt: number; serviceRequestsUpdatedAt: number }> | null
+  inFlight: Promise<{ ordersUpdatedAt: number; serviceRequestsUpdatedAt: number; menuUpdatedAt: number }> | null
 }
 
 declare global {
@@ -676,16 +683,19 @@ declare global {
 const syncStateCache: SyncStateSnapshot = (globalThis.__rp_syncStateCache ??= {
   ordersUpdatedAt: 0,
   serviceRequestsUpdatedAt: 0,
+  menuUpdatedAt: 0,
+  menuSyncedAt: 0,
   fetchedAt: 0,
   inFlight: null,
 })
 
-async function getSyncState(): Promise<{ ordersUpdatedAt: number; serviceRequestsUpdatedAt: number }> {
+async function getSyncState(): Promise<{ ordersUpdatedAt: number; serviceRequestsUpdatedAt: number; menuUpdatedAt: number }> {
   const now = Date.now()
   if (syncStateCache.fetchedAt > 0 && now - syncStateCache.fetchedAt < 10_000) {
     return {
       ordersUpdatedAt: syncStateCache.ordersUpdatedAt,
       serviceRequestsUpdatedAt: syncStateCache.serviceRequestsUpdatedAt,
+      menuUpdatedAt: syncStateCache.menuUpdatedAt,
     }
   }
   if (syncStateCache.inFlight) {
@@ -697,10 +707,12 @@ async function getSyncState(): Promise<{ ordersUpdatedAt: number; serviceRequest
       const data = syncSnap.exists ? syncSnap.data() : undefined
       const ordersUpdatedAt = (data?.ordersUpdatedAt as number) || 0
       const serviceRequestsUpdatedAt = (data?.serviceRequestsUpdatedAt as number) || 0
+      const menuUpdatedAt = (data?.menuUpdatedAt as number) || 0
       syncStateCache.ordersUpdatedAt = ordersUpdatedAt
       syncStateCache.serviceRequestsUpdatedAt = serviceRequestsUpdatedAt
+      syncStateCache.menuUpdatedAt = menuUpdatedAt
       syncStateCache.fetchedAt = Date.now()
-      return { ordersUpdatedAt, serviceRequestsUpdatedAt }
+      return { ordersUpdatedAt, serviceRequestsUpdatedAt, menuUpdatedAt }
     } finally {
       syncStateCache.inFlight = null
     }
@@ -709,13 +721,35 @@ async function getSyncState(): Promise<{ ordersUpdatedAt: number; serviceRequest
   return p
 }
 
-async function bumpSyncState(scope: 'orders' | 'serviceRequests'): Promise<void> {
+export async function ensureMenuCachesFresh(): Promise<void> {
+  const sync = await getSyncState()
+  if (sync.menuUpdatedAt > syncStateCache.menuSyncedAt) {
+    syncStateCache.menuSyncedAt = sync.menuUpdatedAt
+    invalidateCache('order:menu_items')
+    invalidateCache('order:menu_items_count')
+    invalidateCache('order:categories')
+    invalidateCache('order:config')
+    invalidateCache('tables:all')
+    invalidateCache('public:order_menu:')
+  }
+}
+
+async function bumpSyncState(scope: 'orders' | 'serviceRequests' | 'menu'): Promise<void> {
   try {
     const db = getDb()
     const now = Date.now()
-    const field = scope === 'orders' ? 'ordersUpdatedAt' : 'serviceRequestsUpdatedAt'
+    const field =
+      scope === 'orders'
+        ? 'ordersUpdatedAt'
+        : scope === 'serviceRequests'
+          ? 'serviceRequestsUpdatedAt'
+          : 'menuUpdatedAt'
     if (scope === 'orders') syncStateCache.ordersUpdatedAt = now
-    else syncStateCache.serviceRequestsUpdatedAt = now
+    else if (scope === 'serviceRequests') syncStateCache.serviceRequestsUpdatedAt = now
+    else {
+      syncStateCache.menuUpdatedAt = now
+      syncStateCache.menuSyncedAt = now
+    }
     syncStateCache.fetchedAt = now
     await db.doc('counters/syncState').set(
       {
