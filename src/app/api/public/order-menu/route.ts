@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
     const etag = computeMenuCatalogEtag(items, categories, ordering, settings?.updatedAt, diningTables, table?.id || null)
     const cacheHeaders = {
       ETag: etag,
-      'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=120',
+      'Cache-Control': 'public, max-age=0, must-revalidate',
     }
     if (request.headers.get('if-none-match') === etag) {
       return new NextResponse(null, {

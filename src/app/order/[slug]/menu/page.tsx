@@ -3683,6 +3683,34 @@ function normMenuName(s?: string | null): string {
   return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
+function findFuzzyLocalMatch(
+  remoteName: string,
+  targetGroup: string,
+  localItems: typeof MENU_ITEMS,
+  usedLocalIds: Set<string>
+) {
+  const rn = normMenuName(remoteName);
+  if (!rn) return null;
+  let best: typeof MENU_ITEMS[number] | null = null;
+  let bestScore = 0;
+  for (const local of localItems) {
+    if (usedLocalIds.has(local.id) || local.menuGroup !== targetGroup) continue;
+    const ln = normMenuName(local.name);
+    if (!ln) continue;
+    if (ln === rn) return local;
+    const minLen = Math.min(ln.length, rn.length);
+    const maxLen = Math.max(ln.length, rn.length);
+    if (minLen >= 4 && (rn.startsWith(ln) || ln.startsWith(rn)) && maxLen - minLen <= 3) {
+      const score = minLen / maxLen;
+      if (score > bestScore) {
+        bestScore = score;
+        best = local;
+      }
+    }
+  }
+  return bestScore >= 0.72 ? best : null;
+}
+
 function mergeLiveCatalogItems(
   baseItems: typeof MENU_ITEMS,
   remoteItems: any[],
@@ -3691,69 +3719,72 @@ function mergeLiveCatalogItems(
   if (!Array.isArray(remoteItems) || remoteItems.length === 0) return baseItems;
   const catNameById = new Map((remoteCategories || []).map((c) => [c.id, c.name]));
 
-  const remoteById = new Map<string, any>();
-  const remoteByNormName = new Map<string, any>();
-  const remoteByImg = new Map<string, any>();
-  for (const r of remoteItems) {
-    if (!r || !r.id) continue;
-    remoteById.set(r.id, r);
-    const nn = normMenuName(r.name);
-    if (nn) remoteByNormName.set(nn, r);
-    if (r.imageUrl) remoteByImg.set(r.imageUrl, r);
-  }
-
-  const consumedRemoteIds = new Set<string>();
-  const merged = baseItems.map((local) => {
-    const match =
-      remoteById.get(local.id) ||
-      remoteByNormName.get(normMenuName(local.name)) ||
-      remoteByImg.get(local.image);
-    if (!match) return local;
-    consumedRemoteIds.add(match.id);
-    const mappedVeg =
-      match.veg === 'veg' ? true : match.veg === 'nonveg' ? false : local.veg;
-    return {
-      ...local,
-      firestoreId: match.id,
-      name: match.name || local.name,
-      price: typeof match.pricePaise === 'number' && match.pricePaise > 0
-        ? Math.round(match.pricePaise / 100)
-        : local.price,
-      description: match.description || local.description,
-      image: match.imageUrl || local.image,
-      veg: mappedVeg,
-      popular: Boolean(match.featured || local.popular),
-      available: match.available !== false,
-    };
+  const localById = new Map<string, (typeof MENU_ITEMS)[number]>();
+  const localByNormName = new Map<string, (typeof MENU_ITEMS)[number]>();
+  const localByImg = new Map<string, (typeof MENU_ITEMS)[number]>();
+  const localIndexById = new Map<string, number>();
+  baseItems.forEach((item, idx) => {
+    localById.set(item.id, item);
+    localIndexById.set(item.id, idx);
+    const nn = normMenuName(item.name);
+    if (nn) localByNormName.set(nn, item);
+    if (item.image) localByImg.set(item.image, item);
   });
 
-  for (const r of remoteItems) {
-    if (!r || !r.id || consumedRemoteIds.has(r.id)) continue;
+  const usedLocalIds = new Set<string>();
+  const resolved: Array<{ item: any; sortOrder: number }> = [];
+
+  remoteItems.forEach((r, idx) => {
+    if (!r || !r.id) return;
     const catName = r.categoryId ? catNameById.get(r.categoryId) || 'Special' : 'Special';
-    const menuGroup = mapCategoryToMenuGroup(catName);
-    if (r.id.startsWith('special-') && menuGroup === 'MEHMAN NAWAZI PARTY PACKS') continue;
-    merged.push({
-      id: r.id,
+    const fallbackGroup = mapCategoryToMenuGroup(catName);
+
+    let local =
+      localById.get(r.id) ||
+      localByNormName.get(normMenuName(r.name)) ||
+      (r.imageUrl ? localByImg.get(r.imageUrl) : undefined);
+
+    if (local && usedLocalIds.has(local.id)) {
+      local = undefined;
+    }
+    if (!local) {
+      local = findFuzzyLocalMatch(r.name, fallbackGroup, baseItems, usedLocalIds) || undefined;
+    }
+    if (local) {
+      usedLocalIds.add(local.id);
+    }
+
+    const mappedVeg =
+      r.veg === 'veg' ? true : r.veg === 'nonveg' ? false : (local?.veg ?? true);
+
+    const item = {
+      id: local?.id || r.id,
       firestoreId: r.id,
       name: r.name,
-      category: catName,
-      menuGroup,
-      veg: r.veg === 'veg',
-      price: Math.round((r.pricePaise || 0) / 100),
-      halfPrice: null as any,
-      rating: 4.8,
-      ratingCount: '120+',
-      badge: r.featured ? 'POPULAR' : '',
-      badgeType: r.featured ? 'saffron' : '',
-      popular: Boolean(r.featured),
-      customizable: Array.isArray(r.options) && r.options.length > 0,
-      description: r.description || `Freshly prepared ${r.name} cooked to order.`,
-      image: r.imageUrl || FALLBACK_FOOD_IMG,
+      category: local?.category || catName,
+      menuGroup: local?.menuGroup || fallbackGroup,
+      veg: mappedVeg,
+      price: typeof r.pricePaise === 'number' && r.pricePaise > 0
+        ? Math.round(r.pricePaise / 100)
+        : (local?.price ?? 0),
+      halfPrice: local?.halfPrice ?? (null as any),
+      rating: local?.rating ?? 4.8,
+      ratingCount: local?.ratingCount ?? '120+',
+      badge: r.featured ? (local?.badge || 'POPULAR') : (local?.badge || ''),
+      badgeType: r.featured ? (local?.badgeType || 'saffron') : (local?.badgeType || ''),
+      popular: Boolean(r.featured || local?.popular),
+      customizable: local?.customizable ?? (Array.isArray(r.options) && r.options.length > 0),
+      description: r.description || local?.description || `Freshly prepared ${r.name} cooked to order.`,
+      image: r.imageUrl || local?.image || FALLBACK_FOOD_IMG,
       available: r.available !== false,
-    });
-  }
+    };
 
-  return merged;
+    const sortOrder = local ? (localIndexById.get(local.id) ?? idx) : baseItems.length + idx;
+    resolved.push({ item, sortOrder });
+  });
+
+  resolved.sort((a, b) => a.sortOrder - b.sortOrder);
+  return resolved.map((entry) => entry.item);
 }
 
 function MainApp() {
@@ -3862,30 +3893,47 @@ function MainApp() {
     if (token) q.set('token', token);
     if (tableQueryParam) q.set('table', tableQueryParam);
 
-    fetch(`/api/public/order-menu?${q.toString()}`)
-      .then(async (res) => {
-        if (!res.ok) return;
-        const data = await res.json().catch(() => ({}));
-        if (Array.isArray(data.items) && data.items.length > 0) {
-          setLiveMenuItems(mergeLiveCatalogItems(MENU_ITEMS, data.items, data.categories || []));
-        }
-        if (Array.isArray(data.tables) && data.tables.length > 0) {
-          setAvailableTables(data.tables);
-        }
-        if (data.table?.label) {
-          if (isParcelLabel(data.table.label)) {
-            setOrderType('PARCEL');
-            setSelectedTable('Parcel');
-          } else {
-            const formatted = /^\d+$/.test(data.table.label)
-              ? `Table ${data.table.label.padStart(2, '0')}`
-              : data.table.label;
-            setOrderType('DINE_IN');
-            setSelectedTable(formatted);
+    let cancelled = false;
+    const syncCatalog = () => {
+      fetch(`/api/public/order-menu?${q.toString()}`, { cache: 'no-store' })
+        .then(async (res) => {
+          if (!res.ok || cancelled) return;
+          const data = await res.json().catch(() => ({}));
+          if (cancelled) return;
+          if (Array.isArray(data.items) && data.items.length > 0) {
+            setLiveMenuItems(mergeLiveCatalogItems(MENU_ITEMS, data.items, data.categories || []));
           }
-        }
-      })
-      .catch(() => { });
+          if (Array.isArray(data.tables) && data.tables.length > 0) {
+            setAvailableTables(data.tables);
+          }
+          if (data.table?.label) {
+            if (isParcelLabel(data.table.label)) {
+              setOrderType('PARCEL');
+              setSelectedTable('Parcel');
+            } else {
+              const formatted = /^\d+$/.test(data.table.label)
+                ? `Table ${data.table.label.padStart(2, '0')}`
+                : data.table.label;
+              setOrderType('DINE_IN');
+              setSelectedTable(formatted);
+            }
+          }
+        })
+        .catch(() => { });
+    };
+
+    syncCatalog();
+    const onFocusSync = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      syncCatalog();
+    };
+    window.addEventListener('focus', onFocusSync);
+    document.addEventListener('visibilitychange', onFocusSync);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', onFocusSync);
+      document.removeEventListener('visibilitychange', onFocusSync);
+    };
   }, [slug, token, tableQueryParam]);
 
   useEffect(() => {

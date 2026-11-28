@@ -14,8 +14,21 @@ interface CacheEntry<T> {
   cachedAt: number
 }
 
+function expandTagHierarchy(key: string): string[] {
+  const tags = new Set<string>([key])
+  const parts = key.split(':')
+  for (let i = 1; i < parts.length; i++) {
+    const prefix = parts.slice(0, i).join(':')
+    if (prefix) {
+      tags.add(prefix)
+      tags.add(`${prefix}:`)
+    }
+  }
+  return [...tags]
+}
+
 // Attach cache stores to globalThis so they are truly shared across all
-// Server Component bundles, Route Handlers, and survives Next.js fast-refresh / module re-evaluations.
+// Server Component bundles, Route Handlers, and survive Next.js fast-refresh / module re-evaluations.
 declare global {
   // eslint-disable-next-line no-var
   var __rp_memoryStore: Map<string, CacheEntry<unknown>> | undefined
@@ -70,7 +83,7 @@ export async function getCached<T>(
         const cachedFetcher = unstable_cache(
           fetcher,
           [key],
-          { revalidate: revalidateSeconds, tags: [key] }
+          { revalidate: revalidateSeconds, tags: expandTagHierarchy(key) }
         )
         fresh = await cachedFetcher()
       } catch {
@@ -110,13 +123,22 @@ export async function getCached<T>(
  * Call whenever an administrative mutation happens (save settings, edit menu, etc.).
  */
 export function invalidateCache(keyPrefix: string): void {
+  const cleanPrefix = keyPrefix.replace(/:+$/, '')
   for (const key of memoryStore.keys()) {
-    if (key === keyPrefix || key.startsWith(`${keyPrefix}:`) || key.startsWith(keyPrefix)) {
+    if (
+      key === keyPrefix ||
+      key === cleanPrefix ||
+      key.startsWith(`${cleanPrefix}:`) ||
+      key.startsWith(keyPrefix)
+    ) {
       memoryStore.delete(key)
     }
   }
   try {
     revalidateTag(keyPrefix, { expire: 0 })
+    if (cleanPrefix && cleanPrefix !== keyPrefix) {
+      revalidateTag(cleanPrefix, { expire: 0 })
+    }
   } catch {
     // Graceful fallback if called outside Next.js request context
   }
